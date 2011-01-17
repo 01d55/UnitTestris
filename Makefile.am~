@@ -1,0 +1,11 @@
+# Rules for the test code (use `make check` to execute)
+TESTS = FieldTest BlockTest
+check_PROGRAMS = $(TESTS)
+FieldTests_SOURCES = Field.h FieldTest.h FieldTest.cpp FieldTest.cpp
+FieldTests_CXXFLAGS = $(CPPUNIT_CFLAGS)
+FieldTests_LDFLAGS = $(CPPUNIT_LIBS)
+FieldTests_LDFLAGS = -ldl
+BlockTests_SOURCES = Block.h BlockTest.h BlockTest.cpp BlockTest.cpp
+BlockTests_CXXFLAGS = $(CPPUNIT_CFLAGS)
+BlockTests_LDFLAGS = $(CPPUNIT_LIBS)
+BlockTests_LDFLAGS = -ldl
