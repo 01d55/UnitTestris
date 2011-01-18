@@ -1,11 +1,14 @@
 #include "FieldTest.hpp"
 #include "Field.hpp"
 
-void setUp()
+// Registers the fixture into the 'registry'
+CPPUNIT_TEST_SUITE_REGISTRATION( FieldTest );
+
+void FieldTest::setUp()
 {
 }
 
-void tearDown()
+void FieldTest::tearDown()
 {
 }
 
@@ -16,6 +19,11 @@ void FieldTest::testConstructor()
 }
 
 void FieldTest::testSet()
+{
+  CPPUNIT_FAIL( "not implemented" );
+}
+
+void FieldTest::testFieldSize()
 {
   CPPUNIT_FAIL( "not implemented" );
 }

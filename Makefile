@@ -31,7 +31,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-TESTS = FieldTest$(EXEEXT) BlockTest$(EXEEXT)
+TESTS = UnitTestris$(EXEEXT)
 check_PROGRAMS = $(am__EXEEXT_1)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
@@ -46,23 +46,30 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(install_sh) -d
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__EXEEXT_1 = FieldTest$(EXEEXT) BlockTest$(EXEEXT)
-BlockTest_SOURCES = BlockTest.c
-BlockTest_OBJECTS = BlockTest.$(OBJEXT)
-BlockTest_LDADD = $(LDADD)
-FieldTest_SOURCES = FieldTest.c
-FieldTest_OBJECTS = FieldTest.$(OBJEXT)
-FieldTest_LDADD = $(LDADD)
+am__EXEEXT_1 = UnitTestris$(EXEEXT)
+am_UnitTestris_OBJECTS = UnitTestris-Field.$(OBJEXT) \
+	UnitTestris-FieldTest.$(OBJEXT) \
+	UnitTestris-BlockTest.$(OBJEXT) \
+	UnitTestris-UnitTestris.$(OBJEXT)
+UnitTestris_OBJECTS = $(am_UnitTestris_OBJECTS)
+UnitTestris_LDADD = $(LDADD)
+UnitTestris_LINK = $(CXXLD) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) \
+	$(UnitTestris_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
+	-o $@
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = BlockTest.c FieldTest.c
-DIST_SOURCES = BlockTest.c FieldTest.c
+SOURCES = $(UnitTestris_SOURCES)
+DIST_SOURCES = $(UnitTestris_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 am__tty_colors = \
@@ -168,16 +175,15 @@ target_alias =
 top_build_prefix = 
 top_builddir = .
 top_srcdir = .
-FieldTests_SOURCES = Field.h FieldTest.h FieldTest.cpp FieldTest.cpp
-FieldTests_CXXFLAGS = $(CPPUNIT_CFLAGS)
-FieldTests_LDFLAGS = -ldl
-BlockTests_SOURCES = Block.h BlockTest.h BlockTest.cpp BlockTest.cpp
-BlockTests_CXXFLAGS = $(CPPUNIT_CFLAGS)
-BlockTests_LDFLAGS = -ldl
+UnitTestris_SOURCES = Field.hpp Field.cpp FieldTest.hpp FieldTest.cpp\
+Block.hpp BlockTest.hpp BlockTest.cpp UnitTestris.cpp 
+
+UnitTestris_CXXFLAGS = $(CPPUNIT_CFLAGS)
+UnitTestris_LDFLAGS = $(CPPUNIT_LIBS)
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .o .obj
+.SUFFIXES: .cpp .o .obj
 am--refresh:
 	@:
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -215,12 +221,9 @@ $(am__aclocal_m4_deps):
 
 clean-checkPROGRAMS:
 	-test -z "$(check_PROGRAMS)" || rm -f $(check_PROGRAMS)
-BlockTest$(EXEEXT): $(BlockTest_OBJECTS) $(BlockTest_DEPENDENCIES) 
-	@rm -f BlockTest$(EXEEXT)
-	$(LINK) $(BlockTest_OBJECTS) $(BlockTest_LDADD) $(LIBS)
-FieldTest$(EXEEXT): $(FieldTest_OBJECTS) $(FieldTest_DEPENDENCIES) 
-	@rm -f FieldTest$(EXEEXT)
-	$(LINK) $(FieldTest_OBJECTS) $(FieldTest_LDADD) $(LIBS)
+UnitTestris$(EXEEXT): $(UnitTestris_OBJECTS) $(UnitTestris_DEPENDENCIES) 
+	@rm -f UnitTestris$(EXEEXT)
+	$(UnitTestris_LINK) $(UnitTestris_OBJECTS) $(UnitTestris_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -228,22 +231,80 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/BlockTest.Po
-include ./$(DEPDIR)/FieldTest.Po
+include ./$(DEPDIR)/UnitTestris-BlockTest.Po
+include ./$(DEPDIR)/UnitTestris-Field.Po
+include ./$(DEPDIR)/UnitTestris-FieldTest.Po
+include ./$(DEPDIR)/UnitTestris-UnitTestris.Po
 
-.c.o:
-	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+.cpp.o:
+	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
 	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 #	source='$<' object='$@' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
-#	$(COMPILE) -c $<
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXXCOMPILE) -c -o $@ $<
 
-.c.obj:
-	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+.cpp.obj:
+	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
 	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
 #	source='$<' object='$@' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
-#	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+UnitTestris-Field.o: Field.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -MT UnitTestris-Field.o -MD -MP -MF $(DEPDIR)/UnitTestris-Field.Tpo -c -o UnitTestris-Field.o `test -f 'Field.cpp' || echo '$(srcdir)/'`Field.cpp
+	$(am__mv) $(DEPDIR)/UnitTestris-Field.Tpo $(DEPDIR)/UnitTestris-Field.Po
+#	source='Field.cpp' object='UnitTestris-Field.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -c -o UnitTestris-Field.o `test -f 'Field.cpp' || echo '$(srcdir)/'`Field.cpp
+
+UnitTestris-Field.obj: Field.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -MT UnitTestris-Field.obj -MD -MP -MF $(DEPDIR)/UnitTestris-Field.Tpo -c -o UnitTestris-Field.obj `if test -f 'Field.cpp'; then $(CYGPATH_W) 'Field.cpp'; else $(CYGPATH_W) '$(srcdir)/Field.cpp'; fi`
+	$(am__mv) $(DEPDIR)/UnitTestris-Field.Tpo $(DEPDIR)/UnitTestris-Field.Po
+#	source='Field.cpp' object='UnitTestris-Field.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -c -o UnitTestris-Field.obj `if test -f 'Field.cpp'; then $(CYGPATH_W) 'Field.cpp'; else $(CYGPATH_W) '$(srcdir)/Field.cpp'; fi`
+
+UnitTestris-FieldTest.o: FieldTest.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -MT UnitTestris-FieldTest.o -MD -MP -MF $(DEPDIR)/UnitTestris-FieldTest.Tpo -c -o UnitTestris-FieldTest.o `test -f 'FieldTest.cpp' || echo '$(srcdir)/'`FieldTest.cpp
+	$(am__mv) $(DEPDIR)/UnitTestris-FieldTest.Tpo $(DEPDIR)/UnitTestris-FieldTest.Po
+#	source='FieldTest.cpp' object='UnitTestris-FieldTest.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -c -o UnitTestris-FieldTest.o `test -f 'FieldTest.cpp' || echo '$(srcdir)/'`FieldTest.cpp
+
+UnitTestris-FieldTest.obj: FieldTest.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -MT UnitTestris-FieldTest.obj -MD -MP -MF $(DEPDIR)/UnitTestris-FieldTest.Tpo -c -o UnitTestris-FieldTest.obj `if test -f 'FieldTest.cpp'; then $(CYGPATH_W) 'FieldTest.cpp'; else $(CYGPATH_W) '$(srcdir)/FieldTest.cpp'; fi`
+	$(am__mv) $(DEPDIR)/UnitTestris-FieldTest.Tpo $(DEPDIR)/UnitTestris-FieldTest.Po
+#	source='FieldTest.cpp' object='UnitTestris-FieldTest.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -c -o UnitTestris-FieldTest.obj `if test -f 'FieldTest.cpp'; then $(CYGPATH_W) 'FieldTest.cpp'; else $(CYGPATH_W) '$(srcdir)/FieldTest.cpp'; fi`
+
+UnitTestris-BlockTest.o: BlockTest.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -MT UnitTestris-BlockTest.o -MD -MP -MF $(DEPDIR)/UnitTestris-BlockTest.Tpo -c -o UnitTestris-BlockTest.o `test -f 'BlockTest.cpp' || echo '$(srcdir)/'`BlockTest.cpp
+	$(am__mv) $(DEPDIR)/UnitTestris-BlockTest.Tpo $(DEPDIR)/UnitTestris-BlockTest.Po
+#	source='BlockTest.cpp' object='UnitTestris-BlockTest.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -c -o UnitTestris-BlockTest.o `test -f 'BlockTest.cpp' || echo '$(srcdir)/'`BlockTest.cpp
+
+UnitTestris-BlockTest.obj: BlockTest.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -MT UnitTestris-BlockTest.obj -MD -MP -MF $(DEPDIR)/UnitTestris-BlockTest.Tpo -c -o UnitTestris-BlockTest.obj `if test -f 'BlockTest.cpp'; then $(CYGPATH_W) 'BlockTest.cpp'; else $(CYGPATH_W) '$(srcdir)/BlockTest.cpp'; fi`
+	$(am__mv) $(DEPDIR)/UnitTestris-BlockTest.Tpo $(DEPDIR)/UnitTestris-BlockTest.Po
+#	source='BlockTest.cpp' object='UnitTestris-BlockTest.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -c -o UnitTestris-BlockTest.obj `if test -f 'BlockTest.cpp'; then $(CYGPATH_W) 'BlockTest.cpp'; else $(CYGPATH_W) '$(srcdir)/BlockTest.cpp'; fi`
+
+UnitTestris-UnitTestris.o: UnitTestris.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -MT UnitTestris-UnitTestris.o -MD -MP -MF $(DEPDIR)/UnitTestris-UnitTestris.Tpo -c -o UnitTestris-UnitTestris.o `test -f 'UnitTestris.cpp' || echo '$(srcdir)/'`UnitTestris.cpp
+	$(am__mv) $(DEPDIR)/UnitTestris-UnitTestris.Tpo $(DEPDIR)/UnitTestris-UnitTestris.Po
+#	source='UnitTestris.cpp' object='UnitTestris-UnitTestris.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -c -o UnitTestris-UnitTestris.o `test -f 'UnitTestris.cpp' || echo '$(srcdir)/'`UnitTestris.cpp
+
+UnitTestris-UnitTestris.obj: UnitTestris.cpp
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -MT UnitTestris-UnitTestris.obj -MD -MP -MF $(DEPDIR)/UnitTestris-UnitTestris.Tpo -c -o UnitTestris-UnitTestris.obj `if test -f 'UnitTestris.cpp'; then $(CYGPATH_W) 'UnitTestris.cpp'; else $(CYGPATH_W) '$(srcdir)/UnitTestris.cpp'; fi`
+	$(am__mv) $(DEPDIR)/UnitTestris-UnitTestris.Tpo $(DEPDIR)/UnitTestris-UnitTestris.Po
+#	source='UnitTestris.cpp' object='UnitTestris-UnitTestris.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -c -o UnitTestris-UnitTestris.obj `if test -f 'UnitTestris.cpp'; then $(CYGPATH_W) 'UnitTestris.cpp'; else $(CYGPATH_W) '$(srcdir)/UnitTestris.cpp'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -656,6 +717,7 @@ uninstall-am:
 	mostlyclean-compile mostlyclean-generic pdf pdf-am ps ps-am \
 	tags uninstall uninstall-am
 
+#UnitTestris_LDFLAGS = -ldl
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

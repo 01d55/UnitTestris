@@ -4,7 +4,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 // Forward declaration
-class FieldSizeError: public std::std_runtime_error;
+class FieldSizeError;
 
 class FieldTest : public CppUnit::TestFixture
 {
