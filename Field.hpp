@@ -12,7 +12,7 @@
     does not permit deletion except by enforcement of the rules.
  */
 
-class FieldSizeError: public std::std_runtime_error
+class FieldSizeError : public std::runtime_error
 {
 public:
   FieldSizeError() : runtime_error( "Argument does not match Tetris field dimensions." )
@@ -20,7 +20,7 @@ public:
   }
 };
 
-class DuplicateBlockError: public std::std_runtime_error
+class DuplicateBlockError: public std::runtime_error
 {
 public:
   DuplicateBlockError() : runtime_error( "Block already exists." )
@@ -35,10 +35,10 @@ public:
   Field(); // Empty field
   Field(const Field& toCopy);
   // Vector holding blocks in the lowest row
-  Field(std::vector<bool> row) throw FieldSizeError;
+  Field(std::vector<bool> row) throw (FieldSizeError);
   // Vector holding initial blocks in the bottom N rows, where N is the size of 
   // the outer vector.
-  Field(std::vector< std::vector<bool> > rows) throw FieldSizeError;
+  Field(std::vector< std::vector<bool> > rows) throw (FieldSizeError);
 
   ~Field();
 
@@ -46,7 +46,7 @@ public:
   bool get(int, int);
   // Insert a block at the given co-ordinate. Inserting a block on top of an 
   // existing block is an error.
-  void set(int, int) throw DuplicateBlockError;
+  void set(int, int) throw (DuplicateBlockError);
 
 private:
 };
