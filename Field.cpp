@@ -32,3 +32,15 @@ void Field::set(int, int) throw (DuplicateBlockError)
   {
     //STUB
   }
+
+  // Find the current score
+int Field::readScore()
+{
+  //STUB
+  return -1;
+}
+  // Set the score to 0
+void Field::resetScore()
+{
+  //STUB
+}

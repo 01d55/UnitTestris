@@ -23,7 +23,12 @@ void FieldTest::testSet()
   CPPUNIT_FAIL( "not implemented" );
 }
 
-void FieldTest::testFieldSize()
+void FieldTest::testFieldScore()
+{
+  CPPUNIT_FAIL( "not implemented" );
+}
+
+void FieldTest::testFieldSizeException()
 {
   CPPUNIT_FAIL( "not implemented" );
 }

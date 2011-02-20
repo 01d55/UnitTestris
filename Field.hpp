@@ -47,6 +47,10 @@ public:
   // Insert a block at the given co-ordinate. Inserting a block on top of an 
   // existing block is an error.
   void set(int, int) throw (DuplicateBlockError);
+  // Find the current score
+  int readScore();
+  // Set the score to 0
+  void resetScore();
 
 private:
 };
