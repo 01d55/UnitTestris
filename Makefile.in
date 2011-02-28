@@ -49,7 +49,7 @@ CONFIG_CLEAN_VPATH_FILES =
 am__EXEEXT_1 = UnitTestris$(EXEEXT)
 am_UnitTestris_OBJECTS = UnitTestris-Field.$(OBJEXT) \
 	UnitTestris-FieldTest.$(OBJEXT) \
-	UnitTestris-BlockTest.$(OBJEXT) \
+	UnitTestris-PieceTest.$(OBJEXT) \
 	UnitTestris-UnitTestris.$(OBJEXT)
 UnitTestris_OBJECTS = $(am_UnitTestris_OBJECTS)
 UnitTestris_LDADD = $(LDADD)
@@ -176,7 +176,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 UnitTestris_SOURCES = Field.hpp Field.cpp FieldTest.hpp FieldTest.cpp\
-Block.hpp BlockTest.hpp BlockTest.cpp UnitTestris.cpp 
+Piece.hpp PieceTest.hpp PieceTest.cpp UnitTestris.cpp 
 
 UnitTestris_CXXFLAGS = $(CPPUNIT_CFLAGS)
 UnitTestris_LDFLAGS = $(CPPUNIT_LIBS)
@@ -231,9 +231,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UnitTestris-BlockTest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UnitTestris-Field.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UnitTestris-FieldTest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UnitTestris-PieceTest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UnitTestris-UnitTestris.Po@am__quote@
 
 .cpp.o:
@@ -278,19 +278,19 @@ UnitTestris-FieldTest.obj: FieldTest.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -c -o UnitTestris-FieldTest.obj `if test -f 'FieldTest.cpp'; then $(CYGPATH_W) 'FieldTest.cpp'; else $(CYGPATH_W) '$(srcdir)/FieldTest.cpp'; fi`
 
-UnitTestris-BlockTest.o: BlockTest.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -MT UnitTestris-BlockTest.o -MD -MP -MF $(DEPDIR)/UnitTestris-BlockTest.Tpo -c -o UnitTestris-BlockTest.o `test -f 'BlockTest.cpp' || echo '$(srcdir)/'`BlockTest.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/UnitTestris-BlockTest.Tpo $(DEPDIR)/UnitTestris-BlockTest.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='BlockTest.cpp' object='UnitTestris-BlockTest.o' libtool=no @AMDEPBACKSLASH@
+UnitTestris-PieceTest.o: PieceTest.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -MT UnitTestris-PieceTest.o -MD -MP -MF $(DEPDIR)/UnitTestris-PieceTest.Tpo -c -o UnitTestris-PieceTest.o `test -f 'PieceTest.cpp' || echo '$(srcdir)/'`PieceTest.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/UnitTestris-PieceTest.Tpo $(DEPDIR)/UnitTestris-PieceTest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='PieceTest.cpp' object='UnitTestris-PieceTest.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -c -o UnitTestris-BlockTest.o `test -f 'BlockTest.cpp' || echo '$(srcdir)/'`BlockTest.cpp
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -c -o UnitTestris-PieceTest.o `test -f 'PieceTest.cpp' || echo '$(srcdir)/'`PieceTest.cpp
 
-UnitTestris-BlockTest.obj: BlockTest.cpp
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -MT UnitTestris-BlockTest.obj -MD -MP -MF $(DEPDIR)/UnitTestris-BlockTest.Tpo -c -o UnitTestris-BlockTest.obj `if test -f 'BlockTest.cpp'; then $(CYGPATH_W) 'BlockTest.cpp'; else $(CYGPATH_W) '$(srcdir)/BlockTest.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/UnitTestris-BlockTest.Tpo $(DEPDIR)/UnitTestris-BlockTest.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='BlockTest.cpp' object='UnitTestris-BlockTest.obj' libtool=no @AMDEPBACKSLASH@
+UnitTestris-PieceTest.obj: PieceTest.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -MT UnitTestris-PieceTest.obj -MD -MP -MF $(DEPDIR)/UnitTestris-PieceTest.Tpo -c -o UnitTestris-PieceTest.obj `if test -f 'PieceTest.cpp'; then $(CYGPATH_W) 'PieceTest.cpp'; else $(CYGPATH_W) '$(srcdir)/PieceTest.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/UnitTestris-PieceTest.Tpo $(DEPDIR)/UnitTestris-PieceTest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='PieceTest.cpp' object='UnitTestris-PieceTest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -c -o UnitTestris-BlockTest.obj `if test -f 'BlockTest.cpp'; then $(CYGPATH_W) 'BlockTest.cpp'; else $(CYGPATH_W) '$(srcdir)/BlockTest.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -c -o UnitTestris-PieceTest.obj `if test -f 'PieceTest.cpp'; then $(CYGPATH_W) 'PieceTest.cpp'; else $(CYGPATH_W) '$(srcdir)/PieceTest.cpp'; fi`
 
 UnitTestris-UnitTestris.o: UnitTestris.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(UnitTestris_CXXFLAGS) $(CXXFLAGS) -MT UnitTestris-UnitTestris.o -MD -MP -MF $(DEPDIR)/UnitTestris-UnitTestris.Tpo -c -o UnitTestris-UnitTestris.o `test -f 'UnitTestris.cpp' || echo '$(srcdir)/'`UnitTestris.cpp
