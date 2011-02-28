@@ -43,10 +43,10 @@ public:
   ~Field();
 
   // Return true if there is a block at those co-ordinates
-  bool get(int, int);
+  bool get(int x, int y);
   // Insert a block at the given co-ordinate. Inserting a block on top of an 
   // existing block is an error.
-  void set(int, int) throw (DuplicateBlockError);
+  void set(int x, int y) throw (DuplicateBlockError);
   // Find the current score
   int readScore();
   // Set the score to 0
