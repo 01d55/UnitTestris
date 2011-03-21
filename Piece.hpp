@@ -48,8 +48,8 @@ class Piece
 public:
   Piece(PieceType t, const int *d, Field *f);
 
-  bool timeStep(int g);
-  bool handleInput(PieceInput in);
+  bool timeStep(int g) throw (PieceLockError);
+  bool handleInput(PieceInput in) throw (PieceLockError);
 
 private:
 };
