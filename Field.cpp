@@ -26,14 +26,14 @@ Field::~Field()
 }
 
 // Return true if there is a block at those co-ordinates
-bool Field::get(int, int)
+bool Field::get(int, int) throw (FieldSizeError)
 {
   //STUB
   return false;
 }
 // Insert a block at the given co-ordinate. Inserting a block on top of an 
 // existing block is an error.
-void Field::set(int, int) throw (DuplicateBlockError)
+void Field::set(int, int) throw (FieldSizeError, DuplicateBlockError)
 {
   //STUB
 }
