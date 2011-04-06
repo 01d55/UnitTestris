@@ -13,9 +13,8 @@ Field::Field(std::vector<bool> row) throw (FieldSizeError)
 {
   //STUB
 }
-// Vector holding initial blocks in the bottom N rows, where N is the size of 
-// the outer vector.
-Field::Field(std::vector< std::vector<bool> > rows) throw (FieldSizeError)
+// 22x10 vector. Indices are x-y co-ordinates, e.g. blocks[x][y].
+Field::Field(std::vector< std::vector<bool> > blocks) throw (FieldSizeError)
 {
   //STUB
 }
