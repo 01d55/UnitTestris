@@ -16,7 +16,7 @@ void FieldTest::tearDown()
 void FieldTest::testConstructor()
 {
   int i,j;
-  Field * test_field;
+  Field *test_field, *copy_field;
   std::vector<bool> row;
   std::vector< std::vector<bool> > blocks;
   /* Default constructor
@@ -163,7 +163,7 @@ void FieldTest::testConstructor()
     {
       for (j=0;j<22;++j)
 	{
-	  if ( i==0  )
+	  if ( j==0  )
 	    {
 	      CPPUNIT_ASSERT( (i%2)?test_field->get(i,j):(!test_field->get(i,j)) );
 	    }
@@ -172,7 +172,47 @@ void FieldTest::testConstructor()
     }
   delete test_field;
 
-  // Clear multiple rows. 
+  // Clear multiple rows.
+  // Three full rows, two contiguous, one non contiguous,
+  // and a row with alternating empty and full blocks above.
+  // The row with alternating blocks should shift down 3 as the full
+  // rows beneath it are removed.
+  blocks.resize(10);
+  for(i=0;i<10;++i) {blocks[i].resize(22,false);}
+  for(i=0;i<10;++i)
+    {
+      blocks[i][1]=true;
+      blocks[i][2]=true;
+      blocks[i][5]=true;
+      blocks[i][6]=i%2?true:false;
+    }
+  test_field= new Field(blocks);
+  blocks.clear();
+  for(i=0;i<10;++i)
+    {
+      for (j=0;j<22;++j)
+	{
+	  if( j==3 )
+	    {
+	      CPPUNIT_ASSERT( (i%2)?test_field->get(i,j):(!test_field->get(i,j)) );
+	    }
+	  else { CPPUNIT_ASSERT( !(test_field->get(i,j)) ); }
+	}
+    }
+
+  // Full column.
+  blocks.resize(10);
+  for(i=0;i<10;++i) {blocks[i].resize(22,false);}
+  for(j=0;j<22;++j) {blocks[0][j]=true;}
+  test_field = new Field(blocks);
+  blocks.clear();
+  for(i=0;i<10;++i)
+    {
+      for (j=0;j<22;++j)
+	{
+	  CPPUNIT_ASSERT( ( i==0 ? test_field->get(i,j) : !test_field->get(i,j) ) );
+	}
+    }
 
   // All rows full. The full rows should auto-clear.
   blocks.resize(10);
@@ -186,8 +226,25 @@ void FieldTest::testConstructor()
 	  CPPUNIT_ASSERT( !(test_field->get(i,j)) );
 	}
     }
-  delete test_field;  
-  CPPUNIT_FAIL( "test case not complete" );
+  delete test_field;
+  /* Copy constructor
+   */
+  blocks.resize(10);
+  for(i=0;i<10;++i) {blocks[i].resize(22,false);}
+  for(j=0;j<22;++j) {blocks[0][j]=true;}
+  test_field = new Field(blocks);
+  blocks.clear();
+  copy_field = new Field(*test_field);
+  delete test_field;
+  for(i=0;i<10;++i)
+    {
+      for (j=0;j<22;++j)
+	{
+	  CPPUNIT_ASSERT( ( i==0 ? copy_field->get(i,j) : !copy_field->get(i,j) ) );
+	}
+    }
+  delete copy_field;
+  
 }
 
 void FieldTest::testSet()
