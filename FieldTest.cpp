@@ -13,15 +13,10 @@ void FieldTest::tearDown()
 }
 
 
-void FieldTest::testConstructor()
+void FieldTest::testConstructor0()
 {
   int i,j;
-  Field *test_field, *copy_field;
-  std::vector<bool> row;
-  std::vector< std::vector<bool> > blocks;
-  /* Default constructor
-   */
-
+  Field *test_field;
   // Only one possible case: an empty field.
   test_field = new Field();
   for(j=0;j<22;++j)
@@ -33,9 +28,13 @@ void FieldTest::testConstructor()
 	}
     }
   delete test_field;
+}
 
-  /* Constructor with a single bottom row
-   */
+void FieldTest::testConstructor1()
+{
+  int i,j;
+  Field *test_field;
+  std::vector<bool> row;
 
   // Emtpy field
   row.resize(10,false);
@@ -111,9 +110,23 @@ void FieldTest::testConstructor()
     }
   delete test_field;
 
-  /* Constructor with full field
-   */
+  // Test errors
+  // row is clear
+  CPPUNIT_ASSERT_THROW((test_field = new Field(row)),FieldSizeError);
 
+  row.resize(9,true);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(row)),FieldSizeError);
+
+  row.resize(11);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(row)),FieldSizeError);
+}
+
+void FieldTest::testConstructor2()
+{
+  int i,j;
+  Field *test_field, *copy_field;
+  std::vector< std::vector<bool> > blocks;
+ 
   // Empty field
   blocks.resize(10);
   for(i=0;i<10;++i) {blocks[i].resize(22,false);}
@@ -245,6 +258,41 @@ void FieldTest::testConstructor()
     }
   delete copy_field;
   
+  // Test for exception throws
+  // blocks is clear
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+
+  // Throw if not 10 columns
+  blocks.resize(9);
+  for(i=0;i<9;++i) {blocks[i].resize(22,false);}
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+
+  blocks.resize(11);
+  blocks[9].resize(22,false);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+
+  blocks[10].resize(22,false);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+
+  // Throw if not every column is size 22.
+  blocks.resize(10);
+  blocks[5].clear();
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+
+  blocks[5].resize(21, false);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+  
+  blocks[5].resize(23, false);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+
+  blocks[5].resize(22);
+  blocks[0].clear();
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+
+  blocks[0].resize(22);
+  blocks[9].clear();
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+
 }
 
 void FieldTest::testSet()
@@ -253,11 +301,6 @@ void FieldTest::testSet()
 }
 
 void FieldTest::testFieldScore()
-{
-  CPPUNIT_FAIL( "not implemented" );
-}
-
-void FieldTest::testFieldSizeException()
 {
   CPPUNIT_FAIL( "not implemented" );
 }
