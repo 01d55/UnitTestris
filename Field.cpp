@@ -13,7 +13,7 @@ Field::Field(std::vector<bool> row) throw (FieldSizeError)
 {
   //STUB
 }
-// 22x10 vector. Indices are x-y co-ordinates, e.g. blocks[x][y].
+// 10x22 vector. Indices are x-y co-ordinates, e.g. blocks[x][y].
 Field::Field(std::vector< std::vector<bool> > blocks) throw (FieldSizeError)
 {
   //STUB
