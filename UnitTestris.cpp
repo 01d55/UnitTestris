@@ -5,7 +5,7 @@
 
 #include <cppunit/CompilerOutputter.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
+#include <cppunit/TextTestRunner.h>
 
 int main(int argc, char* argv[])
 {
@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
   CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
 
   // Adds the test to the list of test to run
-  CppUnit::TextUi::TestRunner runner;
+  CppUnit::TextTestRunner runner;
   runner.addTest( suite );
 
   // Change the default outputter to a compiler error format outputter
