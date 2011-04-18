@@ -1,6 +1,6 @@
 #include "FieldTest.hpp"
 #include "Field.hpp"
-
+#include <limits>
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( FieldTest );
 
@@ -297,7 +297,61 @@ void FieldTest::testConstructor2()
 
 void FieldTest::testSet()
 {
-  CPPUNIT_FAIL( "not implemented" );
+  Field test_field;
+  int i,j;
+
+  // Check that the corners set correctly
+  test_field.set(0,0);
+  CPPUNIT_ASSERT(test_field.get(0,0));
+  test_field.set(0,21);
+  CPPUNIT_ASSERT(test_field.get(0,21));
+  test_field.set(9,0);
+  CPPUNIT_ASSERT(test_field.get(9,0));
+  test_field.set(9,21);
+  CPPUNIT_ASSERT(test_field.get(9,21));
+
+  // Check line removal; check moving lines above downward.
+  for(i=1;i<21;++i)
+    {
+      test_field.set(i,0);
+    }
+  for(i=0;i<22;++i)
+    {
+      CPPUNIT_ASSERT( !(test_field.get(i,0)) );
+    }
+  CPPUNIT_ASSERT( !(test_field.get(0,21)) );
+  CPPUNIT_ASSERT( !(test_field.get(9,21)) );
+  CPPUNIT_ASSERT( test_field.get(0,20) );
+  CPPUNIT_ASSERT( test_field.get(9,20) );
+
+  // Check that line removal does not disturb lower lines.
+  test_field.set(5,2);
+  for(i=0;i<22;++i)
+    {
+      test_field.set(i,3);
+    }
+  // The blocks that started in the upper corners have moved down again...
+  CPPUNIT_ASSERT( !(test_field.get(0,20)) );
+  CPPUNIT_ASSERT( !(test_field.get(9,20)) );
+  CPPUNIT_ASSERT( test_field.get(0,19) );
+  CPPUNIT_ASSERT( test_field.get(9,19) );
+  // But the block beneath the cleared line is undisturbed, right?
+  CPPUNIT_ASSERT( test_field.get(5,2) );
+  CPPUNIT_ASSERT( !(test_field.get(5,1)) );
+
+  // Test for exception throws
+  CPPUNIT_ASSERT_THROW( (test_field.set(-1,0)) , FieldSizeError );
+  CPPUNIT_ASSERT_THROW( (test_field.set(0,-1)) , FieldSizeError );
+  CPPUNIT_ASSERT_THROW( (test_field.set(10,0)) , FieldSizeError );
+  CPPUNIT_ASSERT_THROW( (test_field.set(0,22)) , FieldSizeError );
+  CPPUNIT_ASSERT_THROW( (test_field.set(std::numeric_limits<int>::min(),0)) , FieldSizeError );
+  CPPUNIT_ASSERT_THROW( (test_field.set(std::numeric_limits<int>::max(),0)) , FieldSizeError );
+  if(std::numeric_limits<int>::has_infinity)
+    {
+      CPPUNIT_ASSERT_THROW( (test_field.set(std::numeric_limits<int>::infinity(),0)) , FieldSizeError );
+    }
+
+  CPPUNIT_ASSERT_THROW( (test_field.set(5,2)), DuplicateBlockError );
 }
 
 void FieldTest::testFieldScore()
