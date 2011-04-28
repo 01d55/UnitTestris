@@ -24,7 +24,7 @@ void FieldTest::testConstructor0()
       for (i=0;i<10;++i)
 	{
 	  // The field should be empty, i.e. all gets should return false.
-	  CPPUNIT_ASSERT( (!test_field->get(i,j)) );
+	  CPPUNIT_ASSERT( (!test_field->get(i,j) ) );
 	}
     }
   delete test_field;
@@ -44,7 +44,7 @@ void FieldTest::testConstructor1()
     {
       for (i=0;i<10;++i)
 	{
-	  CPPUNIT_ASSERT( !(test_field->get(i,j)) );
+	  CPPUNIT_ASSERT( !(test_field->get(i,j) ) );
 	}
     }
   delete test_field;
@@ -59,8 +59,8 @@ void FieldTest::testConstructor1()
     {
       for (i=0;i<10;++i)
 	{
-	  if(j==0 && i < 9) {CPPUNIT_ASSERT( (test_field->get(i,j)) );}
-	  else {CPPUNIT_ASSERT( (!test_field->get(i,j)) );}
+	  if(j==0 && i < 9) {CPPUNIT_ASSERT( (test_field->get(i,j) ) );}
+	  else {CPPUNIT_ASSERT( (!test_field->get(i,j) ) );}
 	}
     }
   delete test_field;
@@ -76,7 +76,7 @@ void FieldTest::testConstructor1()
       for (i=0;i<10;++i)
 	{
 	  if(j==0 && i == 0) {CPPUNIT_ASSERT( test_field->get(i,j) );}
-	  else {CPPUNIT_ASSERT( !(test_field->get(i,j)) );}
+	  else {CPPUNIT_ASSERT( !(test_field->get(i,j) ) );}
 	}
     }
   delete test_field;
@@ -91,7 +91,7 @@ void FieldTest::testConstructor1()
       for (i=0;i<10;++i)
 	{
 	  if(i==5 && j==0) { CPPUNIT_ASSERT( test_field->get(i,j) ); }
-	  else { CPPUNIT_ASSERT( !(test_field->get(i,j)) ); }
+	  else { CPPUNIT_ASSERT( !(test_field->get(i,j) ) ); }
 	}
     }
   delete test_field;
@@ -105,20 +105,20 @@ void FieldTest::testConstructor1()
     {
       for (i=0;i<10;++i)
 	{
-	  CPPUNIT_ASSERT( (!test_field->get(i,j)) );
+	  CPPUNIT_ASSERT( (!test_field->get(i,j) ) );
 	}
     }
   delete test_field;
 
   // Test errors
   // row is clear
-  CPPUNIT_ASSERT_THROW((test_field = new Field(row)),FieldSizeError);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(row) ),FieldSizeError);
 
   row.resize(9,true);
-  CPPUNIT_ASSERT_THROW((test_field = new Field(row)),FieldSizeError);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(row) ),FieldSizeError);
 
   row.resize(11);
-  CPPUNIT_ASSERT_THROW((test_field = new Field(row)),FieldSizeError);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(row) ),FieldSizeError);
 }
 
 void FieldTest::testConstructor2()
@@ -136,7 +136,7 @@ void FieldTest::testConstructor2()
     {
       for (j=0;j<22;++j)
 	{
-	  CPPUNIT_ASSERT( !(test_field->get(i,j)) );
+	  CPPUNIT_ASSERT( !(test_field->get(i,j) ) );
 	}
     }
   delete test_field;
@@ -156,7 +156,7 @@ void FieldTest::testConstructor2()
 	    {
 	      CPPUNIT_ASSERT( test_field->get(i,j) );
 	    }
-	  else { CPPUNIT_ASSERT( !(test_field->get(i,j)) ); }
+	  else { CPPUNIT_ASSERT( !(test_field->get(i,j) ) ); }
 	}
     }
   delete test_field;
@@ -178,9 +178,9 @@ void FieldTest::testConstructor2()
 	{
 	  if ( j==0  )
 	    {
-	      CPPUNIT_ASSERT( (i%2)?test_field->get(i,j):(!test_field->get(i,j)) );
+	      CPPUNIT_ASSERT( (i%2)?test_field->get(i,j):(!test_field->get(i,j) ) );
 	    }
-	  else { CPPUNIT_ASSERT( !(test_field->get(i,j)) ); }
+	  else { CPPUNIT_ASSERT( !(test_field->get(i,j) ) ); }
 	}
     }
   delete test_field;
@@ -207,9 +207,9 @@ void FieldTest::testConstructor2()
 	{
 	  if( j==3 )
 	    {
-	      CPPUNIT_ASSERT( (i%2)?test_field->get(i,j):(!test_field->get(i,j)) );
+	      CPPUNIT_ASSERT( (i%2)?test_field->get(i,j):(!test_field->get(i,j) ) );
 	    }
-	  else { CPPUNIT_ASSERT( !(test_field->get(i,j)) ); }
+	  else { CPPUNIT_ASSERT( !(test_field->get(i,j) ) ); }
 	}
     }
 
@@ -236,7 +236,7 @@ void FieldTest::testConstructor2()
     {
       for (j=0;j<22;++j)
 	{
-	  CPPUNIT_ASSERT( !(test_field->get(i,j)) );
+	  CPPUNIT_ASSERT( !(test_field->get(i,j) ) );
 	}
     }
   delete test_field;
@@ -260,38 +260,38 @@ void FieldTest::testConstructor2()
   
   // Test for exception throws
   // blocks is clear
-  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
   // Throw if not 10 columns
   blocks.resize(9);
   for(i=0;i<9;++i) {blocks[i].resize(22,false);}
-  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
   blocks.resize(11);
   blocks[9].resize(22,false);
-  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
   blocks[10].resize(22,false);
-  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
   // Throw if not every column is size 22.
   blocks.resize(10);
   blocks[5].clear();
-  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
   blocks[5].resize(21, false);
-  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
   
   blocks[5].resize(23, false);
-  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
   blocks[5].resize(22);
   blocks[0].clear();
-  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
   blocks[0].resize(22);
   blocks[9].clear();
-  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks)),FieldSizeError);
+  CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
 }
 
@@ -302,13 +302,13 @@ void FieldTest::testSet()
 
   // Check that the corners set correctly
   test_field.set(0,0);
-  CPPUNIT_ASSERT(test_field.get(0,0));
+  CPPUNIT_ASSERT(test_field.get(0,0) );
   test_field.set(0,21);
-  CPPUNIT_ASSERT(test_field.get(0,21));
+  CPPUNIT_ASSERT(test_field.get(0,21) );
   test_field.set(9,0);
-  CPPUNIT_ASSERT(test_field.get(9,0));
+  CPPUNIT_ASSERT(test_field.get(9,0) );
   test_field.set(9,21);
-  CPPUNIT_ASSERT(test_field.get(9,21));
+  CPPUNIT_ASSERT(test_field.get(9,21) );
 
   // Check line removal; check moving lines above downward.
   for(i=1;i<21;++i)
@@ -317,10 +317,10 @@ void FieldTest::testSet()
     }
   for(i=0;i<22;++i)
     {
-      CPPUNIT_ASSERT( !(test_field.get(i,0)) );
+      CPPUNIT_ASSERT( !(test_field.get(i,0) ) );
     }
-  CPPUNIT_ASSERT( !(test_field.get(0,21)) );
-  CPPUNIT_ASSERT( !(test_field.get(9,21)) );
+  CPPUNIT_ASSERT( !(test_field.get(0,21) ) );
+  CPPUNIT_ASSERT( !(test_field.get(9,21) ) );
   CPPUNIT_ASSERT( test_field.get(0,20) );
   CPPUNIT_ASSERT( test_field.get(9,20) );
 
@@ -331,30 +331,53 @@ void FieldTest::testSet()
       test_field.set(i,3);
     }
   // The blocks that started in the upper corners have moved down again...
-  CPPUNIT_ASSERT( !(test_field.get(0,20)) );
-  CPPUNIT_ASSERT( !(test_field.get(9,20)) );
+  CPPUNIT_ASSERT( !(test_field.get(0,20) ) );
+  CPPUNIT_ASSERT( !(test_field.get(9,20) ) );
   CPPUNIT_ASSERT( test_field.get(0,19) );
   CPPUNIT_ASSERT( test_field.get(9,19) );
   // But the block beneath the cleared line is undisturbed, right?
   CPPUNIT_ASSERT( test_field.get(5,2) );
-  CPPUNIT_ASSERT( !(test_field.get(5,1)) );
+  CPPUNIT_ASSERT( !(test_field.get(5,1) ) );
 
   // Test for exception throws
-  CPPUNIT_ASSERT_THROW( (test_field.set(-1,0)) , FieldSizeError );
-  CPPUNIT_ASSERT_THROW( (test_field.set(0,-1)) , FieldSizeError );
-  CPPUNIT_ASSERT_THROW( (test_field.set(10,0)) , FieldSizeError );
-  CPPUNIT_ASSERT_THROW( (test_field.set(0,22)) , FieldSizeError );
-  CPPUNIT_ASSERT_THROW( (test_field.set(std::numeric_limits<int>::min(),0)) , FieldSizeError );
-  CPPUNIT_ASSERT_THROW( (test_field.set(std::numeric_limits<int>::max(),0)) , FieldSizeError );
+  CPPUNIT_ASSERT_THROW( (test_field.set(-1,0) ),FieldSizeError );
+  CPPUNIT_ASSERT_THROW( (test_field.set(0,-1) ),FieldSizeError );
+  CPPUNIT_ASSERT_THROW( (test_field.set(10,0) ),FieldSizeError );
+  CPPUNIT_ASSERT_THROW( (test_field.set(0,22) ),FieldSizeError );
+  CPPUNIT_ASSERT_THROW( (test_field.set(std::numeric_limits<int>::min(),0) ) , FieldSizeError );
+  CPPUNIT_ASSERT_THROW( (test_field.set(std::numeric_limits<int>::max(),0) ) , FieldSizeError );
   if(std::numeric_limits<int>::has_infinity)
     {
-      CPPUNIT_ASSERT_THROW( (test_field.set(std::numeric_limits<int>::infinity(),0)) , FieldSizeError );
+      CPPUNIT_ASSERT_THROW( (test_field.set(std::numeric_limits<int>::infinity(),0) ) , FieldSizeError );
     }
 
-  CPPUNIT_ASSERT_THROW( (test_field.set(5,2)), DuplicateBlockError );
+  CPPUNIT_ASSERT_THROW( (test_field.set(5,2) ), DuplicateBlockError );
 }
 
 void FieldTest::testFieldScore()
 {
-  CPPUNIT_FAIL( "not implemented" );
+  Field test_field();
+  // Score should begin at zero.
+  CPPUNIT_ASSERT( (0==test_field.readScore() ) );
+  // For now assume the simplest scoring system - 1 line clear is 1 point.
+  for(i=0;i<22;++i)
+    {
+      test_field.set(i,0);
+    }
+  CPPUNIT_ASSERT( (1==test_field.readScore() ) );
+  for(i=0;i<22;++i)
+    {
+      test_field.set(i,6);
+    }
+  CPPUNIT_ASSERT( (2==test_field.readScore() ) );
+
+  // Test reset, and that increasing score after a reset works correctly.
+  test_field.resetScore();
+  CPPUNIT_ASSERT( (0==test_field.readScore() ) );
+  for(i=0;i<22;++i)
+    {
+      test_field.set(i,19);
+    }
+  CPPUNIT_ASSERT( (1==test_field.readScore() ) );
+
 }
