@@ -2,6 +2,8 @@
 #define PIECE_HPP
 
 #include <stdexcept>
+#include <vector>
+#include "common.hpp"
 #include "Field.hpp"
 
 /* Piece
@@ -21,27 +23,8 @@
    locked piece is an error.
  */
 
-enum PieceType
-  {
-    I,J,L,O,S,T,Z
-  };
-enum PieceInput
-  {
-    shift_right,
-    shift_left,
-    rotate_cw,
-    rotate_ccw,
-    soft_drop,
-    hard_drop
-  };
 
-class PieceLockError: public std::runtime_error
-{
-public:
-  PieceLockError() : std::runtime_error("Piece is already locked!")
-  {
-  }
-};
+
 
 class Piece
 {
@@ -51,7 +34,11 @@ public:
   bool timeStep(int g) throw (PieceLockError);
   bool handleInput(PieceInput in) throw (PieceLockError);
 
+  coord getCenter();
+  std::vector<coord> getBlocks();
+
 private:
+  Piece(Piece &c);
 };
 
 #endif // PIECE_HPP

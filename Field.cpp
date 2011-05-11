@@ -25,7 +25,7 @@ Field::~Field()
 }
 
 // Return true if there is a block at those co-ordinates
-bool Field::get(int, int) throw (FieldSizeError)
+bool Field::get(int, int) const throw (FieldSizeError)
 {
   //STUB
   return false;
@@ -38,7 +38,7 @@ void Field::set(int, int) throw (FieldSizeError, DuplicateBlockError)
 }
 
 // Find the current score
-int Field::readScore()
+int Field::readScore() const
 {
   //STUB
   return -1;

@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <stdexcept>
+
+#include "common.hpp"
 /** Field
     The Field enforces the following rules of Tetris: There can be no full 
     rows. All empty rows are above all non-empty rows. The width of the field is
@@ -11,22 +13,6 @@
     The field will allow unlimited read-access and insertion of blocks, but
     does not permit deletion except by enforcement of the rules.
  */
-
-class FieldSizeError : public std::runtime_error
-{
-public:
-  FieldSizeError() : runtime_error( "Argument does not match Tetris field dimensions." )
-  {
-  }
-};
-
-class DuplicateBlockError: public std::runtime_error
-{
-public:
-  DuplicateBlockError() : runtime_error( "Block already exists." )
-  {
-  }
-};
 
 class Field
 {
@@ -42,12 +28,12 @@ public:
   ~Field();
 
   // Return true if there is a block at those co-ordinates
-  bool get(int x, int y) throw (FieldSizeError);
+  bool get(int x, int y) const throw (FieldSizeError);
   // Insert a block at the given co-ordinate. Inserting a block on top of an 
   // existing block is an error.
   void set(int x, int y) throw (FieldSizeError, DuplicateBlockError);
   // Find the current score
-  int readScore();
+  int readScore() const;
   // Set the score to 0
   void resetScore();
 

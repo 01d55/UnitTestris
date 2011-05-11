@@ -14,7 +14,6 @@ class PieceTest : public CppUnit::TestFixture
   CPPUNIT_TEST( testShift );
   CPPUNIT_TEST( testRotate );
   CPPUNIT_TEST( testDrop );
-  CPPUNIT_TEST_EXCEPTION( testPieceLockException, PieceLockError );
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -26,7 +25,6 @@ public:
   void testShift();
   void testRotate();
   void testDrop();
-  void testPieceLockException();
 };
 
 #endif  // PIECETEST_HPP

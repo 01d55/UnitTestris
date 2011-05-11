@@ -356,7 +356,8 @@ void FieldTest::testSet()
 
 void FieldTest::testFieldScore()
 {
-  Field test_field();
+  Field test_field;
+  int i;
   // Score should begin at zero.
   CPPUNIT_ASSERT( (0==test_field.readScore() ) );
   // For now assume the simplest scoring system - 1 line clear is 1 point.
