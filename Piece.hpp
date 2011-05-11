@@ -34,8 +34,8 @@ public:
   bool timeStep(int g) throw (PieceLockError);
   bool handleInput(PieceInput in) throw (PieceLockError);
 
-  coord getCenter();
-  std::vector<coord> getBlocks();
+  coord getCenter() const;
+  std::vector<coord> getBlocks() const;
 
 private:
   Piece(Piece &c);
