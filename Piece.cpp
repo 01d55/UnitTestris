@@ -20,9 +20,7 @@ bool Piece::handleInput(PieceInput in) throw (PieceLockError)
 coord Piece::getCenter() const
 {
   // STUB
-  coord ret;
-  ret.x=-1;
-  ret.y=-1;
+  coord ret(-1,-1);
   return ret;
 }
 std::vector<coord> Piece::getBlocks() const
