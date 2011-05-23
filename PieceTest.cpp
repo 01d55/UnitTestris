@@ -233,7 +233,40 @@ void PieceTest::testConstructor()
 
 void PieceTest::testStep()
 {
-  CPPUNIT_FAIL( "not implemented" );
+  int testDelay = 0, failSafe=44, i=0;
+  coord testCoord(-1,-1), expectedCoord(-1,-1), originCoord(4,20);
+  Field testField;
+  std::vector<Piece> testPieces;
+  std::vector<Piece>::iterator itor;
+  testPieces.reserve(6); 
+  testPieces.push_back(Piece(I,&testDelay,&testField));
+  testPieces.push_back(Piece(J,&testDelay,&testField));
+  testPieces.push_back(Piece(L,&testDelay,&testField));
+  testPieces.push_back(Piece(S,&testDelay,&testField));
+  testPieces.push_back(Piece(Z,&testDelay,&testField));
+  testPieces.push_back(Piece(T,&testDelay,&testField));
+
+  // Test proper center movement & locking
+  for(itor=testPieces.begin();itor!=testPieces.end();++itor)
+    {
+      expectedCoord=originCoord;
+      i=0;
+      while(itor->timeStep(1))
+	{
+	  // If time step never returns false (i.e. the block falls forever)
+	  // we need to detect and fail.
+	  ++i;
+	  CPPUNIT_ASSERT(i<failSafe);
+	  // Test delay is 0, so the piece locks as soon as it touches bottom
+	  expectedCoord.y--;
+	  testCoord=itor->getCenter();
+	  CPPUNIT_ASSERT( testCoord==expectedCoord );
+	}
+      // Test throw when timestepping a locked Piece
+      CPPUNIT_ASSERT_THROW( itor->timeStep(1),PieceLockError );
+    }
+
+  CPPUNIT_FAIL( "Test not complete." );
 }
 
 void PieceTest::testShift()

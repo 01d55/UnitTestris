@@ -45,7 +45,6 @@ public:
   std::vector<coord> getBlocks() const;
 
 private:
-  Piece(Piece &c);
 };
 
 #endif // PIECE_HPP
