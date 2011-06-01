@@ -4,8 +4,8 @@
 // Registers the fixture into the 'registry'
 CPPUNIT_TEST_SUITE_REGISTRATION( PieceTest );
 
-// For sorting coords, somewhat arbitrarily. Used in testConstructor.
-bool coordLess(coord a, coord b)
+// For sorting coords, somewhat arbitrarily.
+inline bool coordLess(coord a, coord b)
 {
   if(a.x<b.x) return true;
   else if (a.x>b.x) return false;
@@ -13,6 +13,21 @@ bool coordLess(coord a, coord b)
   return a.y<b.y;
 }
 
+inline bool testSameCoords(std::vector<coord>presorted,std::vector<coord>unsorted)
+{
+  if ( presorted.size()!=unsorted.size() ) return false;
+  std::list<coord> sorted(unsorted.begin(),unsorted.end());
+  sorted.sort(coordLess);
+  std::list<coord>::iterator itor=sorted.begin();
+  std::vector<coord>::iterator jtor=presorted.begin();
+  while(jtor!=presorted.end())
+    {
+      if( *jtor!=*itor ) return false;
+      jtor++;
+      itor++;
+    }
+  return true;
+}
 
 void PieceTest::setUp()
 {
@@ -27,7 +42,7 @@ void PieceTest::testConstructor()
   int testDelay = 1;
   Field testField;
   coord testCoord(-1,-1), originCoord(4,20);
-  std::vector<coord> expectedBlocks, temp;
+  std::vector<coord> expectedBlocks;
 
 
   Piece *test_piece=NULL;
@@ -44,22 +59,8 @@ void PieceTest::testConstructor()
   CPPUNIT_ASSERT( testCoord==originCoord );
   // Don't insist that the blocks be sorted in a particular way.
   // Do insist that there be exactly 4 blocks, and that they be in the correct places.
-  temp=test_piece->getBlocks();
-  CPPUNIT_ASSERT( temp.size()==4 );
-  {
-    // Sort the not-necessarily sorted blocks. Expected blocks are hand-sorted.
-    std::list<coord> testBlocks(temp.begin(),temp.end());
-    testBlocks.sort(coordLess);
-    std::list<coord>::iterator itor=testBlocks.begin();
-    std::vector<coord>::iterator jtor=expectedBlocks.begin();
-    while(jtor!=expectedBlocks.end())
-      {
-	CPPUNIT_ASSERT( *jtor==*itor );
-	jtor++;
-	itor++;
-      }
-  }
-  
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks, test_piece->getBlocks()) );
+   
   delete test_piece;
 
   // J block
@@ -71,21 +72,8 @@ void PieceTest::testConstructor()
   test_piece=new Piece(J,&testDelay,&testField);
   testCoord=test_piece->getCenter();
   CPPUNIT_ASSERT( testCoord==originCoord );
-  temp=test_piece->getBlocks();
-  CPPUNIT_ASSERT( temp.size()==4 );
-  {
-    // Sort the not-necessarily sorted blocks. Expected blocks are hand-sorted.
-    std::list<coord> testBlocks(temp.begin(),temp.end());
-    testBlocks.sort(coordLess);
-    std::list<coord>::iterator itor=testBlocks.begin();
-    std::vector<coord>::iterator jtor=expectedBlocks.begin();
-    while(jtor!=expectedBlocks.end())
-      {
-	CPPUNIT_ASSERT( *jtor==*itor );
-	jtor++;
-	itor++;
-      }
-  }
+
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks, test_piece->getBlocks()) );
 
   delete test_piece;
 
@@ -99,21 +87,7 @@ void PieceTest::testConstructor()
   testCoord=test_piece->getCenter();
   CPPUNIT_ASSERT( testCoord==originCoord );
 
-  temp=test_piece->getBlocks();
-  CPPUNIT_ASSERT( temp.size()==4 );
-  {
-    // Sort the not-necessarily sorted blocks. Expected blocks are hand-sorted.
-    std::list<coord> testBlocks(temp.begin(),temp.end());
-    testBlocks.sort(coordLess);
-    std::list<coord>::iterator itor=testBlocks.begin();
-    std::vector<coord>::iterator jtor=expectedBlocks.begin();
-    while(jtor!=expectedBlocks.end())
-      {
-	CPPUNIT_ASSERT( *jtor==*itor );
-	jtor++;
-	itor++;
-      }
-  }
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks, test_piece->getBlocks()) );
 
   delete test_piece;
 
@@ -127,21 +101,7 @@ void PieceTest::testConstructor()
   testCoord=test_piece->getCenter();
   CPPUNIT_ASSERT( testCoord==originCoord );
 
-  temp=test_piece->getBlocks();
-  CPPUNIT_ASSERT( temp.size()==4 );
-  {
-    // Sort the not-necessarily sorted blocks. Expected blocks are hand-sorted.
-    std::list<coord> testBlocks(temp.begin(),temp.end());
-    testBlocks.sort(coordLess);
-    std::list<coord>::iterator itor=testBlocks.begin();
-    std::vector<coord>::iterator jtor=expectedBlocks.begin();
-    while(jtor!=expectedBlocks.end())
-      {
-	CPPUNIT_ASSERT( *jtor==*itor );
-	jtor++;
-	itor++;
-      }
-  }
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks, test_piece->getBlocks()) );
 
   delete test_piece;
 
@@ -155,21 +115,7 @@ void PieceTest::testConstructor()
   testCoord=test_piece->getCenter();
   CPPUNIT_ASSERT( testCoord==originCoord );
   
-  temp=test_piece->getBlocks();
-  CPPUNIT_ASSERT( temp.size()==4 );
-  {
-    // Sort the not-necessarily sorted blocks. Expected blocks are hand-sorted.
-    std::list<coord> testBlocks(temp.begin(),temp.end());
-    testBlocks.sort(coordLess);
-    std::list<coord>::iterator itor=testBlocks.begin();
-    std::vector<coord>::iterator jtor=expectedBlocks.begin();
-    while(jtor!=expectedBlocks.end())
-      {
-	CPPUNIT_ASSERT( *jtor==*itor );
-	jtor++;
-	itor++;
-      }
-  }
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks, test_piece->getBlocks()) );
 
   delete test_piece;
 
@@ -183,21 +129,7 @@ void PieceTest::testConstructor()
   testCoord=test_piece->getCenter();
   CPPUNIT_ASSERT( testCoord==originCoord );
 
-  temp=test_piece->getBlocks();
-  CPPUNIT_ASSERT( temp.size()==4 );
-  {
-    // Sort the not-necessarily sorted blocks. Expected blocks are hand-sorted.
-    std::list<coord> testBlocks(temp.begin(),temp.end());
-    testBlocks.sort(coordLess);
-    std::list<coord>::iterator itor=testBlocks.begin();
-    std::vector<coord>::iterator jtor=expectedBlocks.begin();
-    while(jtor!=expectedBlocks.end())
-      {
-	CPPUNIT_ASSERT( *jtor==*itor );
-	jtor++;
-	itor++;
-      }
-  }
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks, test_piece->getBlocks()) );
 
   delete test_piece;
 
@@ -211,22 +143,7 @@ void PieceTest::testConstructor()
   testCoord=test_piece->getCenter();
   CPPUNIT_ASSERT( testCoord==originCoord );
 
-  temp=test_piece->getBlocks();
-  CPPUNIT_ASSERT( temp.size()==4 );
-  {
-    // Sort the not-necessarily sorted blocks. Expected blocks are hand-sorted.
-    std::list<coord> testBlocks(temp.begin(),temp.end());
-    testBlocks.sort(coordLess);
-    std::list<coord>::iterator itor=testBlocks.begin();
-    std::vector<coord>::iterator jtor=expectedBlocks.begin();
-    while(jtor!=expectedBlocks.end())
-      {
-	CPPUNIT_ASSERT( *jtor==*itor );
-	jtor++;
-	itor++;
-      }
-  }
-
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks, test_piece->getBlocks()) );
   delete test_piece;
 
 }
@@ -237,7 +154,7 @@ void PieceTest::testStep()
   coord testCoord(-1,-1), expectedCoord(-1,-1), originCoord(4,20);
   Field testField;
   std::vector<Piece> testPieces;
-  std::vector<coord> expectedBlocks, temp;
+  std::vector<coord> expectedBlocks;
   std::vector<Piece>::iterator itor;
 
   testPieces.reserve(6); 
@@ -307,49 +224,47 @@ void PieceTest::testStep()
 
   // Test that Pieces accurately report block positions both before and after locking.
   // After lock:
-  temp=testPieces.begin()->getBlocks();
-  CPPUNIT_ASSERT( temp.size()==4 );
-  {
-    // Sort the not-necessarily sorted blocks. Expected blocks are hand-sorted.
-    std::list<coord> testBlocks(temp.begin(),temp.end());
-    testBlocks.sort(coordLess);
-    std::list<coord>::iterator ktor=testBlocks.begin();
-    std::vector<coord>::iterator jtor=expectedBlocks.begin();
-    while(jtor!=expectedBlocks.end())
-      {
-	CPPUNIT_ASSERT( *jtor==*ktor );
-	jtor++;
-	ktor++;
-      }
-  }
+
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks, testPieces[0].getBlocks()) );
+  
   // Before lock:
   testPieces.clear();
   testPieces.push_back(Piece(I,&testDelay,&testField));
-  testPieces.begin()->timeStep(3);
+  testPieces[0].timeStep(3);
   expectedBlocks[0]=coord(3,21-3);
   expectedBlocks[1]=coord(4,21-3);
   expectedBlocks[2]=coord(5,21-3);
   expectedBlocks[3]=coord(6,21-3);
 
-  temp=testPieces.begin()->getBlocks();
-  CPPUNIT_ASSERT( temp.size()==4 );
-  {
-    // Sort the not-necessarily sorted blocks. Expected blocks are hand-sorted.
-    std::list<coord> testBlocks(temp.begin(),temp.end());
-    testBlocks.sort(coordLess);
-    std::list<coord>::iterator ktor=testBlocks.begin();
-    std::vector<coord>::iterator jtor=expectedBlocks.begin();
-    while(jtor!=expectedBlocks.end())
-      {
-	CPPUNIT_ASSERT( *jtor==*ktor );
-	jtor++;
-	ktor++;
-      }
-  }
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks, testPieces[0].getBlocks()) );
 }
 
 void PieceTest::testShift()
 {
+  int testDelay = 0, failSafe=44, i=0;
+  coord testCoord(-1,-1), expectedCoord(-1,-1), originCoord(4,20);
+  Field testField;
+  std::vector<Piece> testPieces;
+  std::vector<coord> expectedBlocks;
+  std::vector<Piece>::iterator itor;
+
+  testPieces.push_back(Piece(I,&testDelay,&testField));
+  testPieces[0].handleInput(shift_right);
+
+  expectedBlocks.reserve(4);
+  expectedBlocks.push_back(coord(4,21));
+  expectedBlocks.push_back(coord(5,21));
+  expectedBlocks.push_back(coord(6,21));
+  expectedBlocks.push_back(coord(7,21));
+
+  expectedCoord=originCoord;
+  ++expectedCoord.x;
+
+  testCoord=testPieces[0].getCenter();
+  CPPUNIT_ASSERT( testCoord==originCoord );
+
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+  
   CPPUNIT_FAIL( "not implemented" );
 }
 

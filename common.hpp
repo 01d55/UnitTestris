@@ -19,6 +19,10 @@ struct coord
   {
     return x==right.x && y==right.y;
   }
+  inline bool operator!=(const coord&right)
+  {
+    return x!=right.x || y!=right.y;
+  }
 };
 
 enum PieceType
