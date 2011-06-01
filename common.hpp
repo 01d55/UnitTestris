@@ -5,6 +5,8 @@
 #ifndef COMMON_HPP
 #define COMMON_HPP
 
+#define FIELD_HEIGHT 22
+#define FIELD_WIDTH 10
 
 struct coord
 {

@@ -19,9 +19,9 @@ void FieldTest::testConstructor0()
   Field *test_field;
   // Only one possible case: an empty field.
   test_field = new Field();
-  for(j=0;j<22;++j)
+  for(j=0;j< FIELD_HEIGHT ;++j)
     {
-      for (i=0;i<10;++i)
+      for (i=0;i<FIELD_WIDTH;++i)
 	{
 	  // The field should be empty, i.e. all gets should return false.
 	  CPPUNIT_ASSERT( (!test_field->get(i,j) ) );
@@ -37,12 +37,12 @@ void FieldTest::testConstructor1()
   std::vector<bool> row;
 
   // Emtpy field
-  row.resize(10,false);
+  row.resize(FIELD_WIDTH,false);
   test_field=new Field(row);
   row.clear();
-  for(j=0;j<22;++j)
+  for(j=0;j<FIELD_HEIGHT;++j)
     {
-      for (i=0;i<10;++i)
+      for (i=0;i<FIELD_WIDTH;++i)
 	{
 	  CPPUNIT_ASSERT( !(test_field->get(i,j) ) );
 	}
@@ -51,15 +51,15 @@ void FieldTest::testConstructor1()
 
   // The bottom row should be missing only the far right block
   // All other rows should be empty.
-  row.resize(10,true);
-  row[9]=false;
+  row.resize(FIELD_WIDTH,true);
+  row[FIELD_WIDTH-1]=false;
   test_field = new Field(row);
   row.clear();
-  for(j=0;j<22;++j)
+  for(j=0;j<FIELD_HEIGHT;++j)
     {
-      for (i=0;i<10;++i)
+      for (i=0;i<FIELD_WIDTH;++i)
 	{
-	  if(j==0 && i < 9) {CPPUNIT_ASSERT( (test_field->get(i,j) ) );}
+	  if(j==0 && i < FIELD_WIDTH-1) {CPPUNIT_ASSERT( (test_field->get(i,j) ) );}
 	  else {CPPUNIT_ASSERT( (!test_field->get(i,j) ) );}
 	}
     }
@@ -67,13 +67,13 @@ void FieldTest::testConstructor1()
 
   // The bottom row should have only the far right block.
   // All other rows should be empty.
-  row.resize(10,false);
-  row[9]=true;
+  row.resize(FIELD_WIDTH,false);
+  row[FIELD_WIDTH-1]=true;
   test_field=new Field(row);
   row.clear();
-  for(j=0;j<22;++j)
+  for(j=0;j<FIELD_HEIGHT;++j)
     {
-      for (i=0;i<10;++i)
+      for (i=0;i<FIELD_WIDTH;++i)
 	{
 	  if(j==0 && i == 0) {CPPUNIT_ASSERT( test_field->get(i,j) );}
 	  else {CPPUNIT_ASSERT( !(test_field->get(i,j) ) );}
@@ -82,13 +82,13 @@ void FieldTest::testConstructor1()
   delete test_field;
 
   // A single block in the middle.
-  row.resize(10,false);
+  row.resize(FIELD_WIDTH,false);
   row[5]=true;
   test_field=new Field(row);
   row.clear();
-  for(j=0;j<22;++j)
+  for(j=0;j<FIELD_HEIGHT;++j)
     {
-      for (i=0;i<10;++i)
+      for (i=0;i<FIELD_WIDTH;++i)
 	{
 	  if(i==5 && j==0) { CPPUNIT_ASSERT( test_field->get(i,j) ); }
 	  else { CPPUNIT_ASSERT( !(test_field->get(i,j) ) ); }
@@ -98,12 +98,12 @@ void FieldTest::testConstructor1()
 
   // The full row should automatically clear itself, therefore:
   // The field should be empty, i.e. all gets should return false.
-  row.resize(10,true);
+  row.resize(FIELD_WIDTH,true);
   test_field = new Field(row);
   row.clear();
-  for(j=0;j<22;++j)
+  for(j=0;j<FIELD_HEIGHT;++j)
     {
-      for (i=0;i<10;++i)
+      for (i=0;i<FIELD_WIDTH;++i)
 	{
 	  CPPUNIT_ASSERT( (!test_field->get(i,j) ) );
 	}
@@ -114,10 +114,10 @@ void FieldTest::testConstructor1()
   // row is clear
   CPPUNIT_ASSERT_THROW((test_field = new Field(row) ),FieldSizeError);
 
-  row.resize(9,true);
+  row.resize(FIELD_WIDTH-1,true);
   CPPUNIT_ASSERT_THROW((test_field = new Field(row) ),FieldSizeError);
 
-  row.resize(11);
+  row.resize(FIELD_WIDTH+1);
   CPPUNIT_ASSERT_THROW((test_field = new Field(row) ),FieldSizeError);
 }
 
@@ -128,13 +128,13 @@ void FieldTest::testConstructor2()
   std::vector< std::vector<bool> > blocks;
  
   // Empty field
-  blocks.resize(10);
-  for(i=0;i<10;++i) {blocks[i].resize(22,false);}
+  blocks.resize(FIELD_WIDTH);
+  for(i=0;i<FIELD_WIDTH;++i) {blocks[i].resize(FIELD_HEIGHT,false);}
   test_field= new Field(blocks);
   blocks.clear();
-  for(i=0;i<10;++i)
+  for(i=0;i<FIELD_WIDTH;++i)
     {
-      for (j=0;j<22;++j)
+      for (j=0;j<FIELD_HEIGHT;++j)
 	{
 	  CPPUNIT_ASSERT( !(test_field->get(i,j) ) );
 	}
@@ -142,17 +142,17 @@ void FieldTest::testConstructor2()
   delete test_field;
 
   // Check the extreme corners
-  blocks.resize(10);
-  for(i=0;i<10;++i) {blocks[i].resize(22,false);}
+  blocks.resize(FIELD_WIDTH);
+  for(i=0;i<FIELD_WIDTH;++i) {blocks[i].resize(FIELD_HEIGHT,false);}
   blocks[0][0]=true;
-  blocks[9][21]=true;
+  blocks[FIELD_WIDTH-1][FIELD_HEIGHT-1]=true;
   test_field= new Field(blocks);
   blocks.clear();
-  for(i=0;i<10;++i)
+  for(i=0;i<FIELD_WIDTH;++i)
     {
-      for (j=0;j<22;++j)
+      for (j=0;j<FIELD_HEIGHT;++j)
 	{
-	  if ( (i==0 && j == 0) || (i==9 && j==21) )
+	  if ( (i==0 && j == 0) || (i==FIELD_WIDTH-1 && j==FIELD_HEIGHT-1) )
 	    {
 	      CPPUNIT_ASSERT( test_field->get(i,j) );
 	    }
@@ -163,18 +163,18 @@ void FieldTest::testConstructor2()
 
   // A non-full row placed over a full row. The non-full row should drop into
   // the space opened when the full row is cleared.
-  blocks.resize(10);
-  for(i=0;i<10;++i) {blocks[i].resize(22,false);}
-  for(i=0;i<10;++i)
+  blocks.resize(FIELD_WIDTH);
+  for(i=0;i<FIELD_WIDTH;++i) {blocks[i].resize(FIELD_HEIGHT,false);}
+  for(i=0;i<FIELD_WIDTH;++i)
     {
       blocks[i][0]=true;
       blocks[i][1]= ((i%2)?true:false);
     }
   test_field= new Field(blocks);
   blocks.clear();
-  for(i=0;i<10;++i)
+  for(i=0;i<FIELD_WIDTH;++i)
     {
-      for (j=0;j<22;++j)
+      for (j=0;j<FIELD_HEIGHT;++j)
 	{
 	  if ( j==0  )
 	    {
@@ -190,9 +190,9 @@ void FieldTest::testConstructor2()
   // and a row with alternating empty and full blocks above.
   // The row with alternating blocks should shift down 3 as the full
   // rows beneath it are removed.
-  blocks.resize(10);
-  for(i=0;i<10;++i) {blocks[i].resize(22,false);}
-  for(i=0;i<10;++i)
+  blocks.resize(FIELD_WIDTH);
+  for(i=0;i<FIELD_WIDTH;++i) {blocks[i].resize(FIELD_HEIGHT,false);}
+  for(i=0;i<FIELD_WIDTH;++i)
     {
       blocks[i][1]=true;
       blocks[i][2]=true;
@@ -201,9 +201,9 @@ void FieldTest::testConstructor2()
     }
   test_field= new Field(blocks);
   blocks.clear();
-  for(i=0;i<10;++i)
+  for(i=0;i<FIELD_WIDTH;++i)
     {
-      for (j=0;j<22;++j)
+      for (j=0;j<FIELD_HEIGHT;++j)
 	{
 	  if( j==3 )
 	    {
@@ -214,27 +214,27 @@ void FieldTest::testConstructor2()
     }
 
   // Full column.
-  blocks.resize(10);
-  for(i=0;i<10;++i) {blocks[i].resize(22,false);}
-  for(j=0;j<22;++j) {blocks[0][j]=true;}
+  blocks.resize(FIELD_WIDTH);
+  for(i=0;i<FIELD_WIDTH;++i) {blocks[i].resize(FIELD_HEIGHT,false);}
+  for(j=0;j<FIELD_HEIGHT;++j) {blocks[0][j]=true;}
   test_field = new Field(blocks);
   blocks.clear();
-  for(i=0;i<10;++i)
+  for(i=0;i<FIELD_WIDTH;++i)
     {
-      for (j=0;j<22;++j)
+      for (j=0;j<FIELD_HEIGHT;++j)
 	{
 	  CPPUNIT_ASSERT( ( i==0 ? test_field->get(i,j) : !test_field->get(i,j) ) );
 	}
     }
 
   // All rows full. The full rows should auto-clear.
-  blocks.resize(10);
-  for(i=0;i<10;++i) {blocks[i].resize(22,true);}
+  blocks.resize(FIELD_WIDTH);
+  for(i=0;i<FIELD_WIDTH;++i) {blocks[i].resize(FIELD_HEIGHT,true);}
   test_field= new Field(blocks);
   blocks.clear();
-  for(i=0;i<10;++i)
+  for(i=0;i<FIELD_WIDTH;++i)
     {
-      for (j=0;j<22;++j)
+      for (j=0;j<FIELD_HEIGHT;++j)
 	{
 	  CPPUNIT_ASSERT( !(test_field->get(i,j) ) );
 	}
@@ -242,16 +242,16 @@ void FieldTest::testConstructor2()
   delete test_field;
   /* Copy constructor
    */
-  blocks.resize(10);
-  for(i=0;i<10;++i) {blocks[i].resize(22,false);}
-  for(j=0;j<22;++j) {blocks[0][j]=true;}
+  blocks.resize(FIELD_WIDTH);
+  for(i=0;i<FIELD_WIDTH;++i) {blocks[i].resize(FIELD_HEIGHT,false);}
+  for(j=0;j<FIELD_HEIGHT;++j) {blocks[0][j]=true;}
   test_field = new Field(blocks);
   blocks.clear();
   copy_field = new Field(*test_field);
   delete test_field;
-  for(i=0;i<10;++i)
+  for(i=0;i<FIELD_WIDTH;++i)
     {
-      for (j=0;j<22;++j)
+      for (j=0;j<FIELD_HEIGHT;++j)
 	{
 	  CPPUNIT_ASSERT( ( i==0 ? copy_field->get(i,j) : !copy_field->get(i,j) ) );
 	}
@@ -263,34 +263,34 @@ void FieldTest::testConstructor2()
   CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
   // Throw if not 10 columns
-  blocks.resize(9);
-  for(i=0;i<9;++i) {blocks[i].resize(22,false);}
+  blocks.resize(FIELD_WIDTH-1);
+  for(i=0;i<FIELD_WIDTH-1;++i) {blocks[i].resize(FIELD_HEIGHT,false);}
   CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
-  blocks.resize(11);
-  blocks[9].resize(22,false);
+  blocks.resize(FIELD_WIDTH+1);
+  blocks[FIELD_WIDTH-1].resize(FIELD_HEIGHT,false);
   CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
-  blocks[10].resize(22,false);
+  blocks[FIELD_WIDTH].resize(FIELD_HEIGHT,false);
   CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
-  // Throw if not every column is size 22.
-  blocks.resize(10);
+  // Throw if not every column is size FIELD_HEIGHT.
+  blocks.resize(FIELD_WIDTH);
   blocks[5].clear();
   CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
-  blocks[5].resize(21, false);
+  blocks[5].resize(FIELD_HEIGHT-1, false);
   CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
   
-  blocks[5].resize(23, false);
+  blocks[5].resize(FIELD_HEIGHT+1, false);
   CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
-  blocks[5].resize(22);
+  blocks[5].resize(FIELD_HEIGHT);
   blocks[0].clear();
   CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
-  blocks[0].resize(22);
-  blocks[9].clear();
+  blocks[0].resize(FIELD_HEIGHT);
+  blocks[FIELD_WIDTH-1].clear();
   CPPUNIT_ASSERT_THROW((test_field = new Field(blocks) ),FieldSizeError);
 
 }
@@ -303,38 +303,38 @@ void FieldTest::testSet()
   // Check that the corners set correctly
   test_field.set(0,0);
   CPPUNIT_ASSERT(test_field.get(0,0) );
-  test_field.set(0,21);
-  CPPUNIT_ASSERT(test_field.get(0,21) );
-  test_field.set(9,0);
-  CPPUNIT_ASSERT(test_field.get(9,0) );
-  test_field.set(9,21);
-  CPPUNIT_ASSERT(test_field.get(9,21) );
+  test_field.set(0,FIELD_HEIGHT-1);
+  CPPUNIT_ASSERT(test_field.get(0,FIELD_HEIGHT-1) );
+  test_field.set(FIELD_WIDTH-1,0);
+  CPPUNIT_ASSERT(test_field.get(FIELD_WIDTH-1,0) );
+  test_field.set(FIELD_WIDTH-1,FIELD_HEIGHT-1);
+  CPPUNIT_ASSERT(test_field.get(FIELD_WIDTH-1,FIELD_HEIGHT-1) );
 
   // Check line removal; check moving lines above downward.
-  for(i=1;i<21;++i)
+  for(i=1;i<FIELD_HEIGHT-1;++i)
     {
       test_field.set(i,0);
     }
-  for(i=0;i<22;++i)
+  for(i=0;i<FIELD_HEIGHT;++i)
     {
       CPPUNIT_ASSERT( !(test_field.get(i,0) ) );
     }
-  CPPUNIT_ASSERT( !(test_field.get(0,21) ) );
-  CPPUNIT_ASSERT( !(test_field.get(9,21) ) );
+  CPPUNIT_ASSERT( !(test_field.get(0,FIELD_HEIGHT-1) ) );
+  CPPUNIT_ASSERT( !(test_field.get(FIELD_WIDTH-1,FIELD_HEIGHT-1) ) );
   CPPUNIT_ASSERT( test_field.get(0,20) );
-  CPPUNIT_ASSERT( test_field.get(9,20) );
+  CPPUNIT_ASSERT( test_field.get(FIELD_WIDTH-1,20) );
 
   // Check that line removal does not disturb lower lines.
   test_field.set(5,2);
-  for(i=0;i<22;++i)
+  for(i=0;i<FIELD_HEIGHT;++i)
     {
       test_field.set(i,3);
     }
   // The blocks that started in the upper corners have moved down again...
   CPPUNIT_ASSERT( !(test_field.get(0,20) ) );
-  CPPUNIT_ASSERT( !(test_field.get(9,20) ) );
+  CPPUNIT_ASSERT( !(test_field.get(FIELD_WIDTH-1,20) ) );
   CPPUNIT_ASSERT( test_field.get(0,19) );
-  CPPUNIT_ASSERT( test_field.get(9,19) );
+  CPPUNIT_ASSERT( test_field.get(FIELD_WIDTH-1,19) );
   // But the block beneath the cleared line is undisturbed, right?
   CPPUNIT_ASSERT( test_field.get(5,2) );
   CPPUNIT_ASSERT( !(test_field.get(5,1) ) );
@@ -342,8 +342,8 @@ void FieldTest::testSet()
   // Test for exception throws
   CPPUNIT_ASSERT_THROW( (test_field.set(-1,0) ),FieldSizeError );
   CPPUNIT_ASSERT_THROW( (test_field.set(0,-1) ),FieldSizeError );
-  CPPUNIT_ASSERT_THROW( (test_field.set(10,0) ),FieldSizeError );
-  CPPUNIT_ASSERT_THROW( (test_field.set(0,22) ),FieldSizeError );
+  CPPUNIT_ASSERT_THROW( (test_field.set(FIELD_WIDTH,0) ),FieldSizeError );
+  CPPUNIT_ASSERT_THROW( (test_field.set(0,FIELD_HEIGHT) ),FieldSizeError );
   CPPUNIT_ASSERT_THROW( (test_field.set(std::numeric_limits<int>::min(),0) ) , FieldSizeError );
   CPPUNIT_ASSERT_THROW( (test_field.set(std::numeric_limits<int>::max(),0) ) , FieldSizeError );
   if(std::numeric_limits<int>::has_infinity)
@@ -361,12 +361,12 @@ void FieldTest::testFieldScore()
   // Score should begin at zero.
   CPPUNIT_ASSERT( (0==test_field.readScore() ) );
   // For now assume the simplest scoring system - 1 line clear is 1 point.
-  for(i=0;i<22;++i)
+  for(i=0;i<FIELD_HEIGHT;++i)
     {
       test_field.set(i,0);
     }
   CPPUNIT_ASSERT( (1==test_field.readScore() ) );
-  for(i=0;i<22;++i)
+  for(i=0;i<FIELD_HEIGHT;++i)
     {
       test_field.set(i,6);
     }
@@ -375,7 +375,7 @@ void FieldTest::testFieldScore()
   // Test reset, and that increasing score after a reset works correctly.
   test_field.resetScore();
   CPPUNIT_ASSERT( (0==test_field.readScore() ) );
-  for(i=0;i<22;++i)
+  for(i=0;i<FIELD_HEIGHT;++i)
     {
       test_field.set(i,19);
     }
