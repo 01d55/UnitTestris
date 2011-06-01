@@ -237,7 +237,9 @@ void PieceTest::testStep()
   coord testCoord(-1,-1), expectedCoord(-1,-1), originCoord(4,20);
   Field testField;
   std::vector<Piece> testPieces;
+  std::vector<coord> expectedBlocks, temp;
   std::vector<Piece>::iterator itor;
+
   testPieces.reserve(6); 
   testPieces.push_back(Piece(I,&testDelay,&testField));
   testPieces.push_back(Piece(J,&testDelay,&testField));
@@ -245,6 +247,12 @@ void PieceTest::testStep()
   testPieces.push_back(Piece(S,&testDelay,&testField));
   testPieces.push_back(Piece(Z,&testDelay,&testField));
   testPieces.push_back(Piece(T,&testDelay,&testField));
+
+  expectedBlocks.reserve(4);
+  expectedBlocks.push_back(coord(3,0));
+  expectedBlocks.push_back(coord(4,0));
+  expectedBlocks.push_back(coord(5,0));
+  expectedBlocks.push_back(coord(6,0));
 
   // Test proper center movement & locking
   for(itor=testPieces.begin();itor!=testPieces.end();++itor)
@@ -265,8 +273,79 @@ void PieceTest::testStep()
       // Test throw when timestepping a locked Piece
       CPPUNIT_ASSERT_THROW( itor->timeStep(1),PieceLockError );
     }
+  // Test that locked pieces placed blocks into Field properly. Errors in Field may cause this test to fail.
+  /*    T     *9
+   *   TTT    *8
+   *   ZZ     *7
+   *    ZZ    *6
+   *    SS    *5
+   *   SSL    *4
+   *   LLL    *3
+   *   J      *2
+   *   JJJ    *1
+   *   IIII   *0
+   *0123456789*
+   */
+  for(i=0;i<FIELD_WIDTH;++i)
+    {
+      CPPUNIT_ASSERT( (2<i<7) ? (testField.get(i,0)) : (!testField.get(i,0)) );
 
-  CPPUNIT_FAIL( "Test not complete." );
+      CPPUNIT_ASSERT( (2<i<6) ? (testField.get(i,1)) : (!testField.get(i,1)) );
+      CPPUNIT_ASSERT( (2<i<6) ? (testField.get(i,3)) : (!testField.get(i,3)) );
+      CPPUNIT_ASSERT( (2<i<6) ? (testField.get(i,4)) : (!testField.get(i,4)) );
+      CPPUNIT_ASSERT( (2<i<6) ? (testField.get(i,8)) : (!testField.get(i,8)) );
+
+      CPPUNIT_ASSERT( (i==3) ? (testField.get(i,2)) : (!testField.get(i,2)) );
+
+      CPPUNIT_ASSERT( (3<i<6) ? (testField.get(i,5)) : (!testField.get(i,5)) );
+      CPPUNIT_ASSERT( (3<i<6) ? (testField.get(i,6)) : (!testField.get(i,6)) );
+
+      CPPUNIT_ASSERT( (2<i<5) ? (testField.get(i,7)) : (!testField.get(i,7)) );
+
+      CPPUNIT_ASSERT( (i==4) ? (testField.get(i,9)) : (!testField.get(i,9)) );
+    }
+
+  // Test that Pieces accurately report block positions both before and after locking.
+  // After lock:
+  temp=testPieces.begin()->getBlocks();
+  CPPUNIT_ASSERT( temp.size()==4 );
+  {
+    // Sort the not-necessarily sorted blocks. Expected blocks are hand-sorted.
+    std::list<coord> testBlocks(temp.begin(),temp.end());
+    testBlocks.sort(coordLess);
+    std::list<coord>::iterator ktor=testBlocks.begin();
+    std::vector<coord>::iterator jtor=expectedBlocks.begin();
+    while(jtor!=expectedBlocks.end())
+      {
+	CPPUNIT_ASSERT( *jtor==*ktor );
+	jtor++;
+	ktor++;
+      }
+  }
+  // Before lock:
+  testPieces.clear();
+  testPieces.push_back(Piece(I,&testDelay,&testField));
+  testPieces.begin()->timeStep(3);
+  expectedBlocks[0]=coord(3,21-3);
+  expectedBlocks[1]=coord(4,21-3);
+  expectedBlocks[2]=coord(5,21-3);
+  expectedBlocks[3]=coord(6,21-3);
+
+  temp=testPieces.begin()->getBlocks();
+  CPPUNIT_ASSERT( temp.size()==4 );
+  {
+    // Sort the not-necessarily sorted blocks. Expected blocks are hand-sorted.
+    std::list<coord> testBlocks(temp.begin(),temp.end());
+    testBlocks.sort(coordLess);
+    std::list<coord>::iterator ktor=testBlocks.begin();
+    std::vector<coord>::iterator jtor=expectedBlocks.begin();
+    while(jtor!=expectedBlocks.end())
+      {
+	CPPUNIT_ASSERT( *jtor==*ktor );
+	jtor++;
+	ktor++;
+      }
+  }
 }
 
 void PieceTest::testShift()
