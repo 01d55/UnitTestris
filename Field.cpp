@@ -48,3 +48,8 @@ void Field::resetScore()
 {
   //STUB
 }
+// Set all blocks to false.
+void Field::resetBlocks()
+{
+  //STUB
+}

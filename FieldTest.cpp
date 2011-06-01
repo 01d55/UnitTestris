@@ -352,6 +352,16 @@ void FieldTest::testSet()
     }
 
   CPPUNIT_ASSERT_THROW( (test_field.set(5,2) ), DuplicateBlockError );
+  // Test reset
+  test_field.resetBlocks();
+  for(j=0;j< FIELD_HEIGHT ;++j)
+    {
+      for (i=0;i<FIELD_WIDTH;++i)
+	{
+	  // The field should be empty, i.e. all gets should return false.
+	  CPPUNIT_ASSERT( (!test_field.get(i,j) ) );
+	}
+    }
 }
 
 void FieldTest::testFieldScore()
