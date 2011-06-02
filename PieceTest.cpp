@@ -449,10 +449,10 @@ void PieceTest::testShift()
 
   expectedCoord=originO;
 
-  expectedBlocks(4,20);
-  expectedBlocks(4,21);
-  expectedBlocks(5,20);
-  expectedBlocks(5,21);
+  expectedBlocks[0](4,20);
+  expectedBlocks[1](4,21);
+  expectedBlocks[2](5,20);
+  expectedBlocks[3](5,21);
 
   // Shift right
   testPieces[0].handleInput(shift_right);
@@ -519,6 +519,11 @@ void PieceTest::testShift()
   expectedBlocks[0](4,20);
   expectedBlocks[0](4,21);
   expectedBlocks[0](5,20);
+
+  // Shift right
+  testPieces[0].handleInput(shift_right);
+  ++expectedCoord.x;
+  for(i=0;i<3;++i) ++expectedBlocks[i].x;
   CPPUNIT_FAIL( "Test not complete." );
 }
 
