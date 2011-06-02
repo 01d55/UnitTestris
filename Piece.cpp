@@ -1,11 +1,11 @@
 #include "Piece.hpp"
 
-Piece::Piece(PieceType t, const int *d, Field *f)
+Piece::Piece(PieceType t, const unsigned int d, Field *f)
 {
   // STUB
 }
 
-bool Piece::timeStep(int t) throw (PieceLockError)
+bool Piece::timeStep(unsigned int t) throw (PieceLockError)
 {
   // STUB
   return false;

@@ -15,13 +15,19 @@ struct coord
 
   coord (int iX, int iY):x(iX),y(iY)
   {}
-  inline bool operator==(const coord&right)
+  inline bool operator==(const coord&right) const
   {
     return x==right.x && y==right.y;
   }
-  inline bool operator!=(const coord&right)
+  inline bool operator!=(const coord&right) const
   {
     return x!=right.x || y!=right.y;
+  }
+  inline const coord& operator()(int iX, int iY)
+  {
+    x=iX;
+    y=iY;
+    return *this;
   }
 };
 

@@ -15,12 +15,11 @@
    The piece relies on the game loop to call timeStep once per frame, if g is 
    greater than or equal to 1, or once per 1/g frames, if g is less than one. 
    g is a parameter to the timeStep function so that the game can change g 
-   while the piece is in play. The lock delay is defined in an external 
-   reference and may be zero. Either timeStep or a hard drop may cause a piece 
-   to lock, which causes the piece to place its pieces into the Field. When 
-   this happens the function that caused the piece to lock will return true; 
-   otherwise these functions return false. Attempting to timeStep or move on a 
-   locked piece is an error.
+   while the piece is in play. The lock delay may be zero. Either timeStep or a
+   hard drop may cause a piece to lock, which causes the piece to place its
+   pieces into the Field. When this happens the function that caused the piece
+   to lock will return true; otherwise these functions return false. Attempting
+   to timeStep or move on a locked piece is an error.
 
    The piece tracks it's location in the field through its axis of rotation as 
    defined by SRS. The I and O blocks rotate not around one of their 
@@ -36,9 +35,9 @@
 class Piece
 {
 public:
-  Piece(PieceType t, const int *d, Field *f);
+  Piece(PieceType t, const unsigned int d, Field *f);
 
-  bool timeStep(int g) throw (PieceLockError);
+  bool timeStep(unsigned int g) throw (PieceLockError);
   bool handleInput(PieceInput in) throw (PieceLockError);
 
   coord getCenter() const;
