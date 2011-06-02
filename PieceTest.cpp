@@ -489,6 +489,7 @@ void PieceTest::testShift()
   for(i=0;i<10;++i) testPieces[0].handleInput(shift_left);
   expectedCoord.x-=7;
   for(i=0;i<3;++i) expectedBlocks[i].x-=7;
+  testCoord=testPieces[0].getCenter();
 
   CPPUNIT_ASSERT( testCoord==expectedCoord );
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
@@ -498,12 +499,14 @@ void PieceTest::testShift()
   for(i=0;i<2;++i) testPieces[0].handleInput(shift_right);
   ++expectedCoord.x;
   for(i=0;i<3;++i) ++expectedBlocks[i].x;
+  testCoord=testPieces[0].getCenter();
 
   CPPUNIT_ASSERT( testCoord==expectedCoord );
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
   
   testField.set(0,20);
   testPieces[0].handleInput(shift_left);
+  testCoord=testPieces[0].getCenter();
   
   CPPUNIT_ASSERT( testCoord==expectedCoord );
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
@@ -516,15 +519,76 @@ void PieceTest::testShift()
   
   expectedCoord=originCoord;
   expectedBlocks[0](3,20);
-  expectedBlocks[0](4,20);
-  expectedBlocks[0](4,21);
-  expectedBlocks[0](5,20);
+  expectedBlocks[1](4,20);
+  expectedBlocks[2](4,21);
+  expectedBlocks[3](5,20);
 
   // Shift right
   testPieces[0].handleInput(shift_right);
+  testCoord=testPieces[0].getCenter();
   ++expectedCoord.x;
   for(i=0;i<3;++i) ++expectedBlocks[i].x;
-  CPPUNIT_FAIL( "Test not complete." );
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  // Press against right wall
+  for(i=0;i<5;++i) testPieces[0].handleInput(shift_right);
+  testCoord=testPieces[0].getCenter();
+  expectedCoord.x+=3;
+  for(i=0;i<3;++i) expectedBlocks[i].x+=3;
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  // Shift left
+  testPieces[0].handleInput(shift_left);
+  testCoord=testPieces[0].getCenter();
+  ++expectedCoord.x;
+  for(i=0;i<3;++i) ++expectedBlocks[i].x;
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  // Press against left wall
+
+  for(i=0;i<10;++i) testPieces[0].handleInput(shift_left);
+  testCoord=testPieces[0].getCenter();
+  expectedCoord.x-=6;
+  for(i=0;i<3;++i) expectedCoords[i].x-=6;
+  
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  // Press against blocks
+  testField.set(4,20);
+  testField.set(3,21);
+  
+  for(i=0;i<2;++i) testPieces[0].handleInput(shift_right);
+  testCoord=testPieces[0].getCenter();
+  ++expectedCoord.x;
+  for(i=0;i<3;++i) ++expectedBlocks[i].x;
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+ 
+  testField.set(1,21);
+  testPieces[0].handleInput(shift_left);
+  testCoord=testPieces[0].getCenter();
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+   
+  // Test lock exception
+  testPieces[0].timeStep(20);
+  testCoord=testPieces[0].getCenter();
+  expectedCoord.y-=20;
+  for(i=0;i<3;++i) expectedBlocks[i].y-=20;
+  CPPUNIT_ASSERT_THROW( testpieces[0].handleInput(shift_right),PieceLockError );
+  // Test that no change was made
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
 }
 
 void PieceTest::testRotate()
