@@ -1194,7 +1194,203 @@ void PieceTest::testRotate()
   testPieces.clear();
   testField.resetBlocks();
   // S block
+  testPieces.push_back(Piece(S,testDelay,&testField));
 
+  expectedCoord=originCoord;
+
+  // Turn CCW
+  /*
+   *__________*
+   *    SS    *21
+   *   Sc     *20
+   *          *19 
+   *          *18
+   *0123456789*
+   1 rotation
+   *__________*
+   *   S      *21
+   *   Sc     *20
+   *    S     *19 
+   *          *18
+   *0123456789*
+   2 rotations
+   *__________*
+   *          *21
+   *    cS    *20
+   *   SS     *19 
+   *          *18
+   *0123456789*
+   3 rotations
+   *__________*
+   *    S     *21
+   *    cS    *20
+   *     S    *19 
+   *          *18
+   *0123456789*
+   */
+
+  // 1
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks.push_back(coord(3,20));
+  expectedBlocks.push_back(coord(3,21));
+  expectedBlocks.push_back(coord(4,19));
+  expectedBlocks.push_back(coord(4,20));
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+  // 2
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](3,19);
+  expectedBlocks[1](4,19);
+  expectedBlocks[2](4,20);
+  expectedBlocks[3](5,20);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+  // 3
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](4,20);
+  expectedBlocks[1](4,21);
+  expectedBlocks[2](5,19);
+  expectedBlocks[3](5,20);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  // Does rotation persist through timestep?
+  testPieces[0].timeStep(1);
+  testCoord=testPieces[0].getCenter();
+  --expectedCoord.y;
+  for(i=0;i<3;++i) --expectedBlocks[i].y;
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+ 
+  // Return to original orientation (but not original position!)
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](3,19);
+  expectedBlocks[1](4,19);
+  expectedBlocks[2](4,20);
+  expectedBlocks[3](5,20);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  // CW
+  /*
+   *__________*
+   *          *21
+   *    SS    *20
+   *   Sc     *19
+   *          *18 
+   *          *17
+   *0123456789*
+   1 rotation  
+   *__________*
+   *          *21
+   *    S     *20
+   *    cS    *19
+   *     S    *18 
+   *          *17
+   *0123456789*
+   2 rotations
+   *__________*
+   *          *21
+   *          *20
+   *    cS    *19
+   *   SS     *18 
+   *          *17
+   *0123456789*
+   3 rotations
+   *__________*
+   *          *21
+   *   S      *20
+   *   Sc     *19
+   *    S     *18 
+   *          *17
+   *0123456789*
+   */
+  //1
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](4,19);
+  expectedBlocks[1](4,20);
+  expectedBlocks[2](5,18);
+  expectedBlocks[3](5,19);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  //2
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](3,18);
+  expectedBlocks[1](4,18);
+  expectedBlocks[2](4,19);
+  expectedBlocks[3](5,19);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  //3
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](3,19);
+  expectedBlocks[1](3,20);
+  expectedBlocks[2](4,18);
+  expectedBlocks[3](4,19);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  // Blocked rotations
+  /* Prevent CW rotation, but not CCW
+   *__________*
+   *          *21
+   *   Sb     *20
+   *   Sc     *19
+   *    S     *18 
+   *          *17
+   *0123456789*
+   *__________*
+   *          *21
+   *    bS    *20
+   *   Sc     *19
+   *          *18 
+   *          *17
+   *0123456789*
+   *__________*
+   *          *21
+   *    b     *20
+   *    cS    *19
+   *   SS     *18 
+   *          *17
+   *0123456789*
+   */
+
+  testField.set(4,20);
+  testPieces[0].handleInput(rotate_cw);//blocked
+  testCoord=testPieces[0].getCenter();
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](3,18);
+  expectedBlocks[1](4,18);
+  expectedBlocks[2](4,19);
+  expectedBlocks[3](5,19);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  testPieces.clear();
+  testField.resetBlocks();
   // Z block
 
   // T block
