@@ -75,7 +75,7 @@ void FieldTest::testConstructor1()
     {
       for (i=0;i<FIELD_WIDTH;++i)
 	{
-	  if(j==0 && i == 0) {CPPUNIT_ASSERT( test_field->get(i,j) );}
+	  if(j==0 && i == FIELD_WIDTH-1) {CPPUNIT_ASSERT( test_field->get(i,j) );}
 	  else {CPPUNIT_ASSERT( !(test_field->get(i,j) ) );}
 	}
     }
