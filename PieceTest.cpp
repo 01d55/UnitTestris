@@ -347,6 +347,12 @@ void PieceTest::testStep()
   CPPUNIT_ASSERT_NO_THROW( testPieces[0].timeStep(1) );
   CPPUNIT_ASSERT_THROW( testPieces[0].timeStep(1),PieceLockError );
 
+  testPieces.clear();
+  // Test that locking with a larger-than-necessary timeStep does NOT throw
+  // Also, that timeStepping after such a lock DOES throw.
+  testPieces.push_back(Piece(O,testDelay,&testField));
+  CPPUNIT_ASSERT_NO_THROW( testPieces[0].timeStep(30) );
+  CPPUNIT_ASSERT_THROW( testPieces[0].timeStep(2),PieceLockError );
 }
 
 void PieceTest::testShift()
@@ -1590,10 +1596,253 @@ void PieceTest::testRotate()
   testPieces.clear();
   testField.resetBlocks();
   // T block
+  testPieces.push_back(Piece(T,testDelay,&testField));
 
+  expectedCoord=originCoord;
+
+  // Turn CCW
+  /*
+   *__________*
+   *    T     *21
+   *   TcT    *20
+   *          *19 
+   *          *18
+   *0123456789*
+   1 rotation
+   *__________*
+   *    T     *21
+   *   Tc     *20
+   *    T     *19 
+   *          *18
+   *0123456789*
+   2 rotations
+   *__________*
+   *          *21
+   *   TcT    *20
+   *    T     *19 
+   *          *18
+   *0123456789*
+   3 rotations
+   *__________*
+   *    T     *21
+   *    cT    *20
+   *    T     *19 
+   *          *18
+   *0123456789*
+   */
+
+  // 1
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks.push_back(coord(3,20));
+  expectedBlocks.push_back(coord(4,19));
+  expectedBlocks.push_back(coord(4,20));
+  expectedBlocks.push_back(coord(4,21));
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+  // 2
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](3,20);
+  expectedBlocks[1](4,19);
+  expectedBlocks[2](4,20);
+  expectedBlocks[3](5,20);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+  // 3
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](4,19);
+  expectedBlocks[1](4,20);
+  expectedBlocks[2](4,21);
+  expectedBlocks[3](5,20);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  // Does rotation persist through timestep?
+  testPieces[0].timeStep(1);
+  testCoord=testPieces[0].getCenter();
+  --expectedCoord.y;
+  for(i=0;i<3;++i) --expectedBlocks[i].y;
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+ 
+  // Return to original orientation (but not original position!)
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](0,00);
+  expectedBlocks[1](0,00);
+  expectedBlocks[2](0,00);
+  expectedBlocks[3](0,00);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  // CW
+  /*
+   *__________*
+   *          *21
+   *    T     *20
+   *   TcT    *19
+   *          *18 
+   *          *17
+   *0123456789*
+   1 rotation  
+   *__________*
+   *          *21
+   *    T     *20
+   *    cT    *19
+   *    T     *18 
+   *          *17
+   *0123456789*
+   2 rotations
+   *__________*
+   *          *21
+   *          *20
+   *   TcT    *19
+   *    T     *18 
+   *          *17
+   *0123456789*
+   3 rotations
+   *__________*
+   *          *21
+   *    T     *20
+   *   Tc     *19
+   *    T     *18 
+   *          *17
+   *0123456789*
+   */
+  //1
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](4,18);
+  expectedBlocks[1](4,19);
+  expectedBlocks[2](4,20);
+  expectedBlocks[3](5,19);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  //2
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](3,19);
+  expectedBlocks[1](4,18);
+  expectedBlocks[2](4,19);
+  expectedBlocks[3](5,19);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  //3
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](3,19);
+  expectedBlocks[1](4,18);
+  expectedBlocks[2](4,19);
+  expectedBlocks[3](4,20);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  // Blocked rotations
+  /* Prevent CW rotation, but not CCW
+   *__________*
+   *          *21
+   *    T     *20
+   *   Tc     *19
+   *    T     *18 
+   *          *17
+   *0123456789*
+   *__________*
+   *          *21
+   *    b     *20
+   *   TcT    *19
+   *          *18 
+   *          *17
+   *0123456789*
+   *__________*
+   *          *21
+   *    b     *20
+   *   TcT    *19
+   *    T     *18 
+   *          *17
+   *0123456789*
+   */
+
+  testField.set(4,20);
+  testPieces[0].handleInput(rotate_cw);//blocked
+  testCoord=testPieces[0].getCenter();
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](3,19);
+  expectedBlocks[1](4,18);
+  expectedBlocks[2](4,19);
+  expectedBlocks[3](5,19);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  testPieces.clear();
+  testField.resetBlocks();
   // O rly? yarly.
+  testPieces.push_back(Piece(O,testDelay,&testField));
+  /* O block should not change when rotated.
+   *__________*
+   *    Oc    *21
+   *    OO    *20
+   *          *19
+   *          *18 
+   *          *17
+   *0123456789*
+   */
+  expectedCoord=originO;
+  testPieces[0].handleInput(rotate_cw);
 
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](4,20);
+  expectedBlocks[1](4,21);
+  expectedBlocks[2](5,20);
+  expectedBlocks[3](5,21);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  testPieces.clear();
   // Check exception (but not with an O block)
+  testPieces.push_back(Piece(L,testDelay,&testField));
+  testPieces[0].handleInput(rotate_cw);
+  expectedCoord=originCoord;
+  expectedBlocks[0](4,19);
+  expectedBlocks[1](4,20);
+  expectedBlocks[2](4,21);
+  expectedBlocks[3](5,19);
+  
+  testPieces[0].timeStep(20);
+  testCoord=testPieces[0].getCenter();
+  expectedCoord.y-=19;
+  for(i=0;i<3;++i) expectedBlocks[i].y-=19;
+
+  CPPUNIT_ASSERT_THROW( testPieces[0].handleInput(rotate_cw),PieceLockError );
+  // Test that no change was made
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
   CPPUNIT_FAIL( "not implemented" );
 }
 
