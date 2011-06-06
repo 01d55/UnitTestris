@@ -215,6 +215,8 @@ void PieceTest::testStep()
 	}
       // Test throw when timestepping a locked Piece
       CPPUNIT_ASSERT_THROW( itor->timeStep(1),PieceLockError );
+      // Test that above function did not inappropriately change center.
+      CPPUNIT_ASSERT( testCoord==expectedCoord );
     }
   // Special case tests: I and O
 
@@ -236,6 +238,8 @@ void PieceTest::testStep()
     }
   // Test throw when timestepping a locked Piece
   CPPUNIT_ASSERT_THROW( itor->timeStep(1),PieceLockError );
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+
   testPieces.push_back(Piece(O,testDelay,&testField));
   itor=testPieces.end();
   --itor;
@@ -254,7 +258,7 @@ void PieceTest::testStep()
     }
   // Test throw when timestepping a locked Piece
   CPPUNIT_ASSERT_THROW( itor->timeStep(1),PieceLockError );
-
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
   // Test that locked pieces placed blocks into Field properly. Errors in Field may cause this test to fail.
   /*
    *          *12
@@ -348,11 +352,38 @@ void PieceTest::testStep()
   CPPUNIT_ASSERT_THROW( testPieces[0].timeStep(1),PieceLockError );
 
   testPieces.clear();
-  // Test that locking with a larger-than-necessary timeStep does NOT throw
-  // Also, that timeStepping after such a lock DOES throw.
+  // Test that locking with a larger-than-necessary timeStep does NOT throw,
+  // that timeStepping after such a lock DOES throw,
+  // and finally, that throwing a PieceLockError on timeStep does not inappropriately
+  // change the result of getBlocks.
+  testField.resetBlocks();
+  testPieces.clear();
   testPieces.push_back(Piece(O,testDelay,&testField));
+  testPieces.push_back(Piece(I,testDelay,&testField));
   CPPUNIT_ASSERT_NO_THROW( testPieces[0].timeStep(30) );
   CPPUNIT_ASSERT_THROW( testPieces[0].timeStep(2),PieceLockError );
+  CPPUNIT_ASSERT_NO_THROW( testPieces[1].timeStep(30) );
+  CPPUNIT_ASSERT_THROW( testPieces[1].timeStep(2),PieceLockError );
+  /*__________*
+   *          *04
+   *          *03
+   *   IIiI   *02
+   *    Oo    *01 
+   *    OO    *00
+   *0123456789*
+   */
+  // Is O correct?
+  expectedBlocks[0](4,0);
+  expectedBlocks[1](4,1);
+  expectedBlocks[2](5,0);
+  expectedBlocks[3](5,1);
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks, testPieces[0].getBlocks()) );
+  // Is I correct?
+  expectedBlocks[0](3,2);
+  expectedBlocks[1](4,2);
+  expectedBlocks[2](5,2);
+  expectedBlocks[3](6,2);
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks, testPieces[1].getBlocks()) );
 }
 
 void PieceTest::testShift()
