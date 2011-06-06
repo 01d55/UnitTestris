@@ -1855,21 +1855,64 @@ void PieceTest::testDrop()
   std::vector<Piece>::iterator itor;
 
   // Hard drop
- testPieces.reserve(5); 
- testPieces.push_back(Piece(J,testDelay,&testField));
- testPieces.push_back(Piece(L,testDelay,&testField));
- testPieces.push_back(Piece(S,testDelay,&testField));
- testPieces.push_back(Piece(Z,testDelay,&testField));
- testPieces.push_back(Piece(T,testDelay,&testField));
+  testPieces.reserve(5); 
+  testPieces.push_back(Piece(J,testDelay,&testField));
+  testPieces.push_back(Piece(L,testDelay,&testField));
+  testPieces.push_back(Piece(S,testDelay,&testField));
+  testPieces.push_back(Piece(Z,testDelay,&testField));
+  testPieces.push_back(Piece(T,testDelay,&testField));
+  
+  for(itor=testPieces.begin();itor!=testPieces.end();++itor)
+    {
+      itor->handleInput(hard_drop);
+      CPPUNIT_ASSERT_THROW( itor->handleInput(hard_drop),PieceLockError );
+      CPPUNIT_ASSERT( testField.get(4,0) );
+      CPPUNIT_ASSERT( coord(4,0) == itor->getCenter() );
+      testField.resetBlocks();
+    }
+  
+  testPieces.clear();
+  
+  testPieces.push_back(Piece(I,testDelay,&testField));
+  testPieces.push_back(Piece(O,testDelay,&testField));
+  testPieces[0].handleInput(hard_drop);
+  testPieces[1].handleInput(hard_drop);
+  /*
+   *__________*
+   *          *04
+   *          *03
+   *    Oo    *02
+   *    OO    *01 
+   *   IIiI   *00
+   *0123456789*
+   */
 
- for(itor=testPieces.begin();itor!=testPieces.end();++itor)
-   {
-     itor->handleInput(hard_drop);
-     CPPUNIT_ASSERT_THROW( itor->handleInput(hard_drop),PieceLockError );
-     CPPUNIT_ASSERT( testField.get(4,0) );
-     CPPUNIT_ASSERT( originCoord == itor->getCenter() );
-     testField.resetBlocks();
-   }
+  expectedCoord=originI;
+  expectedCoord.y-=20;
+  expectedBlocks.reserve(4);
+  for(i=0;i<3;++i)
+    {
+      expectedBlocks.push_back(coord(i+3,0));
+    }
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+  CPPUNIT_ASSERT_THROW( testPieces[0].handleInput(hard_drop),PieceLockError );
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  expectedCoord=originO;
+  expectedCoord.y-=18;
+  expectedBlocks[0](4,1);
+  expectedBlocks[1](4,2);
+  expectedBlocks[2](5,1);
+  expectedBlocks[3](5,2);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+  CPPUNIT_ASSERT_THROW( testPieces[0].handleInput(hard_drop),PieceLockError );
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
 
   // Soft drop
   CPPUNIT_FAIL( "not implemented" );
