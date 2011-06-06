@@ -41,6 +41,15 @@ public:
   void resetBlocks();
 
 private:
+  int score;
+  bool blocks[10*22];
+
+  inline void checkLines()
+  {
+    for(int j=0;j<FIELD_HEIGHT;++j)
+      checkLine(j);
+  }
+  void checkLine(int);
 };
 
 

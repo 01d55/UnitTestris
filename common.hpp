@@ -7,7 +7,7 @@
 
 #define FIELD_HEIGHT 22
 #define FIELD_WIDTH 10
-
+#define FIELD_SIZE FIELD_HEIGHT*FIELD_WIDTH
 struct coord
 {
   unsigned int x;
