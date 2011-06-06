@@ -4,14 +4,14 @@ Field::Field():score(0) // Empty field
 {
   int i;
   for(i=0;i<FIELD_SIZE;++i)
-    blocks[i]=false;
+    iblocks[i]=false;
 }
 Field::Field(const Field& toCopy):score(toCopy.score)
 {
   int i,j;
-  for(j=0;j<FIELD_HEIGHT;++i)
+  for(j=0;j<FIELD_HEIGHT;++j)
     for (i=0;i<FIELD_WIDTH;++i)
-      blocks[i+FIELD_WIDTH*j]=toCopy.blocks[i+FIELD_WIDTH*j];
+      iblocks[i+FIELD_WIDTH*j]=toCopy.iblocks[i+FIELD_WIDTH*j];
 }
 // Vector holding blocks in the lowest row
 Field::Field(std::vector<bool> row) throw (FieldSizeError):score(0)
@@ -20,15 +20,24 @@ Field::Field(std::vector<bool> row) throw (FieldSizeError):score(0)
   if(row.size()!=FIELD_WIDTH) throw FieldSizeError();
 
   for(i=FIELD_WIDTH;i<FIELD_SIZE;++i)
-    blocks[i]=false;
+    iblocks[i]=false;
   for(i=0;i<FIELD_WIDTH;++i)
-      blocks[i]=row[i];
+      iblocks[i]=row[i];
   checkLine(0);
 }
 // 10x22 vector. Indices are x-y co-ordinates, e.g. blocks[x][y].
 Field::Field(std::vector< std::vector<bool> > blocks) throw (FieldSizeError):score(0)
 {
-  //STUB
+  int i,j;
+  // Check size
+  if(blocks.size()!=FIELD_WIDTH) throw FieldSizeError();
+  for(i=0;i<FIELD_WIDTH;++i)
+    if(blocks[i].size()!=FIELD_HEIGHT) throw FieldSizeError();
+
+  for(j=0;j<FIELD_HEIGHT;++j)
+    for (i=0;i<FIELD_WIDTH;++i)
+      iblocks[i+FIELD_WIDTH*j]=blocks[i][j];
+  checkLines();
 }
 
 Field::~Field()
@@ -42,7 +51,7 @@ bool Field::get(int x, int y) const throw (FieldSizeError)
   // Check range
   if(0>x||0>y||x>=FIELD_WIDTH||y>=FIELD_HEIGHT) throw FieldSizeError();
 
-  return blocks[x+y*FIELD_WIDTH];
+  return iblocks[x+y*FIELD_WIDTH];
 }
 // Insert a block at the given co-ordinate. Inserting a block on top of an 
 // existing block is an error.
@@ -74,16 +83,17 @@ void Field::checkLine(int y)
 
   for(i=0;i<FIELD_WIDTH;++i)
     {
-      if(!blocks[i+FIELD_WIDTH*y])
+      if(!iblocks[i+FIELD_WIDTH*y])
 	return;
     }
   // Line is full
+  ++score;
   for(i=FIELD_WIDTH*y;i<FIELD_WIDTH*(FIELD_HEIGHT-1);++i)
     {
-      blocks[i]=blocks[i+FIELD_WIDTH];
+      iblocks[i]=iblocks[i+FIELD_WIDTH];
     }
   for(/*where we left off*/;i<FIELD_SIZE;++i)
     {
-      blocks[i]=false;
+      iblocks[i]=false;
     }
 }
