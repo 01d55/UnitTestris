@@ -1843,10 +1843,34 @@ void PieceTest::testRotate()
   CPPUNIT_ASSERT( testCoord==expectedCoord );
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
 
-  CPPUNIT_FAIL( "not implemented" );
 }
 
 void PieceTest::testDrop()
 {
+  int testDelay = 0, i=0;
+  coord testCoord(-1,-1), expectedCoord(-1,-1);
+  Field testField;
+  std::vector<Piece> testPieces;
+  std::vector<coord> expectedBlocks;
+  std::vector<Piece>::iterator itor;
+
+  // Hard drop
+ testPieces.reserve(5); 
+ testPieces.push_back(Piece(J,testDelay,&testField));
+ testPieces.push_back(Piece(L,testDelay,&testField));
+ testPieces.push_back(Piece(S,testDelay,&testField));
+ testPieces.push_back(Piece(Z,testDelay,&testField));
+ testPieces.push_back(Piece(T,testDelay,&testField));
+
+ for(itor=testPieces.begin();itor!=testPieces.end();++itor)
+   {
+     itor->handleInput(hard_drop);
+     CPPUNIT_ASSERT_THROW( itor->handleInput(hard_drop),PieceLockError );
+     CPPUNIT_ASSERT( testField.get(4,0) );
+     CPPUNIT_ASSERT( originCoord == itor->getCenter() );
+     testField.resetBlocks();
+   }
+
+  // Soft drop
   CPPUNIT_FAIL( "not implemented" );
 }
