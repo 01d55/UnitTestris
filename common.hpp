@@ -42,7 +42,6 @@ enum PieceInput
     shift_left,
     rotate_cw,
     rotate_ccw,
-    soft_drop,
     hard_drop
   };
 

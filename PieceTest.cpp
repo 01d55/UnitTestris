@@ -1914,6 +1914,4 @@ void PieceTest::testDrop()
   CPPUNIT_ASSERT( testCoord==expectedCoord );
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
 
-  // Soft drop
-  CPPUNIT_FAIL( "not implemented" );
 }
