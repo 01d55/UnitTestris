@@ -352,6 +352,13 @@ void FieldTest::testSet()
     }
 
   CPPUNIT_ASSERT_THROW( (test_field.set(5,2) ), DuplicateBlockError );
+  // Repeat our most recent battery of assertions, to check that all of these errors haven't changed anything.
+  CPPUNIT_ASSERT( !(test_field.get(0,20) ) );
+  CPPUNIT_ASSERT( !(test_field.get(FIELD_WIDTH-1,20) ) );
+  CPPUNIT_ASSERT( test_field.get(0,19) );
+  CPPUNIT_ASSERT( test_field.get(FIELD_WIDTH-1,19) );
+  CPPUNIT_ASSERT( test_field.get(5,2) );
+  CPPUNIT_ASSERT( !(test_field.get(5,1) ) );  
   // Test reset
   test_field.resetBlocks();
   for(j=0;j< FIELD_HEIGHT ;++j)
