@@ -311,13 +311,13 @@ void FieldTest::testSet()
   CPPUNIT_ASSERT(test_field.get(FIELD_WIDTH-1,FIELD_HEIGHT-1) );
 
   // Check line removal; check moving lines above downward.
-  for(i=1;i<FIELD_HEIGHT-1;++i)
+  for(i=1;i<FIELD_WIDTH-1;++i)
     {
       test_field.set(i,0);
     }
-  for(i=0;i<FIELD_HEIGHT;++i)
+  for(i=0;i<FIELD_WIDTH;++i)
     {
-      CPPUNIT_ASSERT( !(test_field.get(i,0) ) );
+      CPPUNIT_ASSERT_MESSAGE(to_string(i), !(test_field.get(i,0) ) );
     }
   CPPUNIT_ASSERT( !(test_field.get(0,FIELD_HEIGHT-1) ) );
   CPPUNIT_ASSERT( !(test_field.get(FIELD_WIDTH-1,FIELD_HEIGHT-1) ) );
@@ -326,7 +326,7 @@ void FieldTest::testSet()
 
   // Check that line removal does not disturb lower lines.
   test_field.set(5,2);
-  for(i=0;i<FIELD_HEIGHT;++i)
+  for(i=0;i<FIELD_WIDTH;++i)
     {
       test_field.set(i,3);
     }
@@ -378,12 +378,12 @@ void FieldTest::testFieldScore()
   // Score should begin at zero.
   CPPUNIT_ASSERT( (0==test_field.readScore() ) );
   // For now assume the simplest scoring system - 1 line clear is 1 point.
-  for(i=0;i<FIELD_HEIGHT;++i)
+  for(i=0;i<FIELD_WIDTH;++i)
     {
       test_field.set(i,0);
     }
   CPPUNIT_ASSERT( (1==test_field.readScore() ) );
-  for(i=0;i<FIELD_HEIGHT;++i)
+  for(i=0;i<FIELD_WIDTH;++i)
     {
       test_field.set(i,6);
     }
@@ -392,7 +392,7 @@ void FieldTest::testFieldScore()
   // Test reset, and that increasing score after a reset works correctly.
   test_field.resetScore();
   CPPUNIT_ASSERT( (0==test_field.readScore() ) );
-  for(i=0;i<FIELD_HEIGHT;++i)
+  for(i=0;i<FIELD_WIDTH;++i)
     {
       test_field.set(i,19);
     }
