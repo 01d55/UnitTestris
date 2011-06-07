@@ -42,11 +42,11 @@ public:
 
 private:
   int score;
-  bool blocks[10*22];
+  bool iblocks[10*22];
 
   inline void checkLines()
   {
-    for(int j=0;j<FIELD_HEIGHT;++j)
+    for(int j=FIELD_HEIGHT-1;j>=0;--j)
       checkLine(j);
   }
   void checkLine(int);

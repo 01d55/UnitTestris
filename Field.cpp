@@ -55,26 +55,38 @@ bool Field::get(int x, int y) const throw (FieldSizeError)
 }
 // Insert a block at the given co-ordinate. Inserting a block on top of an 
 // existing block is an error.
-void Field::set(int, int) throw (FieldSizeError, DuplicateBlockError)
+void Field::set(int x, int y) throw (FieldSizeError, DuplicateBlockError)
 {
-  //STUB
+  // Check range
+  if(0>x||0>y||x>=FIELD_WIDTH||y>=FIELD_HEIGHT)
+    {
+      throw FieldSizeError();
+    }
+  // Check duplicate
+  if(iblocks[x+y*FIELD_WIDTH])
+    {
+      throw DuplicateBlockError();
+    }
+  iblocks[x+y*FIELD_WIDTH]=true;
+  checkLine(y);
 }
 
 // Find the current score
 int Field::readScore() const
 {
-  //STUB
-  return -1;
+  return score;
 }
 // Set the score to 0
 void Field::resetScore()
 {
-  //STUB
+  score=0;
 }
 // Set all blocks to false.
 void Field::resetBlocks()
 {
-  //STUB
+  int i;
+  for(i=0;i<FIELD_SIZE;++i)
+    iblocks[i]=false;
 }
 
 void Field::checkLine(int y)
