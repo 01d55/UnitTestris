@@ -5,6 +5,8 @@
 #ifndef COMMON_HPP
 #define COMMON_HPP
 
+#include <sstream>
+
 #define FIELD_HEIGHT 22
 #define FIELD_WIDTH 10
 #define FIELD_SIZE FIELD_HEIGHT*FIELD_WIDTH
@@ -69,5 +71,13 @@ public:
   }
 };
 
+// Why is this not in the STL?
+template <class T>
+inline std::string to_string (const T& t)
+{
+std::stringstream ss;
+ss << t;
+return ss.str();
+}
 
 #endif // COMMON_HPP
