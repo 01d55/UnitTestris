@@ -12,19 +12,19 @@ static const boost::array <coord,4> relative_O = {
   { coord(-1,-1),coord(-1,0),coord(0,-1),coord(0,0) }
 };
 static const boost::array <coord,4> relative_L = {
-  { coord(-2,0),coord(-1,0),coord(0,0),coord(1,0) }
+  { coord(-1,0),coord(-0,0),coord(1,0),coord(1,1) }
 };
 static const boost::array <coord,4> relative_J = {
-  { coord(-2,0),coord(-1,0),coord(0,0),coord(1,0) }
+  { coord(-1,0),coord(-1,1),coord(0,0),coord(1,0) }
 };
 static const boost::array <coord,4> relative_S = {
-  { coord(-2,0),coord(-1,0),coord(0,0),coord(1,0) }
+  { coord(-1,0),coord(0,1),coord(0,0),coord(1,1) }
 };
 static const boost::array <coord,4> relative_Z = {
-  { coord(-2,0),coord(-1,0),coord(0,0),coord(1,0) }
+  { coord(-1,1),coord(0,1),coord(0,0),coord(1,0) }
 };
 static const boost::array <coord,4> relative_T = {
-  { coord(-2,0),coord(-1,0),coord(0,0),coord(1,0) }
+  { coord(-1,0),coord(0,1),coord(0,0),coord(1,0) }
 };
 
 
@@ -80,6 +80,10 @@ coord Piece::getCenter() const
 }
 boost::array<coord,4> Piece::getBlocks() const
 {
-  boost::array<coord,4> ret;
+  boost::array<coord,4> ret=relative_blocks;
+  for(int i=0;i<4;++i)
+    {
+      ret[i]+=center;
+    }
   return ret;
 }

@@ -32,6 +32,33 @@ struct coord
     y=iY;
     return *this;
   }
+  inline const coord& operator=(const coord&right)
+  {
+    x=right.x;
+    y=right.y;
+    return *this;
+  }
+  inline const coord& operator+=(const coord&right)
+  {
+    x+=right.x;
+    y+=right.y;
+    return *this;
+  }
+  inline const coord& operator-=(const coord&right)
+  {
+    x-=right.x;
+    y-=right.y;
+    return *this;
+  }
+  inline coord operator+(const coord&right) const
+  {
+    return coord(x+right.x,y+right.y);
+  }
+  inline coord operator-(const coord&right) const
+  {
+    return coord(x-right.x,y-right.y);
+  }
+
 };
 
 enum PieceType
