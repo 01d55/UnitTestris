@@ -280,23 +280,23 @@ void PieceTest::testStep()
    */
   for(i=0;i<FIELD_WIDTH;++i)
     {
-      CPPUNIT_ASSERT( (2<i<7) ? (testField.get(i,0)) : (!testField.get(i,9)) );
+      CPPUNIT_ASSERT( (2<i&&i<7) ? (testField.get(i,9)) : (!testField.get(i,9)) );
 
-      CPPUNIT_ASSERT( (2<i<6) ? (testField.get(i,1)) : (!testField.get(i,0)) );
-      CPPUNIT_ASSERT( (2<i<6) ? (testField.get(i,3)) : (!testField.get(i,2)) );
-      CPPUNIT_ASSERT( (2<i<6) ? (testField.get(i,4)) : (!testField.get(i,3)) );
-      CPPUNIT_ASSERT( (2<i<6) ? (testField.get(i,8)) : (!testField.get(i,7)) );
+      CPPUNIT_ASSERT( (2<i&&i<6) ? (testField.get(i,0)) : (!testField.get(i,0)) );
+      CPPUNIT_ASSERT( (2<i&&i<6) ? (testField.get(i,2)) : (!testField.get(i,2)) );
+      CPPUNIT_ASSERT( (2<i&&i<6) ? (testField.get(i,3)) : (!testField.get(i,3)) );
+      CPPUNIT_ASSERT( (2<i&&i<6) ? (testField.get(i,7)) : (!testField.get(i,7)) );
 
-      CPPUNIT_ASSERT( (i==3) ? (testField.get(i,2)) : (!testField.get(i,1)) );
+      CPPUNIT_ASSERT( (i==3) ? (testField.get(i,1)) : (!testField.get(i,1)) );
 
-      CPPUNIT_ASSERT( (3<i<6) ? (testField.get(i,5)) : (!testField.get(i,4)) );
-      CPPUNIT_ASSERT( (3<i<6) ? (testField.get(i,6)) : (!testField.get(i,5)) );
-      CPPUNIT_ASSERT( (3<i<6) ? (testField.get(i,6)) : (!testField.get(i,10)) );
-      CPPUNIT_ASSERT( (3<i<6) ? (testField.get(i,6)) : (!testField.get(i,11)) );
+      CPPUNIT_ASSERT( (3<i&&i<6) ? (testField.get(i,4)) : (!testField.get(i,4)) );
+      CPPUNIT_ASSERT( (3<i&&i<6) ? (testField.get(i,5)) : (!testField.get(i,5)) );
+      CPPUNIT_ASSERT( (3<i&&i<6) ? (testField.get(i,10)) : (!testField.get(i,10)) );
+      CPPUNIT_ASSERT( (3<i&&i<6) ? (testField.get(i,11)) : (!testField.get(i,11)) );
 
-      CPPUNIT_ASSERT( (2<i<5) ? (testField.get(i,7)) : (!testField.get(i,6)) );
+      CPPUNIT_ASSERT( (2<i&&i<5) ? (testField.get(i,6)) : (!testField.get(i,6)) );
 
-      CPPUNIT_ASSERT( (i==4) ? (testField.get(i,9)) : (!testField.get(i,8)) );
+      CPPUNIT_ASSERT( (i==4) ? (testField.get(i,8)) : (!testField.get(i,8)) );
     }
 
   // Test that Pieces accurately report block positions both before and after locking.
