@@ -26,7 +26,7 @@ static const coord originO(5,21);
 
  *__________*
  *          *21
- *   LLcL   *20
+ *   IIcI   *20
  *          *19 
  *          *18
  *0123456789*
