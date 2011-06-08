@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <vector>
+#include <boost/array.hpp>
 #include "common.hpp"
 #include "Field.hpp"
 
@@ -35,15 +36,21 @@
 class Piece
 {
 public:
-  Piece(PieceType t, const unsigned int d, Field *f);
+  Piece(PieceType t, unsigned int d, Field *f);
 
   bool timeStep(unsigned int g) throw (PieceLockError);
   bool handleInput(PieceInput in) throw (PieceLockError);
 
   coord getCenter() const;
-  std::vector<coord> getBlocks() const;
+  boost::array<coord,4> getBlocks() const;
 
 private:
+  PieceType type;
+  unsigned int lockDelay;
+  Field *field;
+
+  coord center;
+  boost::array <coord,4> relative_blocks;
 };
 
 #endif // PIECE_HPP

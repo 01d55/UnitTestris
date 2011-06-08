@@ -5,9 +5,9 @@
 CPPUNIT_TEST_SUITE_REGISTRATION( PieceTest );
 
 
-const coord originCoord(4,20);
-const coord originI(5,20);
-const coord originO(5,21);
+static const coord originCoord(4,20);
+static const coord originI(5,20);
+static const coord originO(5,21);
 
 /*
  *__________*
@@ -40,13 +40,12 @@ inline bool coordLess(coord a, coord b)
   return a.y<b.y;
 }
 
-inline bool testSameCoords(std::vector<coord>presorted,std::vector<coord>unsorted)
+inline bool testSameCoords(boost::array<coord,4>presorted,boost::array<coord,4>unsorted)
 {
-  if ( presorted.size()!=unsorted.size() ) return false;
   std::list<coord> sorted(unsorted.begin(),unsorted.end());
   sorted.sort(coordLess);
   std::list<coord>::iterator itor=sorted.begin();
-  std::vector<coord>::iterator jtor=presorted.begin();
+  boost::array<coord,4>::iterator jtor=presorted.begin();
   while(jtor!=presorted.end())
     {
       if( *jtor!=*itor ) return false;
@@ -69,16 +68,16 @@ void PieceTest::testConstructor()
   unsigned int testDelay = 1;
   Field testField;
   coord testCoord(-1,-1);
-  std::vector<coord> expectedBlocks;
+  boost::array<coord,4> expectedBlocks;
 
 
   Piece *test_piece=NULL;
-  expectedBlocks.reserve(4);
+  
   // I block
-  expectedBlocks.push_back(coord(3,20));
-  expectedBlocks.push_back(coord(4,20));
-  expectedBlocks.push_back(coord(5,20));
-  expectedBlocks.push_back(coord(6,20));
+  expectedBlocks[0](3,20);
+  expectedBlocks[1](4,20);
+  expectedBlocks[2](5,20);
+  expectedBlocks[3](6,20);
 
   test_piece=new Piece(I,testDelay,&testField);
 
@@ -181,7 +180,7 @@ void PieceTest::testStep()
   coord testCoord(-1,-1), expectedCoord(-1,-1);
   Field testField;
   std::vector<Piece> testPieces;
-  std::vector<coord> expectedBlocks;
+  boost::array<coord,4> expectedBlocks;
   std::vector<Piece>::iterator itor;
 
   testPieces.reserve(7); 
@@ -191,11 +190,11 @@ void PieceTest::testStep()
   testPieces.push_back(Piece(Z,testDelay,&testField));
   testPieces.push_back(Piece(T,testDelay,&testField));
 
-  expectedBlocks.reserve(4);
-  expectedBlocks.push_back(coord(3,0));
-  expectedBlocks.push_back(coord(4,0));
-  expectedBlocks.push_back(coord(5,0));
-  expectedBlocks.push_back(coord(5,1));
+  
+  expectedBlocks[0](3,0);
+  expectedBlocks[1](4,0);
+  expectedBlocks[2](5,0);
+  expectedBlocks[3](5,1);
 
   // Test proper center movement & locking
   for(itor=testPieces.begin();itor!=testPieces.end();++itor)
@@ -392,7 +391,7 @@ void PieceTest::testShift()
   coord testCoord(-1,-1), expectedCoord(-1,-1);
   Field testField;
   std::vector<Piece> testPieces;
-  std::vector<coord> expectedBlocks;
+  boost::array<coord,4> expectedBlocks;
 
   // I block
 
@@ -404,11 +403,11 @@ void PieceTest::testShift()
   expectedCoord=originI;
   ++expectedCoord.x;
 
-  expectedBlocks.reserve(4);
-  expectedBlocks.push_back(coord(4,20));
-  expectedBlocks.push_back(coord(5,20));
-  expectedBlocks.push_back(coord(6,20));
-  expectedBlocks.push_back(coord(7,20));
+  
+  expectedBlocks[0](4,20);
+  expectedBlocks[1](5,20);
+  expectedBlocks[2](6,20);
+  expectedBlocks[3](7,20);
   
   testCoord=testPieces[0].getCenter();
 
@@ -633,9 +632,9 @@ void PieceTest::testRotate()
   coord testCoord(-1,-1), expectedCoord(-1,-1);
   Field testField;
   std::vector<Piece> testPieces;
-  std::vector<coord> expectedBlocks;
+  boost::array<coord,4> expectedBlocks;
 
-  expectedBlocks.reserve(4);
+  
   // I block
   testPieces.push_back(Piece(I,testDelay,&testField));
 
@@ -675,10 +674,10 @@ void PieceTest::testRotate()
   // 1
   testPieces[0].handleInput(rotate_ccw);
   testCoord=testPieces[0].getCenter();
-  expectedBlocks.push_back(coord(4,18));
-  expectedBlocks.push_back(coord(4,19));
-  expectedBlocks.push_back(coord(4,20));
-  expectedBlocks.push_back(coord(4,21));
+  expectedBlocks[0](4,18);
+  expectedBlocks[1](4,19);
+  expectedBlocks[2](4,20);
+  expectedBlocks[3](4,21);
 
   CPPUNIT_ASSERT( testCoord==expectedCoord );
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
@@ -873,10 +872,10 @@ void PieceTest::testRotate()
   // 1
   testPieces[0].handleInput(rotate_ccw);
   testCoord=testPieces[0].getCenter();
-  expectedBlocks.push_back(coord(3,21));
-  expectedBlocks.push_back(coord(4,19));
-  expectedBlocks.push_back(coord(4,20));
-  expectedBlocks.push_back(coord(4,21));
+  expectedBlocks[0](3,21);
+  expectedBlocks[1](4,19);
+  expectedBlocks[2](4,20);
+  expectedBlocks[3](4,21);
 
   CPPUNIT_ASSERT( testCoord==expectedCoord );
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
@@ -1071,10 +1070,10 @@ void PieceTest::testRotate()
   // 1
   testPieces[0].handleInput(rotate_ccw);
   testCoord=testPieces[0].getCenter();
-  expectedBlocks.push_back(coord(3,19));
-  expectedBlocks.push_back(coord(4,19));
-  expectedBlocks.push_back(coord(4,20));
-  expectedBlocks.push_back(coord(4,21));
+  expectedBlocks[0](3,19);
+  expectedBlocks[1](4,19);
+  expectedBlocks[2](4,20);
+  expectedBlocks[3](4,21);
 
   CPPUNIT_ASSERT( testCoord==expectedCoord );
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
@@ -1269,10 +1268,10 @@ void PieceTest::testRotate()
   // 1
   testPieces[0].handleInput(rotate_ccw);
   testCoord=testPieces[0].getCenter();
-  expectedBlocks.push_back(coord(3,20));
-  expectedBlocks.push_back(coord(3,21));
-  expectedBlocks.push_back(coord(4,19));
-  expectedBlocks.push_back(coord(4,20));
+  expectedBlocks[0](3,20);
+  expectedBlocks[1](3,21);
+  expectedBlocks[2](4,19);
+  expectedBlocks[3](4,20);
 
   CPPUNIT_ASSERT( testCoord==expectedCoord );
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
@@ -1467,10 +1466,10 @@ void PieceTest::testRotate()
   // 1
   testPieces[0].handleInput(rotate_ccw);
   testCoord=testPieces[0].getCenter();
-  expectedBlocks.push_back(coord(3,19));
-  expectedBlocks.push_back(coord(3,20));
-  expectedBlocks.push_back(coord(4,20));
-  expectedBlocks.push_back(coord(4,21));
+  expectedBlocks[0](3,19);
+  expectedBlocks[1](3,20);
+  expectedBlocks[2](4,20);
+  expectedBlocks[3](4,21);
 
   CPPUNIT_ASSERT( testCoord==expectedCoord );
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
@@ -1665,10 +1664,10 @@ void PieceTest::testRotate()
   // 1
   testPieces[0].handleInput(rotate_ccw);
   testCoord=testPieces[0].getCenter();
-  expectedBlocks.push_back(coord(3,20));
-  expectedBlocks.push_back(coord(4,19));
-  expectedBlocks.push_back(coord(4,20));
-  expectedBlocks.push_back(coord(4,21));
+  expectedBlocks[0](3,20);
+  expectedBlocks[1](4,19);
+  expectedBlocks[2](4,20);
+  expectedBlocks[3](4,21);
 
   CPPUNIT_ASSERT( testCoord==expectedCoord );
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
@@ -1882,7 +1881,7 @@ void PieceTest::testDrop()
   coord testCoord(-1,-1), expectedCoord(-1,-1);
   Field testField;
   std::vector<Piece> testPieces;
-  std::vector<coord> expectedBlocks;
+  boost::array<coord,4> expectedBlocks;
   std::vector<Piece>::iterator itor;
 
   // Hard drop
@@ -1920,10 +1919,10 @@ void PieceTest::testDrop()
 
   expectedCoord=originI;
   expectedCoord.y-=20;
-  expectedBlocks.reserve(4);
+  
   for(i=0;i<3;++i)
     {
-      expectedBlocks.push_back(coord(i+3,0));
+      expectedBlocks[i](i+3,0);
     }
 
   CPPUNIT_ASSERT( testCoord==expectedCoord );
