@@ -12,8 +12,8 @@
 #define FIELD_SIZE FIELD_HEIGHT*FIELD_WIDTH
 struct coord
 {
-  unsigned int x;
-  unsigned int y;
+  int x;
+  int y;
 
   coord():x(0),y(0) {}
   coord (int iX, int iY):x(iX),y(iY)

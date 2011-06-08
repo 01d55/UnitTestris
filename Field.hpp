@@ -29,12 +29,16 @@ public:
 
   // Return true if there is a block at those co-ordinates
   bool get(int x, int y) const throw (FieldSizeError);
+  inline bool get(const coord&c) const throw(FieldSizeError)
+  {return get(c.x,c.y);}
   // Find the current score
   int readScore() const;
 
   // Insert a block at the given co-ordinate. Inserting a block on top of an 
   // existing block is an error.
   void set(int x, int y) throw (FieldSizeError, DuplicateBlockError);
+  inline void set(const coord&c) throw(FieldSizeError,DuplicateBlockError)
+  {set(c.x,c.y);}
   // Set the score to 0
   void resetScore();
   // Set all blocks to false.
