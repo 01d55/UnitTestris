@@ -201,7 +201,7 @@ void PieceTest::testStep()
     {
       expectedCoord=originCoord;
       i=0;
-      while(itor->timeStep(1))
+      while(!itor->timeStep(1))
 	{
 	  // If time step never returns false (i.e. the block falls forever)
 	  // we need to detect and fail.
@@ -215,6 +215,7 @@ void PieceTest::testStep()
       // Test throw when timestepping a locked Piece
       CPPUNIT_ASSERT_THROW( itor->timeStep(1),PieceLockError );
       // Test that above function did not inappropriately change center.
+      testCoord=itor->getCenter();
       CPPUNIT_ASSERT( testCoord==expectedCoord );
     }
   // Special case tests: I and O
@@ -224,7 +225,7 @@ void PieceTest::testStep()
   --itor;
   expectedCoord=originI;
   i=0;
-  while(itor->timeStep(1))
+  while(!itor->timeStep(1))
     {
       // If time step never returns false (i.e. the block falls forever)
       // we need to detect and fail.
@@ -237,6 +238,7 @@ void PieceTest::testStep()
     }
   // Test throw when timestepping a locked Piece
   CPPUNIT_ASSERT_THROW( itor->timeStep(1),PieceLockError );
+  testCoord=itor->getCenter();
   CPPUNIT_ASSERT( testCoord==expectedCoord );
 
   testPieces.push_back(Piece(O,testDelay,&testField));
@@ -244,7 +246,7 @@ void PieceTest::testStep()
   --itor;
   expectedCoord=originO;
   i=0;
-  while(itor->timeStep(1))
+  while(!itor->timeStep(1))
     {
       // If time step never returns false (i.e. the block falls forever)
       // we need to detect and fail.
@@ -257,6 +259,7 @@ void PieceTest::testStep()
     }
   // Test throw when timestepping a locked Piece
   CPPUNIT_ASSERT_THROW( itor->timeStep(1),PieceLockError );
+  testCoord=itor->getCenter();
   CPPUNIT_ASSERT( testCoord==expectedCoord );
   // Test that locked pieces placed blocks into Field properly. Errors in Field may cause this test to fail.
   /*
