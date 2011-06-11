@@ -2366,7 +2366,7 @@ $as_echo "no" >&6; }
 fi
 
 
-  cppunit_version_min=1.9.6
+  cppunit_version_min=1.12.1
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Cppunit - version >= $cppunit_version_min" >&5
 $as_echo_n "checking for Cppunit - version >= $cppunit_version_min... " >&6; }
