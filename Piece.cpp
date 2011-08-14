@@ -29,7 +29,7 @@ static const boost::array <coord,4> relative_T = {
 
 
 Piece::Piece(PieceType t, unsigned int d, Field *f):
-  type(t),lockDelay(d),field(f),center(4,20)
+  type(t),baseDelay(d),lockDelay(d),field(f),center(4,20),lock(false)
 {
 
   switch (t)
@@ -65,13 +65,56 @@ Piece::Piece(PieceType t, unsigned int d, Field *f):
 bool Piece::timeStep(unsigned int g) throw (PieceLockError)
 {
   // STUB
-  return false;
+  if(lock)
+    {throw PieceLockError();}
+
+  for(int i=g;i>0;--i)
+    {
+      if(can_drop())
+	{
+	  --center.y;
+	}
+      else
+	{
+	  if(0==lockDelay)
+	    {
+	      invoke_lock();
+	    }
+	  else
+	    {
+	      --lockDelay;
+	    }
+	  break;
+	}
+    }
+  return lock;
 }
 
 bool Piece::handleInput(PieceInput in) throw (PieceLockError)
 {
   // STUB
-  return false;
+  if(lock)
+    {
+      throw PieceLockError();
+    }
+
+  switch (in)
+    {
+    case shift_right:
+      break;
+    case shift_left:
+      break;
+    case rotate_cw:
+      break;
+    case rotate_ccw:
+      break;
+    case hard_drop:
+      timeStep(22);
+      break;
+    default:
+      ;
+    }
+  return lock;
 }
 
 coord Piece::getCenter() const
@@ -86,4 +129,60 @@ boost::array<coord,4> Piece::getBlocks() const
       ret[i]+=center;
     }
   return ret;
+}
+
+// Private functions
+/* Return true if the Piece can shift down 1.
+ */
+bool Piece::can_drop() const
+{
+  boost::array<coord,4>blocks=getBlocks();
+  
+  for(int i=0;i<4;++i)
+    {
+      --blocks[i].y;
+      try
+	{
+	  if( field->get(blocks[i]) ) 
+	    {
+	      return false;
+	    }
+	}
+      catch(FieldSizeError)
+	{
+	  return false;
+	}
+    }
+  return true;
+}
+/* Return true if every co-ord in blocks is in the field and
+   is not filled.
+*/
+bool Piece::can_place(boost::array<coord,4> blocks) const
+{
+  for(int i=0;i<4;++i)
+    {
+      try
+	{
+	  if(field->get(blocks[i]))
+	    {
+	      return false;
+	    }
+	}
+      catch(FieldSizeError)
+	{
+	  return false;
+	}
+    }
+  return true;
+}
+// Put blocks in the field and lock self.
+void Piece::invoke_lock()
+{
+  boost::array<coord,4>blocks=getBlocks();
+  for(int i=0;i<4;++i)
+    {
+      field->set(blocks[i]);
+    }
+  lock=true;
 }

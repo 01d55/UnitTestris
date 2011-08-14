@@ -190,12 +190,6 @@ void PieceTest::testStep()
   testPieces.push_back(Piece(Z,testDelay,&testField));
   testPieces.push_back(Piece(T,testDelay,&testField));
 
-  
-  expectedBlocks[0](3,0);
-  expectedBlocks[1](4,0);
-  expectedBlocks[2](5,0);
-  expectedBlocks[3](5,1);
-
   // Test proper center movement & locking
   for(itor=testPieces.begin();itor!=testPieces.end();++itor)
     {
@@ -227,7 +221,7 @@ void PieceTest::testStep()
   i=0;
   while(!itor->timeStep(1))
     {
-      // If time step never returns false (i.e. the block falls forever)
+      // If time step never returns false (i.e. the piece falls forever)
       // we need to detect and fail.
       ++i;
       CPPUNIT_ASSERT(i<failSafe);
@@ -301,7 +295,10 @@ void PieceTest::testStep()
 
   // Test that Pieces accurately report block positions both before and after locking.
   // After lock:
-
+  expectedBlocks[0](3,0);
+  expectedBlocks[1](3,1);
+  expectedBlocks[2](4,0);
+  expectedBlocks[3](5,0);
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks, testPieces[0].getBlocks()) );
   
   // Before lock:

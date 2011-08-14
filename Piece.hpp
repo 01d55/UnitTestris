@@ -46,11 +46,16 @@ public:
 
 private:
   PieceType type;
-  unsigned int lockDelay;
+  unsigned int baseDelay,lockDelay;
   Field *field;
 
   coord center;
+  bool lock;
   boost::array <coord,4> relative_blocks;
+
+  bool can_drop() const;
+  bool can_place(boost::array<coord,4>) const;
+  void invoke_lock();
 };
 
 #endif // PIECE_HPP
