@@ -2,6 +2,8 @@
 *.o
 *.Po
 UnitTestris
+FieldCheck
+PieceCheck
 #Automake products
 autom4te.cache
 Makefile

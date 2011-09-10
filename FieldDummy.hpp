@@ -1,5 +1,8 @@
 #ifndef FIELDDUMMY_HPP
 #define FIELDDUMMY_HPP
+#include <set>
+#include <map>
+
 namespace FieldDummy
 {
   bool compare_get_arg(std::set<coord> args);

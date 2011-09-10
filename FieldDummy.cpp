@@ -1,6 +1,6 @@
-#include Field.hpp
-#include FieldDummy.hpp
-
+#include "Field.hpp"
+#include "FieldDummy.hpp"
+#include <deque>
 namespace FieldDummy
 {
   // Control variables for dummy methods
@@ -47,7 +47,7 @@ bool Field::get(int x, int y) const throw (FieldSizeError)
       throw FieldSizeError();
     }
   coord arg(x,y);
-  map<coord,bool>::iterator it;
+  std::map<coord,bool>::iterator it;
 
   FieldDummy::get_args.push_back(arg);
   it=FieldDummy::get_results.find(arg);
@@ -78,7 +78,7 @@ void Field::resetScore()
 // Set all blocks to false.
 void Field::resetBlocks()
 {
-  ++resetBlocks_count;
+  ++FieldDummy::resetBlocks_count;
 }
 
 // Private method - nothing to spy for.
