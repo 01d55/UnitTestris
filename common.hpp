@@ -58,7 +58,14 @@ struct coord
   {
     return coord(x-right.x,y-right.y);
   }
-
+  // Arbitrary, but useful for stl.
+  inline bool operator<(const coord&right) const
+  {
+    if(this->x<right.x) return true;
+    else if (this->x>right.x) return false;
+    // a.x==b.x
+    return this->y<right.y;;
+  }
 };
 
 enum PieceType
