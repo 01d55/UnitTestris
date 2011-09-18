@@ -86,7 +86,7 @@ void Field::checkLine(int) {}
 
 namespace FieldDummy
 {
-  bool compare_get_arg(std::set<coord> args)
+  bool compare_get_arg(const std::set<coord> &args)
   {
     int i;
     std::set<coord> sample;
@@ -100,7 +100,7 @@ namespace FieldDummy
     return args==sample;
   }
 
-  bool compare_set_arg(std::set<coord> args)
+  bool compare_set_arg(const std::set<coord> &args)
   {
     int i;
     std::set<coord> sample;
@@ -127,7 +127,7 @@ namespace FieldDummy
     return resetBlocks_count;
   }
 
-  void populate_get_results(coord arg, bool result)
+  void populate_get_results(const coord &arg, bool result)
   {
     get_results[arg]=result;
   }
@@ -143,5 +143,26 @@ namespace FieldDummy
   void reset_resetBlocks()
   {
     resetBlocks_count=0;
+  }
+  void reset_get_results()
+  {
+    get_results.clear();
+  }
+  void reset_get_args()
+  {
+    get_args.clear();
+  }
+  void reset_set_args()
+  {
+    set_args.clear();
+  }
+  void reset_all()
+  {
+    reset_readScore();
+    reset_resetScore();
+    reset_resetBlocks();
+    get_results.clear();
+    get_args.clear();
+    set_args.clear();
   }
 }
