@@ -22,7 +22,7 @@
    to lock will return true; otherwise these functions return false. Attempting
    to timeStep or move on a locked piece is an error.
 
-   The piece tracks it's location in the field through its axis of rotation as 
+   The piece tracks its location in the field through its axis of rotation as 
    defined by SRS. The I and O blocks rotate not around one of their 
    constituent blocks, but a point between block spaces. In the case of the I 
    block, it is possible for the point of rotation to be placed against the 

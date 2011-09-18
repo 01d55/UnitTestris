@@ -73,18 +73,30 @@ bool Piece::timeStep(unsigned int g) throw (PieceLockError)
       if(can_drop())
 	{
 	  --center.y;
+	  if(!can_drop())
+	    {
+	      if(0==lockDelay)
+		{
+		  invoke_lock();
+		  break;
+		}
+	      else
+		{
+		  --lockDelay;
+		}
+	    }
 	}
       else
 	{
 	  if(0==lockDelay)
 	    {
 	      invoke_lock();
+	      break;
 	    }
 	  else
 	    {
 	      --lockDelay;
 	    }
-	  break;
 	}
     }
   return lock;
@@ -109,7 +121,7 @@ bool Piece::handleInput(PieceInput in) throw (PieceLockError)
     case rotate_ccw:
       break;
     case hard_drop:
-      timeStep(22);
+      timeStep(22+lockDelay);
       break;
     default:
       ;
