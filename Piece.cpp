@@ -113,8 +113,16 @@ bool Piece::handleInput(PieceInput in) throw (PieceLockError)
   switch (in)
     {
     case shift_right:
+      if( can_shift(coord(1,0)) )
+	{
+	  ++center.x;
+	}
       break;
     case shift_left:
+      if( can_shift(coord(-1,0)) )
+	{
+	  --center.x;
+	}
       break;
     case rotate_cw:
       break;
@@ -144,15 +152,16 @@ boost::array<coord,4> Piece::getBlocks() const
 }
 
 // Private functions
-/* Return true if the Piece can shift down 1.
+/* Return true if the Piece's center can shift by displacement without leaving
+ * the field or intersecting existing blocks.
  */
-bool Piece::can_drop() const
+bool Piece::can_shift(const coord &displacement) const
 {
   boost::array<coord,4>blocks=getBlocks();
   
   for(int i=0;i<4;++i)
     {
-      --blocks[i].y;
+      blocks[i]+=displacement;
       try
 	{
 	  if( field->get(blocks[i]) ) 

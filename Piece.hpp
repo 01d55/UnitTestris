@@ -53,7 +53,11 @@ private:
   bool lock;
   boost::array <coord,4> relative_blocks;
 
-  bool can_drop() const;
+  bool can_shift (const coord &displacement) const;
+  inline bool can_drop() const
+  {
+    return can_shift(coord(0,-1));
+  }
   bool can_place(boost::array<coord,4>) const;
   void invoke_lock();
 };
