@@ -59,6 +59,8 @@ private:
     return can_shift(coord(0,-1));
   }
   bool can_place(boost::array<coord,4>) const;
+  void rotate(PieceInput in) throw (PieceInput);
+
   void invoke_lock();
 };
 

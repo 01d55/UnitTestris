@@ -27,6 +27,15 @@ static const boost::array <coord,4> relative_T = {
   { coord(-1,0),coord(0,1),coord(0,0),coord(1,0) }
 };
 
+inline coord cw(const coord &a)
+{
+  return(coord(a.y,-a.x));
+}
+
+inline coord ccw(const coord &a)
+{
+  return(coord(-a.y,a.x));
+}
 
 Piece::Piece(PieceType t, unsigned int d, Field *f):
   type(t),baseDelay(d),lockDelay(d),field(f),center(4,20),lock(false)
@@ -104,7 +113,7 @@ bool Piece::timeStep(unsigned int g) throw (PieceLockError)
 
 bool Piece::handleInput(PieceInput in) throw (PieceLockError)
 {
-  // STUB
+
   if(lock)
     {
       throw PieceLockError();
@@ -125,8 +134,8 @@ bool Piece::handleInput(PieceInput in) throw (PieceLockError)
 	}
       break;
     case rotate_cw:
-      break;
     case rotate_ccw:
+      rotate(in);
       break;
     case hard_drop:
       timeStep(22+lockDelay);
@@ -197,6 +206,102 @@ bool Piece::can_place(boost::array<coord,4> blocks) const
     }
   return true;
 }
+
+// Rotate the relative blocks
+void Piece::rotate(PieceInput in) throw (PieceInput)
+{
+  boost::array<coord,4> rblocks, blocks;
+  int i;
+  // Sanity check: this should never happen!
+  if( in!=rotate_ccw && in!=rotate_cw)
+    {
+      throw in;
+    }
+
+  if(type==O)
+    {
+      return;
+    }
+  rblocks=relative_blocks;
+  if(type==I)
+    {
+      /*
+       *__________*     *__________*
+       *          * 2   *          * 2
+       *          * 1   *   II II  * 1
+       *   IIcI   * 0   *     c    * 0
+       *          * 1   *          * 1
+       *          * 2   *          * 2
+       *5432101234*     *5432101234*
+       1 rotation
+       *__________*     *__________*
+       *          * 2   *    I     * 2
+       *    I     * 1   *    I     * 1
+       *    Ic    * 0   *     c    * 0
+       *    I     * 1   *    I     * 1 
+       *    I     * 2   *    I     * 2
+       *5432101234*     *5432101234*
+       2 rotations
+       *__________*     *__________*
+       *          * 2   *          * 2
+       *          * 1   *          * 1
+       *     c    * 0   *     c    * 0
+       *   IIII   * 1   *   II II  * 1
+       *          * 2   *          * 2
+       *5432101234*     *5432101234*
+       3 rotations
+       *__________*     *__________*  
+       *          * 2   *      I   * 2
+       *     I    * 1   *      I   * 1
+       *     c    * 0   *     c    * 0
+       *     I    * 1   *      I   * 1
+       *     I    * 2   *      I   * 2
+       *5432101234*     *5432101234*
+       */
+      for(i-0;i<4;++i)
+	{
+	  // Shift all nonnegative co-ordinates up by 1
+	  if(rblocks[i].x >= 0)
+	    {
+	      ++rblocks[i].x;
+	    }
+	  if(rblocks[i].y >= 0)
+	    {
+	      ++rblocks[i].y;
+	    }
+	  // rotate
+	  rblocks[i]= (in==rotate_cw) ? cw(rblocks[i]) : ccw(rblocks[i]);
+	  // un-shift
+	  if(rblocks[i].x > 0)
+	    {
+	      --rblocks[i].x;
+	    }
+	  if(rblocks[i].y > 0)
+	    {
+	      --rblocks[i].y;
+	    }
+	  blocks[i]=rblocks[i]+center;
+	}
+      if(can_place(blocks))
+	{
+	  relative_blocks=rblocks;
+	}
+    }
+  else 
+    {
+      for(i=0;i<4;++i)
+	{
+	  rblocks[i]= (in==rotate_cw) ? cw(rblocks[i]) : ccw(rblocks[i]);
+	  blocks[i]=rblocks[i]+center;
+	}
+      if(can_place(blocks))
+	{
+	  relative_blocks=rblocks;
+	}
+    }
+}
+
+
 // Put blocks in the field and lock self.
 void Piece::invoke_lock()
 {
