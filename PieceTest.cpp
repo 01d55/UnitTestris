@@ -621,204 +621,7 @@ void PieceTest::testRotate()
   boost::array<coord,4> expectedBlocks;
 
   
-  // I block
-  testPieces.push_back(Piece(I,testDelay,&testField));
 
-  expectedCoord=originI;
-
-  // Turn CCW
-  /*
-   *__________*
-   *          *21
-   *   IIcI   *20
-   *          *19 
-   *          *18
-   *0123456789*
-   1 rotation
-   *__________*
-   *    I     *21
-   *    Ic    *20
-   *    I     *19 
-   *    I     *18
-   *0123456789*
-   2 rotations
-   *__________*
-   *          *21
-   *     c    *20
-   *   IIII   *19 
-   *          *18
-   *0123456789*
-   3 rotations
-   *__________*
-   *     I    *21
-   *     c    *20
-   *     I    *19 
-   *     I    *18
-   *0123456789*
-   */
-
-  // 1
-  testPieces[0].handleInput(rotate_ccw);
-  testCoord=testPieces[0].getCenter();
-  expectedBlocks[0](4,18);
-  expectedBlocks[1](4,19);
-  expectedBlocks[2](4,20);
-  expectedBlocks[3](4,21);
-
-  CPPUNIT_ASSERT( testCoord==expectedCoord );
-  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
-  // 2
-  testPieces[0].handleInput(rotate_ccw);
-  testCoord=testPieces[0].getCenter();
-  expectedBlocks[0](3,19);
-  expectedBlocks[1](4,19);
-  expectedBlocks[2](5,19);
-  expectedBlocks[3](6,19);
-
-  CPPUNIT_ASSERT( testCoord==expectedCoord );
-  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
-  // 3
-  testPieces[0].handleInput(rotate_ccw);
-  testCoord=testPieces[0].getCenter();
-  expectedBlocks[0](5,21);
-  expectedBlocks[1](5,20);
-  expectedBlocks[2](5,19);
-  expectedBlocks[3](5,18);
-
-  CPPUNIT_ASSERT( testCoord==expectedCoord );
-  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
-
-  // Does rotation persist through timestep?
-  testPieces[0].timeStep(1);
-  testCoord=testPieces[0].getCenter();
-  --expectedCoord.y;
-  for(i=0;i<4;++i) --expectedBlocks[i].y;
-
-  CPPUNIT_ASSERT( testCoord==expectedCoord );
-  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
- 
-  // Return to original orientation (but not original position!)
-  testPieces[0].handleInput(rotate_ccw);
-  testCoord=testPieces[0].getCenter();
-  expectedBlocks[0](3,19);
-  expectedBlocks[1](4,19);
-  expectedBlocks[2](5,19);
-  expectedBlocks[3](6,19);
-
-  CPPUNIT_ASSERT( testCoord==expectedCoord );
-  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
-
-  // CW
-  /*
-   *__________*
-   *          *21
-   *          *20
-   *   IIcI   *19
-   *          *18 
-   *          *17
-   *0123456789*
-   1 rotation  
-   *__________*
-   *          *21
-   *     I    *20
-   *     c    *19
-   *     I    *18 
-   *     I    *17
-   *0123456789*
-   2 rotations
-   *__________*
-   *          *21
-   *          *20
-   *     c    *19
-   *   IIII   *18 
-   *          *17
-   *0123456789*
-   3 rotations
-   *__________*
-   *          *21
-   *    I     *20
-   *    Ic    *19
-   *    I     *18 
-   *    I     *17
-   *0123456789*
-   */
-  //1
-  testPieces[0].handleInput(rotate_ccw);
-  testCoord=testPieces[0].getCenter();
-  expectedBlocks[0](5,20);
-  expectedBlocks[1](5,19);
-  expectedBlocks[2](5,18);
-  expectedBlocks[3](5,17);
-
-  CPPUNIT_ASSERT( testCoord==expectedCoord );
-  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
-
-  //2
-  testPieces[0].handleInput(rotate_ccw);
-  testCoord=testPieces[0].getCenter();
-  expectedBlocks[0](3,18);
-  expectedBlocks[1](4,18);
-  expectedBlocks[2](5,18);
-  expectedBlocks[3](6,18);
-
-  CPPUNIT_ASSERT( testCoord==expectedCoord );
-  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
-
-  //3
-  testPieces[0].handleInput(rotate_ccw);
-  testCoord=testPieces[0].getCenter();
-  expectedBlocks[0](4,20);
-  expectedBlocks[1](4,19);
-  expectedBlocks[2](4,18);
-  expectedBlocks[3](4,17);
-
-  CPPUNIT_ASSERT( testCoord==expectedCoord );
-  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
-
-  // Blocked rotations
-  /* Prevent CW rotation, but not CCW
-   *__________*
-   *          *21
-   *    I     *20
-   *   bIc    *19
-   *    I     *18 
-   *    I     *17
-   *0123456789*
-   *__________*
-   *          *21
-   *          *20
-   *   bIcI   *19
-   *          *18 
-   *          *17
-   *0123456789*
-   *__________*
-   *          *21
-   *          *20
-   *   b c    *19
-   *   IIII   *18 
-   *          *17
-   *0123456789*
-   */
-
-  FieldDummy::populate_get_results(coord(3,19));
-  testPieces[0].handleInput(rotate_cw);//blocked
-  testCoord=testPieces[0].getCenter();
-
-  CPPUNIT_ASSERT( testCoord==expectedCoord );
-  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
-
-  testPieces[0].handleInput(rotate_ccw);
-  testCoord=testPieces[0].getCenter();
-  expectedBlocks[0](3,18);
-  expectedBlocks[1](4,18);
-  expectedBlocks[2](5,18);
-  expectedBlocks[3](6,18);
-
-  CPPUNIT_ASSERT( testCoord==expectedCoord );
-  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
-
-  testPieces.clear();
-  FieldDummy::populate_get_results(coord(3,19),false);
   // L block
   testPieces.push_back(Piece(L,testDelay,&testField));
 
@@ -941,7 +744,7 @@ void PieceTest::testRotate()
    *0123456789*
    */
   //1
-  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_cw);
   testCoord=testPieces[0].getCenter();
   expectedBlocks[0](4,20);
   expectedBlocks[1](4,19);
@@ -952,7 +755,7 @@ void PieceTest::testRotate()
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
 
   //2
-  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_cw);
   testCoord=testPieces[0].getCenter();
   expectedBlocks[0](3,18);
   expectedBlocks[1](3,19);
@@ -963,7 +766,7 @@ void PieceTest::testRotate()
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
 
   //3
-  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_cw);
   testCoord=testPieces[0].getCenter();
   expectedBlocks[0](3,20);
   expectedBlocks[1](4,18);
@@ -1069,7 +872,7 @@ void PieceTest::testRotate()
   expectedBlocks[0](3,20);
   expectedBlocks[1](4,20);
   expectedBlocks[2](5,20);
-  expectedBlocks[3](5,21);
+  expectedBlocks[3](5,19);
 
   CPPUNIT_ASSERT( testCoord==expectedCoord );
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
@@ -1139,7 +942,7 @@ void PieceTest::testRotate()
    *0123456789*
    */
   //1
-  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_cw);
   testCoord=testPieces[0].getCenter();
   expectedBlocks[0](4,18);
   expectedBlocks[1](4,19);
@@ -1150,7 +953,7 @@ void PieceTest::testRotate()
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
 
   //2
-  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_cw);
   testCoord=testPieces[0].getCenter();
   expectedBlocks[0](3,19);
   expectedBlocks[1](4,19);
@@ -1161,7 +964,7 @@ void PieceTest::testRotate()
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
 
   //3
-  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_cw);
   testCoord=testPieces[0].getCenter();
   expectedBlocks[0](3,18);
   expectedBlocks[1](4,18);
@@ -1196,7 +999,7 @@ void PieceTest::testRotate()
    *0123456789*
    */
 
-  FieldDummy::populate_get_results(coord(0,0));
+  FieldDummy::populate_get_results(coord(3,20));
   testPieces[0].handleInput(rotate_cw);//blocked
   testCoord=testPieces[0].getCenter();
 
@@ -1214,7 +1017,7 @@ void PieceTest::testRotate()
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
 
   testPieces.clear();
-  FieldDummy::populate_get_results(coord(0,0),false);
+  FieldDummy::populate_get_results(coord(3,20),false);
   // S block
   testPieces.push_back(Piece(S,testDelay,&testField));
 
@@ -1337,7 +1140,7 @@ void PieceTest::testRotate()
    *0123456789*
    */
   //1
-  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_cw);
   testCoord=testPieces[0].getCenter();
   expectedBlocks[0](4,19);
   expectedBlocks[1](4,20);
@@ -1348,7 +1151,7 @@ void PieceTest::testRotate()
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
 
   //2
-  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_cw);
   testCoord=testPieces[0].getCenter();
   expectedBlocks[0](3,18);
   expectedBlocks[1](4,18);
@@ -1359,7 +1162,7 @@ void PieceTest::testRotate()
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
 
   //3
-  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_cw);
   testCoord=testPieces[0].getCenter();
   expectedBlocks[0](3,19);
   expectedBlocks[1](3,20);
@@ -1535,7 +1338,7 @@ void PieceTest::testRotate()
    *0123456789*
    */
   //1
-  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_cw);
   testCoord=testPieces[0].getCenter();
   expectedBlocks[0](4,18);
   expectedBlocks[1](4,19);
@@ -1546,7 +1349,7 @@ void PieceTest::testRotate()
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
 
   //2
-  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_cw);
   testCoord=testPieces[0].getCenter();
   expectedBlocks[0](3,19);
   expectedBlocks[1](4,18);
@@ -1557,7 +1360,7 @@ void PieceTest::testRotate()
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
 
   //3
-  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_cw);
   testCoord=testPieces[0].getCenter();
   expectedBlocks[0](3,18);
   expectedBlocks[1](3,19);
@@ -1690,10 +1493,10 @@ void PieceTest::testRotate()
   // Return to original orientation (but not original position!)
   testPieces[0].handleInput(rotate_ccw);
   testCoord=testPieces[0].getCenter();
-  expectedBlocks[0](0,00);
-  expectedBlocks[1](0,00);
-  expectedBlocks[2](0,00);
-  expectedBlocks[3](0,00);
+  expectedBlocks[0](3,19);
+  expectedBlocks[1](4,19);
+  expectedBlocks[2](5,19);
+  expectedBlocks[3](4,20);
 
   CPPUNIT_ASSERT( testCoord==expectedCoord );
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
@@ -1733,7 +1536,7 @@ void PieceTest::testRotate()
    *0123456789*
    */
   //1
-  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_cw);
   testCoord=testPieces[0].getCenter();
   expectedBlocks[0](4,18);
   expectedBlocks[1](4,19);
@@ -1744,7 +1547,7 @@ void PieceTest::testRotate()
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
 
   //2
-  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_cw);
   testCoord=testPieces[0].getCenter();
   expectedBlocks[0](3,19);
   expectedBlocks[1](4,18);
@@ -1755,7 +1558,7 @@ void PieceTest::testRotate()
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
 
   //3
-  testPieces[0].handleInput(rotate_ccw);
+  testPieces[0].handleInput(rotate_cw);
   testCoord=testPieces[0].getCenter();
   expectedBlocks[0](3,19);
   expectedBlocks[1](4,18);
@@ -1809,6 +1612,207 @@ void PieceTest::testRotate()
 
   testPieces.clear();
   FieldDummy::populate_get_results(coord(4,20),false);
+
+
+  // I block
+  testPieces.push_back(Piece(I,testDelay,&testField));
+
+  expectedCoord=originI;
+
+  // Turn CCW
+  /*
+   *__________*
+   *          *21
+   *   IIcI   *20
+   *          *19 
+   *          *18
+   *0123456789*
+   1 rotation
+   *__________*
+   *    I     *21
+   *    Ic    *20
+   *    I     *19 
+   *    I     *18
+   *0123456789*
+   2 rotations
+   *__________*
+   *          *21
+   *     c    *20
+   *   IIII   *19 
+   *          *18
+   *0123456789*
+   3 rotations
+   *__________*
+   *     I    *21
+   *     c    *20
+   *     I    *19 
+   *     I    *18
+   *0123456789*
+   */
+
+  // 1
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](4,18);
+  expectedBlocks[1](4,19);
+  expectedBlocks[2](4,20);
+  expectedBlocks[3](4,21);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+  // 2
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](3,19);
+  expectedBlocks[1](4,19);
+  expectedBlocks[2](5,19);
+  expectedBlocks[3](6,19);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+  // 3
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](5,21);
+  expectedBlocks[1](5,20);
+  expectedBlocks[2](5,19);
+  expectedBlocks[3](5,18);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  // Does rotation persist through timestep?
+  testPieces[0].timeStep(1);
+  testCoord=testPieces[0].getCenter();
+  --expectedCoord.y;
+  for(i=0;i<4;++i) --expectedBlocks[i].y;
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+ 
+  // Return to original orientation (but not original position!)
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](3,19);
+  expectedBlocks[1](4,19);
+  expectedBlocks[2](5,19);
+  expectedBlocks[3](6,19);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  // CW
+  /*
+   *__________*
+   *          *21
+   *          *20
+   *   IIcI   *19
+   *          *18 
+   *          *17
+   *0123456789*
+   1 rotation  
+   *__________*
+   *          *21
+   *     I    *20
+   *     c    *19
+   *     I    *18 
+   *     I    *17
+   *0123456789*
+   2 rotations
+   *__________*
+   *          *21
+   *          *20
+   *     c    *19
+   *   IIII   *18 
+   *          *17
+   *0123456789*
+   3 rotations
+   *__________*
+   *          *21
+   *    I     *20
+   *    Ic    *19
+   *    I     *18 
+   *    I     *17
+   *0123456789*
+   */
+  //1
+  testPieces[0].handleInput(rotate_cw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](5,20);
+  expectedBlocks[1](5,19);
+  expectedBlocks[2](5,18);
+  expectedBlocks[3](5,17);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  //2
+  testPieces[0].handleInput(rotate_cw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](3,18);
+  expectedBlocks[1](4,18);
+  expectedBlocks[2](5,18);
+  expectedBlocks[3](6,18);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  //3
+  testPieces[0].handleInput(rotate_cw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](4,20);
+  expectedBlocks[1](4,19);
+  expectedBlocks[2](4,18);
+  expectedBlocks[3](4,17);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  // Blocked rotations
+  /* Prevent CW rotation, but not CCW
+   *__________*
+   *          *21
+   *    I     *20
+   *   bIc    *19
+   *    I     *18 
+   *    I     *17
+   *0123456789*
+   *__________*
+   *          *21
+   *          *20
+   *   bIcI   *19
+   *          *18 
+   *          *17
+   *0123456789*
+   *__________*
+   *          *21
+   *          *20
+   *   b c    *19
+   *   IIII   *18 
+   *          *17
+   *0123456789*
+   */
+
+  FieldDummy::populate_get_results(coord(3,19));
+  testPieces[0].handleInput(rotate_cw);//blocked
+  testCoord=testPieces[0].getCenter();
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  testPieces[0].handleInput(rotate_ccw);
+  testCoord=testPieces[0].getCenter();
+  expectedBlocks[0](3,18);
+  expectedBlocks[1](4,18);
+  expectedBlocks[2](5,18);
+  expectedBlocks[3](6,18);
+
+  CPPUNIT_ASSERT( testCoord==expectedCoord );
+  CPPUNIT_ASSERT( testSameCoords(expectedBlocks,testPieces[0].getBlocks()) );
+
+  testPieces.clear();
+  FieldDummy::populate_get_results(coord(3,19),false);
+
   // O rly? yarly.
   testPieces.push_back(Piece(O,testDelay,&testField));
   /* O block should not change when rotated.
