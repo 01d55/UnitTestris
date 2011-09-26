@@ -1,7 +1,7 @@
 #Compilation products
 *.o
 *.Po
-UnitTestris
+tetris_fltk
 FieldCheck
 PieceCheck
 # from tetris_fltkgui.fl

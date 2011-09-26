@@ -7,6 +7,14 @@ AC_CONFIG_HEADERS([config.h])
 
 # Checks for programs.
 AC_PROG_CXX
+AC_CHECK_PROG(HAVE_FLUID,fluid,yes)
+if test x"${HAVE_FLUID}" != x"yes" ; then
+   AC_MSG_ERROR([Cannot compile without fluid])
+fi
+AC_CHECK_PROG(HAVE_FLTK_CONFIG,fltk-config,yes)
+if test x"${HAVE_FLTK_CONFIG}" != x"yes" ; then
+   AC_MSG_ERROR([Cannot compile without fltk-config])
+fi
 #AC_PROG_CC
 #AC_PROG_INSTALL
 
@@ -15,6 +23,9 @@ AC_PROG_CXX
 AC_HEADER_STDBOOL
 AC_C_INLINE
 
+# Get fltk compile & link flags
+AC_SUBST(FLTK_CXXFLAGS,[`fltk-config --use-gl --cxxflags`])
+AC_SUBST(FLTK_LDFLAGS,[`fltk-config --use-gl --ldflags`])
 #AM settings
 
 AM_INIT_AUTOMAKE([-Wall -Werror])
