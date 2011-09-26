@@ -4,8 +4,20 @@
 UnitTestris
 FieldCheck
 PieceCheck
+# from tetris_fltkgui.fl
+tetris_fltkgui.cpp
+tetris_fltkgui.hpp
 #Automake products
+aclocal.m4
 autom4te.cache
+autoscan.log
+configure
+configure.scan
+config.h
+config.h.in
+config.log
+config.status
 Makefile
 Makefile.in
-config.log
+stamp-h1
+
