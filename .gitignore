@@ -4,9 +4,9 @@
 tetris_fltk
 FieldCheck
 PieceCheck
-# from tetris_fltkgui.fl
-tetris_fltkgui.cpp
-tetris_fltkgui.hpp
+# from Tetris_fltkgui.fl
+Tetris_fltkgui.cpp
+Tetris_fltkgui.hpp
 #Automake products
 aclocal.m4
 autom4te.cache

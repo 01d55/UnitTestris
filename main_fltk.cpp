@@ -1,5 +1,5 @@
 #include <FL/Fl.H>
-#include "tetris_fltkgui.hpp"
+#include "Tetris_fltkgui.hpp"
 
 int main(int argc, char **argv){
   Fl::gl_visual(FL_DEPTH | FL_DOUBLE);

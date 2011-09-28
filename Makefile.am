@@ -1,14 +1,15 @@
 #Rules for compilation
 bin_PROGRAMS = tetris_fltk
 
-tetris_fltk_SOURCES = main_fltk.cpp tetris_fltkgui.cpp tetris_fltkgui.hpp\
+tetris_fltk_SOURCES = main_fltk.cpp Tetris_fltkgui.cpp Tetris_fltkgui.hpp\
 Field.hpp Field.cpp Piece.hpp Piece.cpp Fl_Gl_Tetris.hpp Fl_Gl_Tetris.cpp
 tetris_fltk_CXXFLAGS = $(CXXFLAGS) $(FLTK_CXXFLAGS)
 tetris_fltk_LDFLAGS = $(LDFLAGS) $(FLTK_LDFLAGS)
 
 # Rule for compiling fluid file
-tetris_fltkgui.cpp tetris_fltkgui.hpp: tetris_fltkgui.fl
-	fluid -c tetris_fltkgui.fl
+BUILT_SOURCES = Tetris_fltkgui.cpp Tetris_fltkgui.hpp
+Tetris_fltkgui.cpp Tetris_fltkgui.hpp: Tetris_fltkgui.fl
+	fluid -c Tetris_fltkgui.fl
 
 # Rules for the test code (use `make check` to execute)
 TESTS = FieldCheck PieceCheck
