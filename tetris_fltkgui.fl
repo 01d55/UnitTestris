@@ -4,7 +4,7 @@ header_name {.hpp}
 code_name {.cpp}
 class Tetris_fltkgui {open
 } {
-  Function {GUI()} {open
+  Function {Tetris_fltkgui()} {open selected
   } {
     Fl_Window window {
       label Tetris open
@@ -23,7 +23,7 @@ class Tetris_fltkgui {open
         Fl_Button {} {
           label Reset
           callback {tWin->reset();
-tWin->redraw();} selected
+tWin->redraw();}
           xywh {5 740 280 30}
         }
         Fl_Button {} {
