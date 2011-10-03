@@ -81,26 +81,42 @@ enum PieceInput
     hard_drop
   };
 
-class FieldSizeError : public std::runtime_error
+class FieldSizeError : public std::out_of_range
 {
 public:
-  FieldSizeError() : runtime_error( "Argument does not match Tetris field dimensions." )
+  FieldSizeError() : std::out_of_range( "Argument does not match Tetris field dimensions." )
   {
   }
 };
 
-class DuplicateBlockError: public std::runtime_error
+class DuplicateBlockError: public std::logic_error
 {
 public:
-  DuplicateBlockError() : runtime_error( "Block already exists." )
+  DuplicateBlockError() : std::logic_error( "Block already exists." )
   {
   }
 };
 
-class PieceLockError: public std::runtime_error
+class PieceLockError: public std::logic_error
 {
 public:
-  PieceLockError() : std::runtime_error("Piece is already locked!")
+  PieceLockError() : std::logic_error("Piece is already locked!")
+  {
+  }
+};
+
+class GameRunningError: public std::runtime_error
+{
+public:
+  GameRunningError() : std::runtime_error("Attempt to call a configuration function during run.")
+  {
+  }
+};
+
+class GameNotRunningError: public std::runtime_error
+{
+public:
+  GameNotRunningError() : std::runtime_error("Attempt to call a control function on a game which is not running.")
   {
   }
 };
