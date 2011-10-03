@@ -12,7 +12,7 @@ Tetris_fltkgui.cpp Tetris_fltkgui.hpp: Tetris_fltkgui.fl
 	fluid -c Tetris_fltkgui.fl
 
 # Rules for the test code (use `make check` to execute)
-TESTS = FieldCheck PieceCheck
+TESTS = FieldCheck PieceCheck TetrisGameCheck
 check_PROGRAMS = $(TESTS)
 
 FieldCheck_SOURCES = Field.hpp Field.cpp FieldTest.hpp FieldTest.cpp\
@@ -24,3 +24,9 @@ PieceCheck_SOURCES = Field.hpp FieldDummy.hpp FieldDummy.cpp\
 Piece.hpp Piece.cpp PieceTest.hpp PieceTest.cpp PieceCheck.cpp 
 PieceCheck_CXXFLAGS = $(CPPUNIT_CFLAGS)
 PieceCheck_LDFLAGS = $(CPPUNIT_LIBS)
+
+TetrisGameCheck_SOURCES = TetrisGame.hpp TetrisGame.cpp TetrisGameTest.hpp TetrisGameTest.cpp\
+Field.hpp FieldDummy.hpp FieldDummy.cpp Piece.hpp PieceDummy.hpp PieceDummy.cpp\
+TetrisGameCheck.cpp
+TetrisGameCheck_CXXFLAGS = $(CPPUNIT_CFLAGS)
+TetrisGameCheck_LDFLAGS = $(CPPUNIT_LIBS)
