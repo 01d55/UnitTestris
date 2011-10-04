@@ -13,7 +13,7 @@ class TetrisGame
 {
 public:
   TetrisGame();
-  TetrisGame(void (*renderFunc)(const Field &, const Piece &, const Piece & ) );
+  TetrisGame(void (*renderFunc)(const Field &, const Piece &, const Piece * ) );
   ~TetrisGame();
 
   // Start/stop the thread.

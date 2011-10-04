@@ -2,7 +2,7 @@
 
 TetrisGame::TetrisGame()
 {}
-TetrisGame::TetrisGame(void (*renderFunc)(const Field &, const Piece &, const Piece & ) )
+TetrisGame::TetrisGame(void (*renderFunc)(const Field &, const Piece &, const Piece * ) )
 {}
 TetrisGame::~TetrisGame()
 {}
