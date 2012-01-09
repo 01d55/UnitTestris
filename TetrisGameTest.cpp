@@ -31,7 +31,7 @@ void TetrisGameTest::testNewDelete()
   mptr = new TetrisGame(&dummyRenderFunctor);
   delete mptr;
   mptr=nullptr;
-  // Check stack allocation & destruction
+  // Check automatic storage
   {
     TetrisGame stackTetrisGame();
   }
@@ -42,10 +42,12 @@ void TetrisGameTest::testNewDelete()
 void TetrisGameTest::testRunCallback()
 {
   // STUB
+  CPPUNIT_FAIL("NYI");
 }
 void TetrisGameTest::testExceptions()
 {
   // STUB
+  CPPUNIT_FAIL("NYI");
 }
 
 void TetrisGameTest::dummyRenderCallback(const Field &afield, const Piece & curr, 
