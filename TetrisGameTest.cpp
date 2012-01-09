@@ -1,7 +1,7 @@
 #include "TetrisGameTest.hpp"
 #include "TetrisGame.hpp"
 #include "config.h"
-#ifndef HAVE_STDCXX_11_NULLPTR
+#ifndef HAVE_STDCXX_0X
 #define nullptr 0
 #endif
 // Registers the fixture
@@ -22,11 +22,13 @@ void TetrisGameTest::tearDown()
 
 void TetrisGameTest::testNewDelete()
 {
+  RenderFunc<renderfuncptr> dummyRenderFunctor(dummyRenderCallback);
+
   // Check default constructor doesn't explode.
   mptr = new TetrisGame();
   delete mptr;
   // Check callback constructor doesn't explode.
-  mptr = new TetrisGame(dummyRenderCallback);
+  mptr = new TetrisGame(&dummyRenderFunctor);
   delete mptr;
   mptr=nullptr;
   // Check stack allocation & destruction
@@ -34,7 +36,7 @@ void TetrisGameTest::testNewDelete()
     TetrisGame stackTetrisGame();
   }
   {
-    TetrisGame stackTetrisGame(dummyRenderCallback);
+    TetrisGame stackTetrisGame(&dummyRenderFunctor);
   }
 }
 void TetrisGameTest::testRunCallback()

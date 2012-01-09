@@ -5,6 +5,7 @@
 #ifndef COMMON_HPP
 #define COMMON_HPP
 
+#include <stdexcept>
 #include <sstream>
 
 #define FIELD_HEIGHT 22

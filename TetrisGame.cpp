@@ -2,7 +2,7 @@
 
 TetrisGame::TetrisGame()
 {}
-TetrisGame::TetrisGame(void (*renderFunc)(const Field &, const Piece &, const Piece * ) )
+TetrisGame::TetrisGame(IRenderFunc *callback):cb(callback)
 {}
 TetrisGame::~TetrisGame()
 {}
@@ -18,7 +18,7 @@ void TetrisGame::pause() throw(GameNotRunningError)
   // STUB
 }
 // Render callback. Calling during run is an error.
-void TetrisGame::setRenderer(void (*renderFunc)(const Field &, const Piece &, const Piece * ) ) 
+void TetrisGame::setRenderer(IRenderFunc *callback)
   throw (GameRunningError)
 {
   // STUB

@@ -2,7 +2,8 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.67])
 AC_INIT([UnitTestris],[0.1],[ajrich@earthlink.net])
-m4_include([m4/ax_cxx_compile_stdcxx_11_nullptr.m4])
+dnl m4_include([m4/ax_cxx_compile_stdcxx_11_nullptr.m4])
+m4_include([m4/ax_cxx_use_stdcxx_11.m4])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS([config.h])
 
@@ -28,15 +29,16 @@ AC_C_INLINE
   dnl in the future this should be AX_CXX_COMPILE_STDCXX_0X
 AC_CXX_COMPILE_STDCXX_0X
 
+
 dnl Custom checks for C++11 features
 
   dnl C++11 nullptr constant
-AX_CXX_COMPILE_STDCXX_11_NULLPTR
-
+  dnl AX_CXX_COMPILE_STDCXX_11_NULLPTR
+AX_CXX_USE_STDCXX_11
 
 dnl Get fltk compile & link flags
 AC_SUBST(FLTK_CXXFLAGS,[`fltk-config --use-gl --cxxflags`])
-AC_SUBST(FLTK_LDFLAGS,[`fltk-config --use-gl --ldflags`])
+AC_SUBST(FLTK_LDADD,[`fltk-config --use-gl --ldflags`])
 dnl AM settings
 
 AM_INIT_AUTOMAKE([-Wall -Werror])
