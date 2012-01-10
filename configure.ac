@@ -3,6 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ([2.67])
 AC_INIT([UnitTestris],[0.1],[ajrich@earthlink.net])
 m4_include([m4/ax_cxx_use_stdcxx_11.m4])
+m4_include([m4/ax_cxx_stdcxx_synch.m4])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS([config.h])
 
@@ -30,11 +31,7 @@ AX_CXX_COMPILE_STDCXX_0X
 dnl Custom checks for C++11 features
 
 AX_CXX_USE_STDCXX_11
- dnl check for c++11 headers
-ac_save_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS $CXX11FLAG"
-AC_CHECK_HEADERS([atomic])
-CPPFLAGS="$ac_save_CPPFLAGS"
+AX_CXX_STDCXX_SYNCH
 
 
 dnl Get fltk compile & link flags
