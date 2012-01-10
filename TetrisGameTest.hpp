@@ -4,9 +4,9 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "config.h"
-#ifdef HAVE_ATOMIC
+#ifdef HAVE_STDCXX_SYNCH
 #include <atomic>
-#endif // HAVE_ATOMIC
+#endif // HAVE_STDCXX_SYNCH
 
 class TetrisGame;
 class Field;
@@ -32,11 +32,11 @@ protected:
 private:
   TetrisGame * mptr;
 
-#ifdef HAVE_ATOMIC
+#ifdef HAVE_STDCXX_SYNCH
   static std::atomic_int dummyCount;
-#else // HAVE_ATOMIC
+#else // HAVE_STDCXX_SYNCH
   static int dummyCount;
-#endif // HAVE_ATOMIC
+#endif // HAVE_STDCXX_SYNCH
 };
 
 #endif // TETRISGAMETEST_HPP

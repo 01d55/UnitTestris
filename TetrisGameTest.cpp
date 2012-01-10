@@ -6,7 +6,14 @@ CPPUNIT_TEST_SUITE_REGISTRATION( TetrisGameTest );
 #include "config.h"
 #ifndef HAVE_STDCXX_0X
 #define nullptr 0
-#endif
+#endif // HAVE_STDCXX_0X
+
+#ifdef HAVE_STDCXX_SYNCH
+#include <chrono>
+#include <thread>
+typedef std::chrono::system_clock mclock;
+typedef std::chrono::duration<mclock::rep,std::ratio<1,60>> duration_frames;
+#endif //HAVE_STDCXX_SYNCH
 
 void TetrisGameTest::setUp()
 {
@@ -49,10 +56,25 @@ void TetrisGameTest::testRunCallback()
   CPPUNIT_ASSERT_NO_THROW(mptr->setRenderer(&dummyRenderFunctor));
   // Test normal run/stop
 
+#ifdef HAVE_STDCXX_SYNCH
+  auto t0 = mclock::now();
+#endif //HAVE_STDCXX_SYNCH
+
   CPPUNIT_ASSERT_NO_THROW(mptr->run());
-  
+
+#ifdef HAVE_STDCXX_SYNCH
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+#endif //HAVE_STDCXX_SYNCH
+
   CPPUNIT_ASSERT_NO_THROW(mptr->pause());
+
+#ifdef HAVE_STDCXX_SYNCH
+  auto t1 = mclock::now();
+  int frames = std::chrono::duration_cast<duration_frames>(t1-t0).count();
+  CPPUNIT_ASSERT(0 == frames-dummyCount);
+#else // HAVE_STDCXX_SYNCH
   CPPUNIT_ASSERT(0 < dummyCount);
+#endif // HAVE_STDCXX_SYNCH
   // Test that the destructor stops the internal thread.
 
   CPPUNIT_ASSERT_NO_THROW(mptr->run());
@@ -83,14 +105,11 @@ void TetrisGameTest::testExceptions()
 void TetrisGameTest::dummyRenderCallback(const Field &afield, const Piece & curr, 
 					 const Piece * ghost)
 {
-#ifdef HAVE_ATOMIC
   ++dummyCount;
-#else // HAVE_ATOMIC
-#error Alternative to <atomic> NYI
-#endif // HAVE_ATOMIC
 }
-#ifdef HAVE_ATOMIC
+
+#ifdef HAVE_STDCXX_SYNCH
 std::atomic_int TetrisGameTest::dummyCount = ATOMIC_VAR_INIT(0);
-#else // HAVE_ATOMIC
+#else // HAVE_STDCXX_SYNCH
 int TetrisGameTest::dummyCount = 0;
-#endif // HAVE_ATOMIC
+#endif // HAVE_STDCXX_SYNCH
