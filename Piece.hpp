@@ -38,8 +38,8 @@ class Piece
 public:
   Piece(PieceType t, unsigned int d, Field *f);
 
-  bool timeStep(unsigned int g) throw (PieceLockError);
-  bool handleInput(PieceInput in) throw (PieceLockError);
+  bool timeStep(unsigned int g); //throw (PieceLockError);
+  bool handleInput(PieceInput in); //throw (PieceLockError);
 
   coord getCenter() const;
   boost::array<coord,4> getBlocks() const;
@@ -59,7 +59,7 @@ private:
     return can_shift(coord(0,-1));
   }
   bool can_place(boost::array<coord,4>) const;
-  void rotate(PieceInput in) throw (PieceInput);
+  void rotate(PieceInput in); //throw (PieceInput);
 
   void invoke_lock();
 };

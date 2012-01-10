@@ -14,7 +14,7 @@ Field::Field(const Field& toCopy):score(toCopy.score)
       iblocks[i+FIELD_WIDTH*j]=toCopy.iblocks[i+FIELD_WIDTH*j];
 }
 // Vector holding blocks in the lowest row
-Field::Field(std::vector<bool> row) throw (FieldSizeError):score(0)
+Field::Field(std::vector<bool> row):score(0)
 {
   int i;
   if(row.size()!=FIELD_WIDTH) throw FieldSizeError();
@@ -26,7 +26,7 @@ Field::Field(std::vector<bool> row) throw (FieldSizeError):score(0)
   checkLine(0);
 }
 // 10x22 vector. Indices are x-y co-ordinates, e.g. blocks[x][y].
-Field::Field(std::vector< std::vector<bool> > blocks) throw (FieldSizeError):score(0)
+Field::Field(std::vector< std::vector<bool> > blocks) :score(0)
 {
   int i,j;
   // Check size
@@ -46,7 +46,7 @@ Field::~Field()
 }
 
 // Return true if there is a block at those co-ordinates
-bool Field::get(int x, int y) const throw (FieldSizeError)
+bool Field::get(int x, int y) const
 {
   // Check range
   if(0>x||0>y||x>=FIELD_WIDTH||y>=FIELD_HEIGHT) throw FieldSizeError();
@@ -55,7 +55,7 @@ bool Field::get(int x, int y) const throw (FieldSizeError)
 }
 // Insert a block at the given co-ordinate. Inserting a block on top of an 
 // existing block is an error.
-void Field::set(int x, int y) throw (FieldSizeError, DuplicateBlockError)
+void Field::set(int x, int y)
 {
   // Check range
   if(0>x||0>y||x>=FIELD_WIDTH||y>=FIELD_HEIGHT)

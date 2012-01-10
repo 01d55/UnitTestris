@@ -19,12 +19,11 @@ void TetrisGame::pause() throw(GameNotRunningError)
 }
 // Render callback. Calling during run is an error.
 void TetrisGame::setRenderer(IRenderFunc *callback)
-  throw (GameRunningError)
 {
   // STUB
 }
 // Control functions. May be called asyncronously.
-void TetrisGame::queueInput(PieceInput) throw (GameNotRunningError)
+void TetrisGame::queueInput(PieceInput)
 {
   // STUB
 }

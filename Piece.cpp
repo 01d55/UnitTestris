@@ -71,7 +71,7 @@ Piece::Piece(PieceType t, unsigned int d, Field *f):
     }
 }
 
-bool Piece::timeStep(unsigned int g) throw (PieceLockError)
+bool Piece::timeStep(unsigned int g)
 {
   // STUB
   if(lock)
@@ -111,7 +111,7 @@ bool Piece::timeStep(unsigned int g) throw (PieceLockError)
   return lock;
 }
 
-bool Piece::handleInput(PieceInput in) throw (PieceLockError)
+bool Piece::handleInput(PieceInput in)
 {
 
   if(lock)
@@ -208,7 +208,7 @@ bool Piece::can_place(boost::array<coord,4> blocks) const
 }
 
 // Rotate the relative blocks
-void Piece::rotate(PieceInput in) throw (PieceInput)
+void Piece::rotate(PieceInput in)
 {
   boost::array<coord,4> rblocks, blocks;
   int i;

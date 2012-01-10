@@ -27,10 +27,9 @@ public:
   // Render callback. Calling during run is an error.
   // Piece reference is the current piece, the piece pointer is the "hold" piece
   // The "hold" piece will be NULL if there is no "hold" piece.
-  void setRenderer( IRenderFunc* callback ) 
-    throw (GameRunningError);
+  void setRenderer( IRenderFunc* callback ); // throw (GameRunningError);
   // May be called only while the game is running. If the queue has multiple inputs,
-  void queueInput(PieceInput) throw (GameNotRunningError);
+  void queueInput(PieceInput in); //throw (GameNotRunningError);
 protected:
 private:
   IRenderFunc *cb;
