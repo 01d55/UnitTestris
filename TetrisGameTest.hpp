@@ -3,6 +3,11 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "config.h"
+#ifdef HAVE_ATOMIC
+#include <atomic>
+#endif // HAVE_ATOMIC
+
 class TetrisGame;
 class Field;
 class Piece;
@@ -27,7 +32,11 @@ protected:
 private:
   TetrisGame * mptr;
 
+#ifdef HAVE_ATOMIC
+  static std::atomic_int dummyCount;
+#else // HAVE_ATOMIC
   static int dummyCount;
+#endif // HAVE_ATOMIC
 };
 
 #endif // TETRISGAMETEST_HPP
