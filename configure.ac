@@ -2,15 +2,14 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.67])
 AC_INIT([UnitTestris],[0.1],[ajrich@earthlink.net])
-dnl m4_include([m4/ax_cxx_compile_stdcxx_11_nullptr.m4])
 m4_include([m4/ax_cxx_use_stdcxx_11.m4])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS([config.h])
 
 dnl Checks for programs.
 AC_PROG_CXX
-AC_CHECK_PROG(HAVE_FLUID,fluid,yes)
 
+AC_CHECK_PROG(HAVE_FLUID,fluid,yes)
 AS_IF([test x"${HAVE_FLUID}" != x"yes" ],
 [ AC_MSG_ERROR( [Cannot compile without fluid!] ) ])
 
@@ -26,15 +25,17 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 
 AC_HEADER_STDBOOL
 AC_C_INLINE
-  dnl in the future this should be AX_CXX_COMPILE_STDCXX_0X
-AC_CXX_COMPILE_STDCXX_0X
-
+AX_CXX_COMPILE_STDCXX_0X
 
 dnl Custom checks for C++11 features
 
-  dnl C++11 nullptr constant
-  dnl AX_CXX_COMPILE_STDCXX_11_NULLPTR
 AX_CXX_USE_STDCXX_11
+ dnl check for c++11 headers
+ac_save_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS $CXX11FLAG"
+AC_CHECK_HEADERS([atomic])
+CPPFLAGS="$ac_save_CPPFLAGS"
+
 
 dnl Get fltk compile & link flags
 AC_SUBST(FLTK_CXXFLAGS,[`fltk-config --use-gl --cxxflags`])
