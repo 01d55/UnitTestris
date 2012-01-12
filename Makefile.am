@@ -1,3 +1,6 @@
+# Required by AC_CONFIG_MACRO_DIR
+ACLOCAL_AMFLAGS = -I m4
+
 #Rules for compilation
 bin_PROGRAMS = tetris_fltk
 

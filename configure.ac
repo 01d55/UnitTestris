@@ -2,8 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.67])
 AC_INIT([UnitTestris],[0.1],[ajrich@earthlink.net])
-m4_include([m4/ax_cxx_use_stdcxx_11.m4])
-m4_include([m4/ax_cxx_stdcxx_synch.m4])
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS([config.h])
 
