@@ -5,7 +5,7 @@
 # DESCRIPTION
 #
 #   If the three major synchronization headers (<atomic>,<chrono>,<thread>) are all
-#   present, define HAVE_STDCXX_SYNCH. Must call AX_CXX_USE_STDCXX_11
+#   present, define HAVE_STDCXX_SYNCH. Must call AX_CXX_USE_STDCXX_11 for $CXX11FLAG.
 #
 # LICENSE
 #
