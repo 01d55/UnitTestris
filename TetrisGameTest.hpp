@@ -16,6 +16,8 @@ class TetrisGameTest: public CppUnit::TestFixture
   CPPUNIT_TEST_SUITE ( TetrisGameTest );
   CPPUNIT_TEST( testNewDelete );
   CPPUNIT_TEST( testRunCallback );
+  CPPUNIT_TEST( whitebox_testRunCallback );
+  CPPUNIT_TEST( whitebox_testInput );
   CPPUNIT_TEST( testExceptions );
   CPPUNIT_TEST_SUITE_END();
 
@@ -25,6 +27,8 @@ public:
 
   void testNewDelete();
   void testRunCallback();
+  void whitebox_testRunCallback();
+  void whitebox_testInput();
   void testExceptions();
 
   static void dummyRenderCallback(const Field &, const Piece &, const Piece *);

@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "common.hpp"
-#include "config.h"
 
 namespace PieceDummy
 {

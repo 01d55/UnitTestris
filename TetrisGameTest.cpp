@@ -1,11 +1,13 @@
 #include "TetrisGameTest.hpp"
 #include "TetrisGame.hpp"
+#include "PieceDummy.hpp"
 // Registers the fixture
 CPPUNIT_TEST_SUITE_REGISTRATION( TetrisGameTest );
 
 #include "config.h"
 #ifndef HAVE_STDCXX_0X
 #define nullptr 0
+#define constexpr const
 #endif // HAVE_STDCXX_0X
 
 #ifdef HAVE_STDCXX_SYNCH
@@ -18,6 +20,7 @@ typedef std::chrono::duration<mclock::rep,std::ratio<1,60>> duration_frames;
 void TetrisGameTest::setUp()
 {
   TetrisGameTest::dummyCount = 0;
+  PieceDummy::reset_all();
 }
 void TetrisGameTest::tearDown()
 {
@@ -88,11 +91,44 @@ void TetrisGameTest::testRunCallback()
 
 #ifdef HAVE_STDCXX_SYNCH
   std::this_thread::sleep_for(std::chrono::seconds(1));
+#else // HAVE_STDCXX_SYNCH
+#error NYI
 #endif // HAVE_STDCXX_SYNCH
 
   CPPUNIT_ASSERT( 0 == dummyCount );
 
+}
 
+void TetrisGameTest::whitebox_testRunCallback()
+{
+  TetrisGame game;
+  game.run();
+#ifdef HAVE_STDCXX_SYNCH
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+#else // HAVE_STDCXX_SYNCH
+#error NYI
+#endif // HAVE_STDCXX_SYNCH
+  game.pause();
+
+  CPPUNIT_ASSERT(0 < PieceDummy::count_timeStep());
+}
+
+void TetrisGameTest::whitebox_testInput()
+{
+  TetrisGame game;
+  constexpr PieceInput cinputs[5]={shift_right,shift_left,rotate_cw,rotate_ccw,hard_drop};
+  std::vector<PieceInput> inputs(cinputs,cinputs+5);
+
+  game.run();
+#ifdef HAVE_STDCXX_SYNCH
+  std::this_thread::sleep_for(duration_frames(2));
+#else // HAVE_STDCXX_SYNCH
+#error NYI
+#endif // HAVE_STD_CXX_SYNCH
+  game.pause();
+
+  CPPUNIT_ASSERT( PieceDummy::compare_handleInput_arg(inputs) );
+  
 }
 
 void TetrisGameTest::testExceptions()
