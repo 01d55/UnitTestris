@@ -1,6 +1,37 @@
 #include "PieceDummy.hpp"
 #include "Piece.hpp"
 
+namespace PieceDummy
+{
+  int timeStep_count=0;
+  std::vector<PieceInput> handleInput_args;
+
+  int count_timeStep()
+  {
+    return timeStep_count;
+  }
+
+  bool compare_handleInput_arg(const std::vector<PieceInput> &args)
+  {
+    return args == handleInput_args;
+  }
+
+
+  void reset_timeStep()
+  {
+    timeStep_count=0;
+  }
+  void reset_handleInput()
+  {
+    handleInput_args.clear();
+  }
+
+  void reset_all()
+  {
+    reset_timeStep();
+    reset_handleInput();
+  }
+}
 
 //public:
 Piece::Piece(PieceType t, unsigned int d, Field *f):
@@ -12,11 +43,13 @@ Piece::Piece(PieceType t, unsigned int d, Field *f):
 bool Piece::timeStep(unsigned int g) 
 {
   // STUB
+  ++PieceDummy::timeStep_count;
   return false;
 }
 bool Piece::handleInput(PieceInput in)
 {
   // STUB
+  PieceDummy::handleInput_args.push_back(in);
   return false;
 }
 
