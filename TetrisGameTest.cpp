@@ -75,6 +75,7 @@ void TetrisGameTest::testRunCallback()
 #else // HAVE_STDCXX_SYNCH
   CPPUNIT_ASSERT(0 < dummyCount);
 #endif // HAVE_STDCXX_SYNCH
+
   // Test that the destructor stops the internal thread.
 
   CPPUNIT_ASSERT_NO_THROW(mptr->run());
@@ -82,8 +83,15 @@ void TetrisGameTest::testRunCallback()
   CPPUNIT_ASSERT_NO_THROW(delete mptr);
 
   mptr=0;
-  // STUB
-  CPPUNIT_FAIL("NYI");
+
+  dummyCount=0;
+
+#ifdef HAVE_STDCXX_SYNCH
+  std::this_thread::sleep_for(std::chrono::seconds(1));
+#endif // HAVE_STDCXX_SYNCH
+
+  CPPUNIT_ASSERT( 0 == dummyCount );
+
 
 }
 

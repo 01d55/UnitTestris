@@ -12,6 +12,11 @@
    frame-based counters (e.g. gravity, lock delay). At the end of each loop, the 
    callback set by setRenderer will be called with read-only references to the Field, 
    current Piece, and hold Piece.
+
+   Neither TetrisGame nor the templated implementation of IRenderFunc synchronize with
+   other threads - the callback will be executed from the TetrisGame's thread and it is
+   the responsibility of that callback to aquire appropriate locks before modifying
+   client data.
  */
 class TetrisGame
 {
@@ -28,7 +33,9 @@ public:
   // Piece reference is the current piece, the piece pointer is the "hold" piece
   // The "hold" piece will be NULL if there is no "hold" piece.
   void setRenderer( IRenderFunc* callback ); // throw (GameRunningError);
-  // May be called only while the game is running. If the queue has multiple inputs,
+  // May be called only while the game is running. The internal thread will aquire a 
+  // lock and consume the entire queue once each frame, processing each input in the
+  // order it was recieved. 
   void queueInput(PieceInput in); //throw (GameNotRunningError);
 protected:
 private:
