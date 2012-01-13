@@ -27,8 +27,8 @@ public:
   ~TetrisGame();
 
   // Start/stop the thread.
-  void run() throw(GameRunningError);
-  void pause() throw(GameNotRunningError);
+  void run(); //throw(GameRunningError);
+  void pause(); //throw(GameNotRunningError);
   // Render callback. Calling during run is an error.
   // Piece reference is the current piece, the piece pointer is the "hold" piece
   // The "hold" piece will be NULL if there is no "hold" piece.
