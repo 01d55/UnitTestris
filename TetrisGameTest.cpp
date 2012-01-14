@@ -123,6 +123,12 @@ void TetrisGameTest::whitebox_testInput()
   std::vector<PieceInput> inputs(cinputs,cinputs+5);
 
   game.run();
+
+  std::for_each(inputs.begin(),inputs.end(),
+		[&game](PieceInput i)
+		{
+		  game.queueInput(i);
+		});
 #ifdef HAVE_STDCXX_SYNCH
   std::this_thread::sleep_for(duration_frames(2));
 #else // HAVE_STDCXX_SYNCH

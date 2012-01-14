@@ -42,7 +42,6 @@ public:
 protected:
 private:
   TetrisGame(const TetrisGame&); // Uncopyable
-  IRenderFunc *cb;
   std::unique_ptr<TetrisGame_impl> me;
 };
 #endif // TETRISGAME_HPP

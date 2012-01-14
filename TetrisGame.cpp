@@ -27,38 +27,43 @@ typedef std::chrono::duration<g_clock::rep,std::ratio<1,FPS*frame_err>> sleep_ti
 
 struct TetrisGame_impl
 {
-  const TetrisGame& parent;
+  IRenderFunc *cb;
   // Tetris members
-  static constexpr unsigned int gravity=1,lockdelay=30;
+  static constexpr unsigned int gravity=1,lockdelay=30,minBuffer=8;
   Field mField;
   Piece current, ghost;
+  std::vector<PieceInput> inputBuffer;
 
   // Threading members
-  std::atomic_bool is_paused,is_continuing;
-  std::mutex pause_mutex,cb_mutex;
-  std::unique_lock<std::mutex> pause_lock;
-  std::condition_variable pause_condition;
+  std::atomic_bool isPaused,isContinuing;
+  std::mutex pauseMutex,cbMutex,inputMutex;
+  std::unique_lock<std::mutex> pauseLock;
+  std::condition_variable pauseCondition;
   std::thread runner;
 
-  TetrisGame_impl(const TetrisGame &parent_):parent(parent_),
-					     mField(),current(I,lockdelay,&mField),
-					     ghost(I,lockdelay,&mField),
-					     is_paused(true),is_continuing(false),
-					     pause_mutex(),cb_mutex(),
-					     pause_lock(pause_mutex),
-					     pause_condition(),
-					     runner()
+  TetrisGame_impl(IRenderFunc *cb_):cb(cb_),
+				    mField(),current(I,lockdelay,&mField),
+				    ghost(I,lockdelay,&mField),inputBuffer(),
+				    isPaused(true),isContinuing(false),
+				    pauseMutex(),cbMutex(),
+				    pauseLock(pauseMutex),
+				    pauseCondition(),
+				    runner()
   {
-    pause_lock.unlock();
+    pauseLock.unlock();
+    inputBuffer.reserve(minBuffer);
   }
 
   ~TetrisGame_impl()
   {
     if(runner.joinable())
       {
-	is_continuing=false;
-	is_paused=false;
-	pause_condition.notify_all();
+	cbMutex.lock();
+	cb=nullptr;
+	cbMutex.unlock();
+	isContinuing=false;
+	isPaused=false;
+	pauseCondition.notify_all();
 	runner.join();
       }
   }
@@ -67,20 +72,23 @@ struct TetrisGame_impl
   void threadFunc()
   {
     
-    pause_lock.lock();
-    while(is_continuing)
+    pauseLock.lock();
+    while(isContinuing)
       {
-	while (is_paused)
+	while (isPaused)
 	  {
-	    pause_condition.wait(pause_lock);
+	    pauseCondition.wait(pauseLock);
 	  }
 	auto t0=g_clock::now();
-	cb_mutex.lock();
-	if(nullptr!=parent.cb)
+	cbMutex.lock();
+	if(nullptr!=cb)
 	  {
-	    (*parent.cb)(mField,current,nullptr);
+	    (*cb)(mField,current,nullptr);
 	  }
-	cb_mutex.unlock();
+	cbMutex.unlock();
+
+	consumeInput();
+
 
 	while(std::chrono::duration_cast<sleep_time>(g_clock::now()-t0).count() < frame_err)
 	  {
@@ -90,39 +98,50 @@ struct TetrisGame_impl
     
   }
 
+  void consumeInput()
+  {
+    inputMutex.lock();
+    std::vector<PieceInput> input(std::move(inputBuffer));
+    inputBuffer.clear();
+    inputBuffer.reserve(minBuffer);
+    inputMutex.unlock();
+    std::for_each(input.begin(),input.end(),
+		  [&current](PieceInput i)
+		  {
+		    current.handleInput(i);
+		  });
+  }
+
   void run()
   {
-    is_paused=false;
+    isPaused=false;
     if(!runner.joinable()) // Thread not yet initialized
       {
-	is_continuing=true;
+	isContinuing=true;
 	runner = std::thread( &TetrisGame_impl::threadFunc, this);
       }
     
-    pause_condition.notify_one();
+    pauseCondition.notify_one();
   }
     
 };
 
-TetrisGame::TetrisGame(): cb(nullptr),me(new TetrisGame_impl(*this))
+TetrisGame::TetrisGame(): me(new TetrisGame_impl(nullptr))
 {
 }
-TetrisGame::TetrisGame(IRenderFunc *callback):cb(callback),me(new TetrisGame_impl(*this))
+TetrisGame::TetrisGame(IRenderFunc *callback):me(new TetrisGame_impl(callback))
 {
 }
 
 TetrisGame::~TetrisGame()
 {
-  me->is_paused=true;
-  me->cb_mutex.lock();
-  cb=nullptr;
-  me->cb_mutex.unlock();
+
 }
 
 // Start the thread.
 void TetrisGame::run()
 {
-  if(!me->is_paused)
+  if(!me->isPaused)
     {
       throw GameRunningError();
     }
@@ -131,31 +150,32 @@ void TetrisGame::run()
 // Stop the thread, preserving current state.
 void TetrisGame::pause()
 {
-  if(me->is_paused)
+  if(me->isPaused)
     {
       throw GameNotRunningError();
     }
-  me->is_paused=true;
+  me->isPaused=true;
 }
 // Render callback. Calling during run is an error.
 void TetrisGame::setRenderer(IRenderFunc *callback)
 {
-  if(!me->is_paused)
+  if(!me->isPaused)
     {
       throw GameRunningError();
     }
 
-  me->cb_mutex.lock();
-  cb=callback;
-  me->cb_mutex.unlock();
+  me->cbMutex.lock();
+  me->cb=callback;
+  me->cbMutex.unlock();
 }
 // Control functions. May be called asyncronously.
-void TetrisGame::queueInput(PieceInput)
+void TetrisGame::queueInput(PieceInput in)
 {
-  if(me->is_paused)
+  if(me->isPaused)
     {
       throw GameNotRunningError();
     }
-
-  
+  me->inputMutex.lock();
+  me->inputBuffer.push_back(in);
+  me->inputMutex.unlock();
 }
