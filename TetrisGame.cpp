@@ -7,6 +7,12 @@
 #include <chrono>
 #include <thread>
 #include <condition_variable>
+
+
+typedef std::chrono::system_clock g_clock;
+constexpr unsigned frame_err=32;
+constexpr unsigned FPS=60;
+typedef std::chrono::duration<g_clock::rep,std::ratio<1,FPS*frame_err>> sleep_time;
 #else // HAVE_STDCXX_SYNCH
 #error NYI
 #endif // HAVE_STDCXX_SYNCH
@@ -16,9 +22,7 @@
 #define constexpr const
 #endif// HAVE_STDCXX_0X
 
-void foo()
-{
-}
+
 
 
 struct TetrisGame_impl
@@ -70,12 +74,18 @@ struct TetrisGame_impl
 	  {
 	    pause_condition.wait(pause_lock);
 	  }
+	auto t0=g_clock::now();
 	cb_mutex.lock();
 	if(nullptr!=parent.cb)
 	  {
 	    (*parent.cb)(mField,current,nullptr);
 	  }
 	cb_mutex.unlock();
+
+	while(std::chrono::duration_cast<sleep_time>(g_clock::now()-t0).count() < frame_err)
+	  {
+	    std::this_thread::sleep_for(sleep_time(1));
+	  }
       }
     
   }
