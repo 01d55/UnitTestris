@@ -5,25 +5,25 @@
 static const coord originI(5,20);
 static const coord originO(5,21);
 // Initial values of relative blocks, by type
-static const boost::array <coord,4> relative_I = {
+static const arrayt relative_I = {
   { coord(-2,0),coord(-1,0),coord(0,0),coord(1,0) }
 };
-static const boost::array <coord,4> relative_O = {
+static const arrayt relative_O = {
   { coord(-1,-1),coord(-1,0),coord(0,-1),coord(0,0) }
 };
-static const boost::array <coord,4> relative_L = {
+static const arrayt relative_L = {
   { coord(-1,0),coord(-0,0),coord(1,0),coord(1,1) }
 };
-static const boost::array <coord,4> relative_J = {
+static const arrayt relative_J = {
   { coord(-1,0),coord(-1,1),coord(0,0),coord(1,0) }
 };
-static const boost::array <coord,4> relative_S = {
+static const arrayt relative_S = {
   { coord(-1,0),coord(0,1),coord(0,0),coord(1,1) }
 };
-static const boost::array <coord,4> relative_Z = {
+static const arrayt relative_Z = {
   { coord(-1,1),coord(0,1),coord(0,0),coord(1,0) }
 };
-static const boost::array <coord,4> relative_T = {
+static const arrayt relative_T = {
   { coord(-1,0),coord(0,1),coord(0,0),coord(1,0) }
 };
 
@@ -150,9 +150,9 @@ coord Piece::getCenter() const
 {
   return center;
 }
-boost::array<coord,4> Piece::getBlocks() const
+arrayt Piece::getBlocks() const
 {
-  boost::array<coord,4> ret=relative_blocks;
+  arrayt ret=relative_blocks;
   for(int i=0;i<4;++i)
     {
       ret[i]+=center;
@@ -166,7 +166,7 @@ boost::array<coord,4> Piece::getBlocks() const
  */
 bool Piece::can_shift(const coord &displacement) const
 {
-  boost::array<coord,4>blocks=getBlocks();
+  arrayt blocks=getBlocks();
   
   for(int i=0;i<4;++i)
     {
@@ -188,7 +188,7 @@ bool Piece::can_shift(const coord &displacement) const
 /* Return true if every co-ord in blocks is in the field and
    is not filled.
 */
-bool Piece::can_place(boost::array<coord,4> blocks) const
+bool Piece::can_place(arrayt blocks) const
 {
   for(int i=0;i<4;++i)
     {
@@ -210,7 +210,7 @@ bool Piece::can_place(boost::array<coord,4> blocks) const
 // Rotate the relative blocks
 void Piece::rotate(PieceInput in)
 {
-  boost::array<coord,4> rblocks, blocks;
+  arrayt rblocks, blocks;
   int i;
   // Sanity check: this should never happen!
   if( in!=rotate_ccw && in!=rotate_cw)
@@ -305,7 +305,7 @@ void Piece::rotate(PieceInput in)
 // Put blocks in the field and lock self.
 void Piece::invoke_lock()
 {
-  boost::array<coord,4>blocks=getBlocks();
+  arrayt blocks=getBlocks();
   for(int i=0;i<4;++i)
     {
       field->set(blocks[i]);

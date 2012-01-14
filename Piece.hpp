@@ -3,9 +3,19 @@
 
 #include <stdexcept>
 #include <vector>
-#include <boost/array.hpp>
+
 #include "common.hpp"
 #include "Field.hpp"
+
+#include "config.h"
+#ifdef HAVE_STDCXX_0X
+#include <array>
+typedef std::array<coord,4> arrayt;
+#else // HAVE_STDCXX_0X
+#include <boost/array>
+typedef boost::array<coord,4> arrayt;
+#endif // HAVE_STDCXX_0X
+
 
 /* Piece
    The piece class enforces the following rules of Tetris: The piece enters play
@@ -42,7 +52,8 @@ public:
   bool handleInput(PieceInput in); //throw (PieceLockError);
 
   coord getCenter() const;
-  boost::array<coord,4> getBlocks() const;
+  arrayt getBlocks() const;
+
 
 private:
   PieceType type;
@@ -51,14 +62,15 @@ private:
 
   coord center;
   bool lock;
-  boost::array <coord,4> relative_blocks;
+  arrayt relative_blocks;
+
 
   bool can_shift (const coord &displacement) const;
   inline bool can_drop() const
   {
     return can_shift(coord(0,-1));
   }
-  bool can_place(boost::array<coord,4>) const;
+  bool can_place(arrayt) const;
   void rotate(PieceInput in); //throw (PieceInput);
 
   void invoke_lock();

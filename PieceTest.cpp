@@ -41,7 +41,7 @@ inline bool coordLess(coord a, coord b)
   return a.y<b.y;
 }
 
-inline bool testSameCoords(boost::array<coord,4>a,boost::array<coord,4>b)
+inline bool testSameCoords(arrayt a,arrayt b)
 {
   std::set<coord> ma(a.begin(),a.end()), mb(b.begin(),b.end());
   return ma==mb;
@@ -61,7 +61,7 @@ void PieceTest::testConstructor()
   unsigned int testDelay = 1;
   Field testField;
   coord testCoord(-1,-1);
-  boost::array<coord,4> expectedBlocks;
+  arrayt expectedBlocks;
 
 
   Piece *test_piece=NULL;
@@ -174,7 +174,7 @@ void PieceTest::testStep()
   Field testField;
   std::vector<Piece> testPieces;
   std::vector<Piece>::iterator itor;
-  boost::array<coord,4> expectedBlocks, blocks;
+  arrayt expectedBlocks, blocks;
   std::set<coord> args;
   testPieces.reserve(7); 
   testPieces.push_back(Piece(J,testDelay,&testField));
@@ -373,7 +373,7 @@ void PieceTest::testShift()
   coord testCoord(-1,-1), expectedCoord(-1,-1);
   Field testField;
   std::vector<Piece> testPieces;
-  boost::array<coord,4> expectedBlocks;
+  arrayt expectedBlocks;
 
   // I block
 
@@ -618,7 +618,7 @@ void PieceTest::testRotate()
   coord testCoord(-1,-1), expectedCoord(-1,-1);
   Field testField;
   std::vector<Piece> testPieces;
-  boost::array<coord,4> expectedBlocks;
+  arrayt expectedBlocks;
 
   
 
@@ -1871,7 +1871,7 @@ void PieceTest::testDrop()
   coord testCoord(-1,-1), expectedCoord(-1,-1);
   Field testField;
   std::vector<Piece> testPieces;
-  boost::array<coord,4> expectedBlocks,blocks;
+  arrayt expectedBlocks,blocks;
   std::vector<Piece>::iterator itor;
   std::set<coord> args;
 

@@ -58,10 +58,10 @@ coord Piece::getCenter() const
   // STUB
   return coord();
 }
-boost::array<coord,4> Piece::getBlocks() const
+arrayt Piece::getBlocks() const
 {
   // STUB
-  return boost::array<coord,4>();
+  return arrayt();
 }
 
 //private:
@@ -70,7 +70,7 @@ bool Piece::can_shift (const coord &displacement) const
   // STUB
   return false;
 }
-bool Piece::can_place(boost::array<coord,4>) const
+bool Piece::can_place(arrayt) const
 {
   // STUB
   return false;
