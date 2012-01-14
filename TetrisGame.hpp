@@ -3,7 +3,7 @@
 
 #include "RenderFunc.hpp"
 #include "common.hpp"
-
+#include <memory>
 /* TetrisGame
    A tetris game, running on its own thread. Attepts to execute the core loop once each 
    1/60th of a second.
@@ -18,8 +18,10 @@
    the responsibility of that callback to aquire appropriate locks before modifying
    client data.
  */
+struct TetrisGame_impl;
 class TetrisGame
 {
+  friend struct TetrisGame_impl;
 public:
   TetrisGame();
 
@@ -39,6 +41,8 @@ public:
   void queueInput(PieceInput in); //throw (GameNotRunningError);
 protected:
 private:
+  TetrisGame(const TetrisGame&); // Uncopyable
   IRenderFunc *cb;
+  std::unique_ptr<TetrisGame_impl> me;
 };
 #endif // TETRISGAME_HPP

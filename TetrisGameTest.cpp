@@ -1,6 +1,8 @@
 #include "TetrisGameTest.hpp"
 #include "TetrisGame.hpp"
 #include "PieceDummy.hpp"
+#include "Field.hpp"
+#include "Piece.hpp"
 // Registers the fixture
 CPPUNIT_TEST_SUITE_REGISTRATION( TetrisGameTest );
 
@@ -74,6 +76,7 @@ void TetrisGameTest::testRunCallback()
 #ifdef HAVE_STDCXX_SYNCH
   auto t1 = mclock::now();
   int frames = std::chrono::duration_cast<duration_frames>(t1-t0).count();
+  //std::cerr << dummyCount;
   CPPUNIT_ASSERT(0 == frames-dummyCount);
 #else // HAVE_STDCXX_SYNCH
   CPPUNIT_ASSERT(0 < dummyCount);
@@ -143,13 +146,12 @@ void TetrisGameTest::testExceptions()
 
   CPPUNIT_ASSERT_THROW(game.setRenderer(&dummyRenderFunctor) , GameRunningError);
   CPPUNIT_ASSERT_THROW(game.run() , GameRunningError);
-  CPPUNIT_FAIL("NYI");
 }
 
 void TetrisGameTest::dummyRenderCallback(const Field &afield, const Piece & curr, 
 					 const Piece * ghost)
 {
-  ++dummyCount;
+  dummyCount=dummyCount+1;
 }
 
 #ifdef HAVE_STDCXX_SYNCH
