@@ -7,7 +7,9 @@
 CPPUNIT_TEST_SUITE_REGISTRATION( TetrisGameTest );
 
 #include "config.h"
-#ifndef HAVE_STDCXX_0X
+#ifdef HAVE_STDCXX_0X
+#include <algorithm>
+#else // HAVE_STDCXX_0X
 #define nullptr 0
 #define constexpr const
 #endif // HAVE_STDCXX_0X

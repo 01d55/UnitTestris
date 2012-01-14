@@ -17,10 +17,13 @@ typedef std::chrono::duration<g_clock::rep,std::ratio<1,FPS*frame_err>> sleep_ti
 #error NYI
 #endif // HAVE_STDCXX_SYNCH
 
-#ifndef HAVE_STDCXX_0x
+#ifdef HAVE_STDCXX_0X
+#include <random>
+#include <algorithm>
+#else // HAVE_STDCXX_0X
 #define nullptr 0
 #define constexpr const
-#endif// HAVE_STDCXX_0X
+#endif // HAVE_STDCXX_0X
 
 
 
@@ -29,10 +32,15 @@ struct TetrisGame_impl
 {
   IRenderFunc *cb;
   // Tetris members
-  static constexpr unsigned int gravity=1,lockdelay=30,minBuffer=8;
+  static constexpr unsigned int lockdelay=30,minBuffer=8;
+  typedef std::ratio<1,30> gravity;
+  unsigned int timeCount;
   Field mField;
   Piece current, ghost;
   std::vector<PieceInput> inputBuffer;
+  // Randomized generation
+  std::default_random_engine re;
+  std::uniform_int_distribution<> pieces;
 
   // Threading members
   std::atomic_bool isPaused,isContinuing;
@@ -41,9 +49,10 @@ struct TetrisGame_impl
   std::condition_variable pauseCondition;
   std::thread runner;
 
-  TetrisGame_impl(IRenderFunc *cb_):cb(cb_),
+  TetrisGame_impl(IRenderFunc *cb_):cb(cb_), timeCount(0),
 				    mField(),current(I,lockdelay,&mField),
 				    ghost(I,lockdelay,&mField),inputBuffer(),
+				    re(),pieces(shift_right,hard_drop),
 				    isPaused(true),isContinuing(false),
 				    pauseMutex(),cbMutex(),
 				    pauseLock(pauseMutex),
@@ -80,16 +89,18 @@ struct TetrisGame_impl
 	    pauseCondition.wait(pauseLock);
 	  }
 	auto t0=g_clock::now();
+	//
+	consumeInput();
+	//
+	timeStep();
+	// Render
 	cbMutex.lock();
 	if(nullptr!=cb)
 	  {
 	    (*cb)(mField,current,nullptr);
 	  }
 	cbMutex.unlock();
-
-	consumeInput();
-
-
+	// Cap game speed
 	while(std::chrono::duration_cast<sleep_time>(g_clock::now()-t0).count() < frame_err)
 	  {
 	    std::this_thread::sleep_for(sleep_time(1));
@@ -106,10 +117,36 @@ struct TetrisGame_impl
     inputBuffer.reserve(minBuffer);
     inputMutex.unlock();
     std::for_each(input.begin(),input.end(),
-		  [&current](PieceInput i)
+		  [&current,this](PieceInput i)
 		  {
-		    current.handleInput(i);
+		    if(current.handleInput(i))
+		      {
+			newPiece();
+		      }
 		  });
+  }
+
+  void newPiece()
+  {
+    PieceType t=(PieceType)pieces(re);
+    current.~Piece();
+    new(&current) Piece(t,lockdelay,&mField);
+  }
+
+  void timeStep()
+  {
+    if( (timeCount * gravity::num) / gravity::den > 0)
+      {
+	if(current.timeStep(1))
+	  {
+	    newPiece();
+	  }
+	timeCount=0;
+      }
+    else
+      {
+	++timeCount;
+      }
   }
 
   void run()
@@ -117,6 +154,8 @@ struct TetrisGame_impl
     isPaused=false;
     if(!runner.joinable()) // Thread not yet initialized
       {
+	timeCount=0;
+	newPiece();
 	isContinuing=true;
 	runner = std::thread( &TetrisGame_impl::threadFunc, this);
       }
