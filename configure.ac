@@ -11,7 +11,7 @@ AC_PROG_CXX
 
 AC_CHECK_PROG(HAVE_FLUID,fluid,yes)
 AS_IF([test x"${HAVE_FLUID}" != x"yes" ],
-[ AC_MSG_ERROR( [Cannot compile without fluid!] ) ])
+[ AC_MSG_ERROR( [Cannot compile without fluid] ) ])
 
 AC_CHECK_PROG(HAVE_FLTK_CONFIG,fltk-config,yes)
 AS_IF([test x"${HAVE_FLTK_CONFIG}" != x"yes" ],
@@ -31,6 +31,10 @@ dnl Custom checks for C++11 features
 
 AX_CXX_USE_STDCXX_11
 AX_CXX_STDCXX_SYNCH
+
+dnl For now, error out if C++11 isn't available
+AS_IF([test "ac_cv_cxx_compile_cxx0x_native" != "yes" && test x"${CXX11FLAG}" = x""],
+[AC_MSG_ERROR([Cannot compile without c++11 features in the compiler])])
 
 
 dnl Get fltk compile & link flags
