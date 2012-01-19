@@ -6,7 +6,7 @@ bin_PROGRAMS = tetris_fltk
 
 tetris_fltk_SOURCES = main_fltk.cpp Tetris_fltkgui.cpp Tetris_fltkgui.hpp\
 Field.hpp Field.cpp Piece.hpp Piece.cpp Fl_Gl_Tetris.hpp Fl_Gl_Tetris.cpp\
-RenderFunc.hpp
+RenderFunc.hpp TetrisGame.hpp TetrisGame.cpp
 tetris_fltk_CXXFLAGS = $(FLTK_CXXFLAGS) $(CXX11FLAG)
 tetris_fltk_LDADD = $(FLTK_LDADD)
 
