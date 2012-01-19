@@ -47,11 +47,13 @@ Fl_Gl_Tetris::~Fl_Gl_Tetris()
 // Callbacks named in tetris_fltkgui.fl
 void Fl_Gl_Tetris::setGridMode(char mode)
 {
-  gmod=mode;
+  gmod=(bool)mode;
+
 }
 void Fl_Gl_Tetris::setColorMode(char mode)
 {
-  cmod=mode;
+  cmod=(bool)mode;
+
 }
 void Fl_Gl_Tetris::startTetris()
 {

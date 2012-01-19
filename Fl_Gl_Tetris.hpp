@@ -47,7 +47,7 @@ public:
   void draw();
 protected:
 private:
-  char gmod,cmod;
+  bool gmod,cmod;
 
   DataDoubleBuffer mBuff;
   RenderFunc<DataDoubleBuffer> mCB;

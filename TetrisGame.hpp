@@ -41,7 +41,7 @@ public:
   void queueInput(PieceInput in); //throw (GameNotRunningError);
 protected:
 private:
-  TetrisGame(const TetrisGame&); // Uncopyable
+  TetrisGame(const TetrisGame&) = delete; // Uncopyable
   std::unique_ptr<TetrisGame_impl> me;
 };
 #endif // TETRISGAME_HPP
