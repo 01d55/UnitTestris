@@ -3,7 +3,11 @@
 
 #include <mutex>
 
+// Get full openGL API from FL/gl.h
+#define GL_GLEXT_PROTOTYPES 1
+
 #include <FL/Fl.H>
+#include <FL/gl.h>
 #include <FL/Fl_Gl_Window.H>
 #include "TetrisGame.hpp"
 #include "Field.hpp"
@@ -48,6 +52,7 @@ public:
 protected:
 private:
   bool gmod,cmod;
+  GLuint squareVBO,squareTexID;
 
   DataDoubleBuffer mBuff;
   RenderFunc<DataDoubleBuffer> mCB;
