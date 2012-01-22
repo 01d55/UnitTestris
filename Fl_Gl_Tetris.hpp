@@ -4,7 +4,9 @@
 #include <mutex>
 
 // Get full openGL API from FL/gl.h
+#ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES 1
+#endif
 
 #include <FL/Fl.H>
 #include <FL/gl.h>

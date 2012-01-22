@@ -67,11 +67,11 @@ Fl_Gl_Tetris::Fl_Gl_Tetris( int x,int y,int w,int h, const char *l):
        0.5f, 0.5f,0.0f,
        1.0f, 1.0f,
        0.5f,-0.5f,0.0f,
-       1.0f,-1.0f,
+       1.0f,-0.0f,
       -0.5f,-0.5f,0.0f,
-      -1.0f,-1.0f,
+      -0.0f,-0.0f,
       -0.5f, 0.5f,0.0f,
-      -1.0f, 1.0f
+      -0.0f, 1.0f
     };
   glBufferData(GL_ARRAY_BUFFER,sqSize,square,GL_STATIC_DRAW);
   // Set up texture
