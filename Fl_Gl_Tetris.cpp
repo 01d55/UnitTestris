@@ -97,11 +97,15 @@ void Fl_Gl_Tetris::setColorMode(char mode)
 }
 void Fl_Gl_Tetris::startTetris()
 {
-  // STUB
+  mGame.run();
 }
 void Fl_Gl_Tetris::reset()
 {
-  // STUB
+  mGame.~TetrisGame();
+  new(&mGame) TetrisGame(&mCB);
+  
+  mBuff.~DataDoubleBuffer();
+  new(&mBuff) DataDoubleBuffer();
 }
 
 //
