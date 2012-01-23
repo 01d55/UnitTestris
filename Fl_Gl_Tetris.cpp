@@ -157,8 +157,8 @@ void Fl_Gl_Tetris::initGL()
 	       texdata);
   delete[] texdata;
   // Set up shader program
-  char constexpr * VERT_SHADER_PATH="shaders/default.vert";
-  char constexpr * FRAG_SHADER_PATH="shaders/default.frag";
+  char constexpr VERT_SHADER_PATH[]="shaders/default.vert";
+  char constexpr FRAG_SHADER_PATH[]="shaders/default.frag";
   retcode=LoadShader(VERT_SHADER_PATH,FRAG_SHADER_PATH,
 		     true,false,false,
 		     shaderProgram,vertexShader,fragShader);

@@ -6,9 +6,6 @@
 #include <sstream>
 #include <fstream>
 
-using std::cout;
-using std::endl;
-#define FALSE GL_FALSE
 
 /*
   Code copied from 
@@ -25,7 +22,7 @@ std::string loadFile(const char *fname)
   std::ifstream file(fname);
   if(!file.is_open())
     {
-      cout << "Unable to open file " << fname << endl;
+      std::cout << "Unable to open file " << fname << std::endl;
       exit(1);
     }
   
@@ -53,7 +50,7 @@ void printShaderInfoLog(GLint shader)
       infoLog = new GLchar[infoLogLen];
       // error check for fail to allocate memory omitted
       glGetShaderInfoLog(shader, infoLogLen, &charsWritten, infoLog);
-      cout << "InfoLog : " << endl << infoLog << endl;
+      std::cout << "InfoLog : " << std::endl << infoLog << std::endl;
       delete [] infoLog;
     }
 }
@@ -92,9 +89,9 @@ int LoadShader(const char *pfilePath_vs, const char *pfilePath_fs, bool bindTexC
   
   glCompileShader(vertexShader);
   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &compiled);
-  if(compiled==FALSE)
+  if(compiled==GL_FALSE)
     {
-      cout << "Vertex shader not compiled." << endl;
+      std::cout << "Vertex shader not compiled." << std::endl;
       printShaderInfoLog(vertexShader);
       
       glDeleteShader(vertexShader);
@@ -107,9 +104,9 @@ int LoadShader(const char *pfilePath_vs, const char *pfilePath_fs, bool bindTexC
   
   glCompileShader(fragmentShader);
   glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &compiled);
-  if(compiled==FALSE)
+  if(compiled==GL_FALSE)
     {
-      cout << "Fragment shader not compiled." << endl;
+      std::cout << "Fragment shader not compiled." << std::endl;
       printShaderInfoLog(fragmentShader);
       
       glDeleteShader(vertexShader);
@@ -140,9 +137,9 @@ int LoadShader(const char *pfilePath_vs, const char *pfilePath_fs, bool bindTexC
   
   GLint IsLinked;
   glGetProgramiv(shaderProgram, GL_LINK_STATUS, (GLint *)&IsLinked);
-  if(IsLinked==FALSE)
+  if(IsLinked==GL_FALSE)
     {
-      cout << "Failed to link shader." << endl;
+      std::cout << "Failed to link shader." << std::endl;
       
       GLint maxLength;
       glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &maxLength);
@@ -150,7 +147,7 @@ int LoadShader(const char *pfilePath_vs, const char *pfilePath_fs, bool bindTexC
 	{
 	  char *pLinkInfoLog = new char[maxLength];
 	  glGetProgramInfoLog(shaderProgram, maxLength, &maxLength, pLinkInfoLog);
-	  cout << pLinkInfoLog << endl;
+	  std::cout << pLinkInfoLog << std::endl;
 	  delete [] pLinkInfoLog;
 	}
       
