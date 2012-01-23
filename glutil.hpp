@@ -63,9 +63,7 @@ int LoadShader(const char *pfilePath_vs, const char *pfilePath_fs, bool bindTexC
   vertexShader=0;
   fragmentShader=0;
   
-  // load shaders & get length of each
-  int vlen;
-  int flen;
+  // load shaders
   std::string vertexShaderString = loadFile(pfilePath_vs);
   std::string fragmentShaderString = loadFile(pfilePath_fs);
   
@@ -84,8 +82,8 @@ int LoadShader(const char *pfilePath_vs, const char *pfilePath_fs, bool bindTexC
   
   const char *vertexShaderCStr = vertexShaderString.c_str();
   const char *fragmentShaderCStr = fragmentShaderString.c_str();
-  glShaderSource(vertexShader, 1, (const GLchar **)&vertexShaderCStr, &vlen);
-  glShaderSource(fragmentShader, 1, (const GLchar **)&fragmentShaderCStr, &flen);
+  glShaderSource(vertexShader, 1, (const GLchar **)&vertexShaderCStr, nullptr);
+  glShaderSource(fragmentShader, 1, (const GLchar **)&fragmentShaderCStr, nullptr);
   
   GLint compiled;
   
