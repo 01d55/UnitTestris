@@ -61,16 +61,25 @@ Fl_Gl_Tetris::Fl_Gl_Tetris( int x,int y,int w,int h, const char *l):
 }
 Fl_Gl_Tetris::~Fl_Gl_Tetris()
 {
-  glDeleteBuffers(1,&squareVBO);
-  glDeleteTextures(1,&squareTexID);
-  // Shader cleanup
-  glDetachShader(shaderProgram, vertexShader);
-  glDetachShader(shaderProgram, fragShader);
+  if(mGLready)
+    {
+      glBindBuffer(GL_ARRAY_BUFFER,0);
+      glDeleteBuffers(1,&squareVBO);
 
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragShader);
+      glBindTexture(GL_TEXTURE_2D,0);
+      glDeleteTextures(1,&squareTexID);
+      // Shader cleanup
 
-  glDeleteProgram(shaderProgram);
+      glUseProgram(0);
+
+      glDetachShader(shaderProgram, vertexShader);
+      glDetachShader(shaderProgram, fragShader);
+      
+      glDeleteShader(vertexShader);
+      glDeleteShader(fragShader);
+      
+      glDeleteProgram(shaderProgram);
+    }
   
 }
 
@@ -166,5 +175,7 @@ void Fl_Gl_Tetris::initGL()
     {
       throw std::runtime_error("Shader loading failed");
     }
+  glUseProgram(shaderProgram);
+
   mGLready=true;
 }
