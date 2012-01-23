@@ -1,5 +1,5 @@
 #include "Fl_Gl_Tetris.hpp"
-
+#include "glutil.hpp"
 
 #define WBUFF swapped ? 1:0;
 #define RBUFF swapped ? 0:1;
@@ -54,55 +54,24 @@ const DataBuffer& DataDoubleBuffer::swap_and_read()
 
 Fl_Gl_Tetris::Fl_Gl_Tetris( int x,int y,int w,int h, const char *l):
   Fl_Gl_Window(x,y,w,h,l),
-  squareVBO(0),squareTexID(0),gmod(0),cmod(0),
+  gmod(false),cmod(false),mGLready(false),
+  squareVBO(0),squareTexID(0),shaderProgram(0),vertexShader(0),fragShader(0),
   mBuff(),mCB(&mBuff,&DataDoubleBuffer::write),mGame(&mCB)
 {
-  glGenBuffers(1,&squareVBO);
-  glGenTextures(1,&squareTexID);
-  // Set up Buffer Object
-  glBindBuffer(GL_ARRAY_BUFFER,squareVBO);
-  constexpr GLsizeiptr sqSize = sizeof(GLfloat)*4*(3+2);
-  constexpr GLfloat square[4*(3+2)]=
-    {// Space+texture co-ordinates, Specified in clockwise order
-       0.5f, 0.5f,0.0f,
-       1.0f, 1.0f,
-       0.5f,-0.5f,0.0f,
-       1.0f,-0.0f,
-      -0.5f,-0.5f,0.0f,
-      -0.0f,-0.0f,
-      -0.5f, 0.5f,0.0f,
-      -0.0f, 1.0f
-    };
-  glBufferData(GL_ARRAY_BUFFER,sqSize,square,GL_STATIC_DRAW);
-  // Set up texture
-  // To avoid dealing with files, generate a simple texture.
-  constexpr unsigned TEXDIMENSION=256,TEXBUFFSIZE=TEXDIMENSION*TEXDIMENSION;
-  BGRA *texdata=new BGRA[TEXBUFFSIZE];
-  for(unsigned i=0;i<TEXDIMENSION;++i)
-    {
-      for(unsigned j=0;j<TEXDIMENSION;++j)
-	{
-	  unsigned idist=std::min(TEXDIMENSION-i,i);
-	  unsigned jdist=std::min(TEXDIMENSION-j,j);
-	  unsigned dist=std::min(idist,jdist);
-	  GLfloat value=((GLfloat)dist)/TEXDIMENSION;
-	  texdata[i*TEXDIMENSION+j].r=
-	    texdata[i*TEXDIMENSION+j].g=
-	    texdata[i*TEXDIMENSION+j].b=value;
-	}
-    }
-  // Copy the generated texure into GL controlled memory
-  glBindTexture(GL_TEXTURE_2D,squareTexID);
-  glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,
-	      TEXDIMENSION,TEXDIMENSION,0,
-	      GL_BGRA,GL_FLOAT,
-	      texdata);
-  delete[] texdata;
 }
 Fl_Gl_Tetris::~Fl_Gl_Tetris()
 {
   glDeleteBuffers(1,&squareVBO);
   glDeleteTextures(1,&squareTexID);
+  // Shader cleanup
+  glDetachShader(shaderProgram, vertexShader);
+  glDetachShader(shaderProgram, fragShader);
+
+  glDeleteShader(vertexShader);
+  glDeleteShader(fragShader);
+
+  glDeleteProgram(shaderProgram);
+  
 }
 
 // Callbacks named in tetris_fltkgui.fl
@@ -129,4 +98,73 @@ void Fl_Gl_Tetris::reset()
 void Fl_Gl_Tetris::draw()
 {
   // STUB
+  if(!mGLready)
+    {
+      initGL();
+    }
+}
+
+// Private functions
+
+void Fl_Gl_Tetris::initGL()
+{
+  GLint retcode=-1;
+
+  glGetIntegerv(GL_MAJOR_VERSION,&retcode);  
+  std::cout << "GL version: " << retcode << '.';
+  glGetIntegerv(GL_MINOR_VERSION,&retcode);
+  std::cout << retcode << '\n';
+  
+  glGenBuffers(1,&squareVBO);
+  glGenTextures(1,&squareTexID);
+  // Set up Buffer Object
+  glBindBuffer(GL_ARRAY_BUFFER,squareVBO);
+  constexpr GLsizeiptr sqSize = sizeof(GLfloat)*4*(3+2);
+  constexpr GLfloat square[4*(3+2)]=
+    {// Space+texture co-ordinates, Specified in clockwise order
+      0.5f, 0.5f,0.0f,
+      1.0f, 1.0f,
+      0.5f,-0.5f,0.0f,
+      1.0f,-0.0f,
+      -0.5f,-0.5f,0.0f,
+      -0.0f,-0.0f,
+      -0.5f, 0.5f,0.0f,
+      -0.0f, 1.0f
+    };
+  glBufferData(GL_ARRAY_BUFFER,sqSize,square,GL_STATIC_DRAW);
+  // Set up texture
+  // To avoid dealing with files, generate a simple texture.
+  constexpr unsigned TEXDIMENSION=256,TEXBUFFSIZE=TEXDIMENSION*TEXDIMENSION;
+  BGRA *texdata=new BGRA[TEXBUFFSIZE];
+  for(unsigned i=0;i<TEXDIMENSION;++i)
+    {
+      for(unsigned j=0;j<TEXDIMENSION;++j)
+	{
+	  unsigned idist=std::min(TEXDIMENSION-i,i);
+	  unsigned jdist=std::min(TEXDIMENSION-j,j);
+	  unsigned dist=std::min(idist,jdist);
+	  GLfloat value=((GLfloat)dist)/TEXDIMENSION;
+	  texdata[i*TEXDIMENSION+j].r=
+	    texdata[i*TEXDIMENSION+j].g=
+	    texdata[i*TEXDIMENSION+j].b=value;
+	}
+    }
+  // Copy the generated texure into GL controlled memory
+  glBindTexture(GL_TEXTURE_2D,squareTexID);
+  glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,
+	       TEXDIMENSION,TEXDIMENSION,0,
+	       GL_BGRA,GL_FLOAT,
+	       texdata);
+  delete[] texdata;
+  // Set up shader program
+  char constexpr * VERT_SHADER_PATH="shaders/default.vert";
+  char constexpr * FRAG_SHADER_PATH="shaders/default.frag";
+  retcode=LoadShader(VERT_SHADER_PATH,FRAG_SHADER_PATH,
+		     true,false,false,
+		     shaderProgram,vertexShader,fragShader);
+  if(-1==retcode)
+    {
+      throw std::runtime_error("Shader loading failed");
+    }
+  mGLready=true;
 }

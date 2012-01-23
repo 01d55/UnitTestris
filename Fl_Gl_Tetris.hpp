@@ -53,12 +53,15 @@ public:
   void draw();
 protected:
 private:
-  bool gmod,cmod;
-  GLuint squareVBO,squareTexID;
+  bool gmod,cmod,mGLready;
+  GLuint squareVBO,squareTexID,
+    shaderProgram,vertexShader,fragShader;
 
   DataDoubleBuffer mBuff;
   RenderFunc<DataDoubleBuffer> mCB;
   TetrisGame mGame;
+
+  void initGL();
 
 };
 
