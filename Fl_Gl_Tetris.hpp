@@ -49,18 +49,21 @@ public:
   void startTetris();
   void reset();
 
-  //
-  void draw();
 protected:
+  // The first call to draw will call initGL, which may throw.
+  virtual void draw();
+
 private:
   bool gmod,cmod,mGLready;
   GLuint squareVBO,squareTexID,
     shaderProgram,vertexShader,fragShader;
+  GLint projectionUniform,modelviewUniform;
 
   DataDoubleBuffer mBuff;
   RenderFunc<DataDoubleBuffer> mCB;
   TetrisGame mGame;
 
+  // Throws std::runtime_error if shader loading fails.
   void initGL();
 
 };

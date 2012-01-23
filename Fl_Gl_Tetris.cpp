@@ -56,6 +56,7 @@ Fl_Gl_Tetris::Fl_Gl_Tetris( int x,int y,int w,int h, const char *l):
   Fl_Gl_Window(x,y,w,h,l),
   gmod(false),cmod(false),mGLready(false),
   squareVBO(0),squareTexID(0),shaderProgram(0),vertexShader(0),fragShader(0),
+  projectionUniform(-1),modelviewUniform(-1),
   mBuff(),mCB(&mBuff,&DataDoubleBuffer::write),mGame(&mCB)
 {
 }
@@ -111,6 +112,12 @@ void Fl_Gl_Tetris::draw()
     {
       initGL();
     }
+  const DataBuffer & gameState=mBuff.swap_and_read();
+  float Projection[16],Modelview[16];
+
+  // Begin GL operations
+  glClear(GL_COLOR_BUFFER_BIT);
+
 }
 
 // Private functions
@@ -173,9 +180,19 @@ void Fl_Gl_Tetris::initGL()
 		     shaderProgram,vertexShader,fragShader);
   if(-1==retcode)
     {
-      throw std::runtime_error("Shader loading failed");
+      throw std::runtime_error("Shader loading failed.");
     }
   glUseProgram(shaderProgram);
+
+  GLchar constexpr PROJECTION_UNIFORM_NAME[]="Projection";
+  GLchar constexpr MODELVIEW_UNIFORM_NAME[]="Modelview";
+  projectionUniform=glGetUniformLocation(shaderProgram,PROJECTION_UNIFORM_NAME);
+  modelviewUniform=glGetUniformLocation(shaderProgram,MODELVIEW_UNIFORM_NAME);
+
+  if(-1==projectionUniform || -1 == modelviewUniform)
+    {
+      throw std::runtime_error("Uniform name loading failed.");
+    }
 
   mGLready=true;
 }
