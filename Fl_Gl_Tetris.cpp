@@ -54,16 +54,20 @@ const DataBuffer& DataDoubleBuffer::swap_and_read()
 
 Fl_Gl_Tetris::Fl_Gl_Tetris( int x,int y,int w,int h, const char *l):
   Fl_Gl_Window(x,y,w,h,l),
-  gmod(false),cmod(false),mGLready(false),
-  squareVBO(0),squareTexID(0),shaderProgram(0),vertexShader(0),fragShader(0),
+  gmod(false),cmod(false),
+  squareVBO(0),squareTexID(0),squareIBO(0),VAO(0),
+  shaderProgram(0),vertexShader(0),fragShader(0),
   projectionUniform(-1),modelviewUniform(-1),tintUniform(-1),
   mBuff(),mCB(&mBuff,&DataDoubleBuffer::write),mGame(&mCB)
 {
 }
 Fl_Gl_Tetris::~Fl_Gl_Tetris()
 {
-  if(mGLready)
+  if(context_valid())
     {
+      glBindVertexArray(0);
+      glDeleteVertexArrays(1,&VAO);
+
       glBindBuffer(GL_ARRAY_BUFFER,0);
       glDeleteBuffers(1,&squareVBO);
 
@@ -88,16 +92,17 @@ Fl_Gl_Tetris::~Fl_Gl_Tetris()
 void Fl_Gl_Tetris::setGridMode(char mode)
 {
   gmod=(bool)mode;
-
+  redraw();
 }
 void Fl_Gl_Tetris::setColorMode(char mode)
 {
   cmod=(bool)mode;
-
+  redraw();
 }
 void Fl_Gl_Tetris::startTetris()
 {
   mGame.run();
+  redraw();
 }
 void Fl_Gl_Tetris::reset()
 {
@@ -106,52 +111,95 @@ void Fl_Gl_Tetris::reset()
   
   mBuff.~DataDoubleBuffer();
   new(&mBuff) DataDoubleBuffer();
+
+  redraw();
 }
 
 // Protected functions
 
 void Fl_Gl_Tetris::draw()
 {
-  // STUB
-  if(!mGLready)
+  static GLfloat Projection[16];
+  static int width,height;
+
+  if(!context_valid())
     {
       initGL();
     }
+  if(!valid())
+    {
+      width=w();
+      height=h();
+      // Set up viewport
+      glViewport(0,0,width,height);
+      // Set up projection
+      memset(Projection,0,sizeof(Projection));
+      Projection[0]=1.0f;// /width;
+      Projection[5]=1.0f;// /height;
+      Projection[10]=1.0f;
+      Projection[15]=1.0f;
+    }
+  //std::cout << "Beginning draw\n";
+  //printGlError();
   const DataBuffer & gameState=mBuff.swap_and_read();
   /* TODO: Use a proper matrix class & have a stack of said class with which to do proper
      transform matrix composition.
      (LilyUtils' matrix looks good. TODO: Figure out a sensible way to merge that repo 
      into our repo)
   */
-  GLfloat Projection[16],Modelview[16];
-  memset(Projection,0,sizeof(Projection));
+  GLfloat Modelview[16];
   memset(Modelview,0,sizeof(Modelview));
-  Projection[0]=Modelview[0]=1.0f;
-  Projection[5]=Modelview[5]=1.0f;
-  Projection[10]=Modelview[10]=1.0f;
-  Projection[15]=Modelview[15]=1.0f;
+  Modelview[0]=1.0f;
+  Modelview[5]=1.0f;
+  Modelview[10]=1.0f;
+  Modelview[15]=1.0f;
 
   // Begin GL operations
   glClear(GL_COLOR_BUFFER_BIT);
   glUniformMatrix4fv(projectionUniform,1,GL_FALSE,Projection);
   // TODO: Use a vector struct to hold color values, preferably as named constants
   // Draw a grey square for each block in the field which is set.
-  glUniform3f(tintUniform, 0.8f, 0.8f, 0.8f);// TODO: GREY_COLOR
+  glUniform4f(tintUniform, 0.8f, 0.8f, 0.8f,1.0f);// TODO: GREY_COLOR
+  //std::cout << "Entering field loop\n";
+  //printGlError();
+  // Draw blocks set in field
   for(unsigned i=0;i<FIELD_WIDTH;++i)
     {
       for(unsigned j=0;j<FIELD_HEIGHT;++j)
 	{
 	  if(gameState.field.get(i,j))
 	    {
-	      Modelview[3]=i;
-	      Modelview[7]=j;
+	      Modelview[3]=i*Modelview[0];
+	      Modelview[7]=j*Modelview[5];
 	      glUniformMatrix4fv(modelviewUniform,1,GL_FALSE,Modelview);
-	      
+	      glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT,0);
 	    }
 	}
     }
   Modelview[3]=0;
   Modelview[7]=0;
+
+  //std::cout << "Entering current piece loop\n";
+  //printGlError();
+  // Draw current piece
+  arrayt blocks=gameState.current.getBlocks();
+  for(auto block : blocks)
+    {
+      Modelview[3]=block.x*Modelview[0];
+      Modelview[7]=block.y*Modelview[5];
+      glUniformMatrix4fv(modelviewUniform,1,GL_FALSE,Modelview);
+      glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT,0);
+    }
+  //std::cout << "Drawing test square\n";
+  //printGlError();
+  // Test square
+  Modelview[3]=0.5f;
+  Modelview[7]=0.5f;
+  glUniform4f(tintUniform, 1.0f, 1.0f, 1.0f, 1.0f);
+  glUniformMatrix4fv(modelviewUniform,1,GL_FALSE,Modelview);
+  glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT,0);
+  //std::cout << "draw() finished\n";
+  printGlError(); // Keep this to tell us if we need to go fishing.
 }
 
 // Private functions
@@ -164,11 +212,21 @@ void Fl_Gl_Tetris::initGL()
   std::cout << "GL version: " << retcode << '.';
   glGetIntegerv(GL_MINOR_VERSION,&retcode);
   std::cout << retcode << '\n';
-  
+
+  // Set up some global state
+  glDisable(GL_CULL_FACE);
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_SCISSOR_TEST);
+
+
+  // Set up VAO
+  glGenVertexArrays(1,&VAO);
+  glBindVertexArray(VAO);
+
+  // Set up Buffer Objects
   glGenBuffers(1,&squareVBO);
-  glGenTextures(1,&squareTexID);
-  // Set up Buffer Object
   glBindBuffer(GL_ARRAY_BUFFER,squareVBO);
+
   constexpr GLsizei STRIDE=sizeof(GLfloat)*(3+2);
   constexpr GLsizeiptr sqSize = STRIDE*4;
   constexpr GLfloat square[4*(3+2)]=
@@ -182,10 +240,24 @@ void Fl_Gl_Tetris::initGL()
       -0.5f, 0.5f,0.0f,
       -0.0f, 1.0f
     };
-  constexpr GLvoid* TEX0_OFFSET=(GLvoid*)(&square[3]-&square[0]);
+  constexpr GLvoid* TEX0_OFFSET=BUFFER_OFFSET(sizeof(float)*3);
   glBufferData(GL_ARRAY_BUFFER,sqSize,square,GL_STATIC_DRAW);
+
+  glGenBuffers(1,&squareIBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,squareIBO);
+
+  constexpr GLushort squareIDX[3*2]=
+    { // Triangle indices
+      0,3,1,
+      2,1,3
+    };
+  constexpr GLsizeiptr squareIDXsize=sizeof(squareIDX);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,squareIDXsize,squareIDX,GL_STATIC_DRAW);
+
+
   // Set up texture
   // To avoid dealing with files, generate a simple texture.
+  glGenTextures(1,&squareTexID);
   constexpr unsigned TEXDIMENSION=256,TEXBUFFSIZE=TEXDIMENSION*TEXDIMENSION;
   BGRA *texdata=new BGRA[TEXBUFFSIZE];
   for(unsigned i=0;i<TEXDIMENSION;++i)
@@ -232,18 +304,22 @@ void Fl_Gl_Tetris::initGL()
       throw std::runtime_error("Uniform name loading failed.");
     }
 
+
   glVertexAttribPointer(INVERTEX_ATTRIB_LOC,
 			3, // size
 			GL_FLOAT,
 			GL_FALSE,
 			STRIDE,
-			0); // offset
+			BUFFER_OFFSET(0)); // offset
+  glEnableVertexAttribArray(INVERTEX_ATTRIB_LOC);
+
   glVertexAttribPointer(INTEXCOORD0_ATTRIB_LOC,
 			2, // size
 			GL_FLOAT,
 			GL_FALSE,
 			STRIDE,
 			TEX0_OFFSET); // offset
+  glEnableVertexAttribArray(INTEXCOORD0_ATTRIB_LOC);
 
-  mGLready=true;
+  std::cerr << glGetError() << '\n';
 }

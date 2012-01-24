@@ -10,5 +10,5 @@ out vec4 gl_FragColor;
 
 void main()
 {
-  gl_FragColor=tint*texture(msampler,fg_texCoord);
+  gl_FragColor=tint;//*texture(msampler,fg_texCoord);
 }

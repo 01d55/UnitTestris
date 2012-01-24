@@ -54,8 +54,8 @@ protected:
   virtual void draw();
 
 private:
-  bool gmod,cmod,mGLready;
-  GLuint squareVBO,squareTexID,
+  bool gmod,cmod;
+  GLuint squareVBO,squareTexID,squareIBO,VAO,
     shaderProgram,vertexShader,fragShader;
   GLint projectionUniform,modelviewUniform,tintUniform;
 

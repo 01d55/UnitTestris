@@ -7,6 +7,33 @@
 #include <fstream>
 
 
+// Print OpenGL error. If no error, no print.
+void printGlError()
+{
+  GLenum error = glGetError();
+
+  switch(error)
+    {
+    case GL_INVALID_ENUM:
+      std::cerr << "INVALID_ENUM\n";
+      break;
+    case GL_INVALID_VALUE:
+      std::cerr << "INVALID_VALUE\n";
+      break;
+    case GL_INVALID_OPERATION:
+      std::cerr << "INVALID_OPERATION\n";
+      break;
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+      std::cerr << "INVALID_FRAMEBUFFER_OPERATION\n";
+      break;
+    case GL_OUT_OF_MEMORY:
+      std::cerr << "OUT_OF_MEMORY\n";
+      break;
+    default:
+      break;
+    }
+}
+
 /*
   Code copied from 
   http://www.opengl.org/wiki/Tutorial1:_Rendering_shapes_with_glDrawRangeElements,_VAO,_VBO,_shaders_%28C%2B%2B_/_freeGLUT%29
@@ -14,7 +41,7 @@
   Code modified by Alan Richardson (ajrich@earthlink.net), see earliest git revision of 
   this file for code as it appeared on the wiki when I filched it.
 */
-
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 // loadFile - loads text file into char* fname
 // allocates memory - so need to delete after use
