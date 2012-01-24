@@ -7,7 +7,7 @@ in vec2 InTexCoord0;
 uniform mat4 Projection;
 uniform mat4 Modelview;
 
-out vec2 fg_texCoord;
+smooth out vec2 fg_texCoord;
 
 void main()
 {
@@ -16,6 +16,6 @@ void main()
   // Transform position
   vec4 temp;
   temp.xyz=InVertex;
-  temp.w=1;
+  temp.w=1.0f;
   gl_Position=(Projection*Modelview)*temp;
 }

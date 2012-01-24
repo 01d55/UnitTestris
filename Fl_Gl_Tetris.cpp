@@ -134,8 +134,8 @@ void Fl_Gl_Tetris::draw()
       glViewport(0,0,width,height);
       // Set up projection
       memset(Projection,0,sizeof(Projection));
-      Projection[0]=1.0f;// /width;
-      Projection[5]=1.0f;// /height;
+      Projection[0]=1.0f/(width);
+      Projection[5]=1.0f/(height);
       Projection[10]=1.0f;
       Projection[15]=1.0f;
     }
@@ -149,8 +149,9 @@ void Fl_Gl_Tetris::draw()
   */
   GLfloat Modelview[16];
   memset(Modelview,0,sizeof(Modelview));
-  Modelview[0]=1.0f;
-  Modelview[5]=1.0f;
+  const GLfloat scale=5.0f;
+  Modelview[0]=scale;
+  Modelview[5]=scale;
   Modelview[10]=1.0f;
   Modelview[15]=1.0f;
 
@@ -188,16 +189,16 @@ void Fl_Gl_Tetris::draw()
       Modelview[3]=block.x*Modelview[0];
       Modelview[7]=block.y*Modelview[5];
       glUniformMatrix4fv(modelviewUniform,1,GL_FALSE,Modelview);
-      glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT,0);
+      //glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT,0);
     }
   //std::cout << "Drawing test square\n";
   //printGlError();
-  // Test square
-  Modelview[3]=0.5f;
-  Modelview[7]=0.5f;
+  // Test triangle
+  Modelview[3]=1.5f*scale;
+  Modelview[7]=1.5f*scale;
   glUniform4f(tintUniform, 1.0f, 1.0f, 1.0f, 1.0f);
   glUniformMatrix4fv(modelviewUniform,1,GL_FALSE,Modelview);
-  glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT,0);
+  glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_SHORT,0);
   //std::cout << "draw() finished\n";
   printGlError(); // Keep this to tell us if we need to go fishing.
 }
@@ -215,8 +216,8 @@ void Fl_Gl_Tetris::initGL()
 
   // Set up some global state
   glDisable(GL_CULL_FACE);
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_SCISSOR_TEST);
+  //glDisable(GL_DEPTH_TEST);
+  //glDisable(GL_SCISSOR_TEST);
 
 
   // Set up VAO
@@ -295,14 +296,24 @@ void Fl_Gl_Tetris::initGL()
   GLchar constexpr PROJECTION_UNIFORM_NAME[]="Projection";
   GLchar constexpr MODELVIEW_UNIFORM_NAME[]="Modelview";
   GLchar constexpr TINT_UNIFORM_NAME[]="tint";
+  GLchar constexpr SAMPLER_UNIFORM_NAME[]="msampler";
   projectionUniform=glGetUniformLocation(shaderProgram,PROJECTION_UNIFORM_NAME);
   modelviewUniform=glGetUniformLocation(shaderProgram,MODELVIEW_UNIFORM_NAME);
   tintUniform=glGetUniformLocation(shaderProgram,TINT_UNIFORM_NAME);
+  // We don't need to keep the samplerUniform after init - for now.
+  GLint samplerUniform=glGetUniformLocation(shaderProgram,SAMPLER_UNIFORM_NAME);
 
-  if(-1==projectionUniform || -1 == modelviewUniform || -1 == tintUniform)
+
+  if(-1==projectionUniform || -1 == modelviewUniform ||
+     -1 == tintUniform || -1 == samplerUniform)
     {
+      std::cerr << projectionUniform << modelviewUniform << tintUniform << samplerUniform << '\n';
       throw std::runtime_error("Uniform name loading failed.");
     }
+  glUniform1i(samplerUniform,0);
+  // Rebind texture
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D,squareTexID);
 
 
   glVertexAttribPointer(INVERTEX_ATTRIB_LOC,
