@@ -57,6 +57,8 @@ void printShaderInfoLog(GLint shader)
     }
 }
 
+constexpr GLuint INVERTEX_ATTRIB_LOC=0, INTEXCOORD0_ATTRIB_LOC=1;
+constexpr GLuint INNORMAL_ATTRIB_LOC=2, INCOLOR_ATTRIB_LOC=3;
 int LoadShader(const char *pfilePath_vs, const char *pfilePath_fs, bool bindTexCoord0, bool bindNormal, bool bindColor, GLuint &shaderProgram, GLuint &vertexShader, GLuint &fragmentShader)
 {
   shaderProgram=0;
@@ -122,16 +124,16 @@ int LoadShader(const char *pfilePath_vs, const char *pfilePath_fs, bool bindTexC
   glAttachShader(shaderProgram, vertexShader);
   glAttachShader(shaderProgram, fragmentShader);
   
-  glBindAttribLocation(shaderProgram, 0, "InVertex");
+  glBindAttribLocation(shaderProgram, INVERTEX_ATTRIB_LOC, "InVertex");
   
   if(bindTexCoord0)
-    glBindAttribLocation(shaderProgram, 1, "InTexCoord0");
+    glBindAttribLocation(shaderProgram, INTEXCOORD0_ATTRIB_LOC, "InTexCoord0");
   
   if(bindNormal)
-    glBindAttribLocation(shaderProgram, 2, "InNormal");
+    glBindAttribLocation(shaderProgram, INNORMAL_ATTRIB_LOC, "InNormal");
   
   if(bindColor)
-    glBindAttribLocation(shaderProgram, 3, "InColor");
+    glBindAttribLocation(shaderProgram, INCOLOR_ATTRIB_LOC, "InColor");
   
   glLinkProgram(shaderProgram);
   

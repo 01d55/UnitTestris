@@ -57,7 +57,7 @@ private:
   bool gmod,cmod,mGLready;
   GLuint squareVBO,squareTexID,
     shaderProgram,vertexShader,fragShader;
-  GLint projectionUniform,modelviewUniform;
+  GLint projectionUniform,modelviewUniform,tintUniform;
 
   DataDoubleBuffer mBuff;
   RenderFunc<DataDoubleBuffer> mCB;

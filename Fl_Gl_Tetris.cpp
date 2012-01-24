@@ -56,7 +56,7 @@ Fl_Gl_Tetris::Fl_Gl_Tetris( int x,int y,int w,int h, const char *l):
   Fl_Gl_Window(x,y,w,h,l),
   gmod(false),cmod(false),mGLready(false),
   squareVBO(0),squareTexID(0),shaderProgram(0),vertexShader(0),fragShader(0),
-  projectionUniform(-1),modelviewUniform(-1),
+  projectionUniform(-1),modelviewUniform(-1),tintUniform(-1),
   mBuff(),mCB(&mBuff,&DataDoubleBuffer::write),mGame(&mCB)
 {
 }
@@ -108,7 +108,8 @@ void Fl_Gl_Tetris::reset()
   new(&mBuff) DataDoubleBuffer();
 }
 
-//
+// Protected functions
+
 void Fl_Gl_Tetris::draw()
 {
   // STUB
@@ -117,11 +118,40 @@ void Fl_Gl_Tetris::draw()
       initGL();
     }
   const DataBuffer & gameState=mBuff.swap_and_read();
-  float Projection[16],Modelview[16];
+  /* TODO: Use a proper matrix class & have a stack of said class with which to do proper
+     transform matrix composition.
+     (LilyUtils' matrix looks good. TODO: Figure out a sensible way to merge that repo 
+     into our repo)
+  */
+  GLfloat Projection[16],Modelview[16];
+  memset(Projection,0,sizeof(Projection));
+  memset(Modelview,0,sizeof(Modelview));
+  Projection[0]=Modelview[0]=1.0f;
+  Projection[5]=Modelview[5]=1.0f;
+  Projection[10]=Modelview[10]=1.0f;
+  Projection[15]=Modelview[15]=1.0f;
 
   // Begin GL operations
   glClear(GL_COLOR_BUFFER_BIT);
-
+  glUniformMatrix4fv(projectionUniform,1,GL_FALSE,Projection);
+  // TODO: Use a vector struct to hold color values, preferably as named constants
+  // Draw a grey square for each block in the field which is set.
+  glUniform3f(tintUniform, 0.8f, 0.8f, 0.8f);// TODO: GREY_COLOR
+  for(unsigned i=0;i<FIELD_WIDTH;++i)
+    {
+      for(unsigned j=0;j<FIELD_HEIGHT;++j)
+	{
+	  if(gameState.field.get(i,j))
+	    {
+	      Modelview[3]=i;
+	      Modelview[7]=j;
+	      glUniformMatrix4fv(modelviewUniform,1,GL_FALSE,Modelview);
+	      
+	    }
+	}
+    }
+  Modelview[3]=0;
+  Modelview[7]=0;
 }
 
 // Private functions
@@ -139,7 +169,8 @@ void Fl_Gl_Tetris::initGL()
   glGenTextures(1,&squareTexID);
   // Set up Buffer Object
   glBindBuffer(GL_ARRAY_BUFFER,squareVBO);
-  constexpr GLsizeiptr sqSize = sizeof(GLfloat)*4*(3+2);
+  constexpr GLsizei STRIDE=sizeof(GLfloat)*(3+2);
+  constexpr GLsizeiptr sqSize = STRIDE*4;
   constexpr GLfloat square[4*(3+2)]=
     {// Space+texture co-ordinates, Specified in clockwise order
       0.5f, 0.5f,0.0f,
@@ -151,6 +182,7 @@ void Fl_Gl_Tetris::initGL()
       -0.5f, 0.5f,0.0f,
       -0.0f, 1.0f
     };
+  constexpr GLvoid* TEX0_OFFSET=(GLvoid*)(&square[3]-&square[0]);
   glBufferData(GL_ARRAY_BUFFER,sqSize,square,GL_STATIC_DRAW);
   // Set up texture
   // To avoid dealing with files, generate a simple texture.
@@ -190,13 +222,28 @@ void Fl_Gl_Tetris::initGL()
 
   GLchar constexpr PROJECTION_UNIFORM_NAME[]="Projection";
   GLchar constexpr MODELVIEW_UNIFORM_NAME[]="Modelview";
+  GLchar constexpr TINT_UNIFORM_NAME[]="tint";
   projectionUniform=glGetUniformLocation(shaderProgram,PROJECTION_UNIFORM_NAME);
   modelviewUniform=glGetUniformLocation(shaderProgram,MODELVIEW_UNIFORM_NAME);
+  tintUniform=glGetUniformLocation(shaderProgram,TINT_UNIFORM_NAME);
 
-  if(-1==projectionUniform || -1 == modelviewUniform)
+  if(-1==projectionUniform || -1 == modelviewUniform || -1 == tintUniform)
     {
       throw std::runtime_error("Uniform name loading failed.");
     }
+
+  glVertexAttribPointer(INVERTEX_ATTRIB_LOC,
+			3, // size
+			GL_FLOAT,
+			GL_FALSE,
+			STRIDE,
+			0); // offset
+  glVertexAttribPointer(INTEXCOORD0_ATTRIB_LOC,
+			2, // size
+			GL_FLOAT,
+			GL_FALSE,
+			STRIDE,
+			TEX0_OFFSET); // offset
 
   mGLready=true;
 }
