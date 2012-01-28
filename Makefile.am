@@ -6,9 +6,10 @@ bin_PROGRAMS = tetris_fltk
 
 tetris_fltk_SOURCES = main_fltk.cpp Tetris_fltkgui.cpp Tetris_fltkgui.hpp\
 Field.hpp Field.cpp Piece.hpp Piece.cpp Fl_Gl_Tetris.hpp Fl_Gl_Tetris.cpp\
-RenderFunc.hpp TetrisGame.hpp TetrisGame.cpp
+RenderFunc.hpp TetrisGame.hpp TetrisGame.cpp\
+libLilyEngineUtils/matrix.h
 tetris_fltk_CXXFLAGS = $(FLTK_CXXFLAGS) $(CXX11FLAG)
-tetris_fltk_LDADD = $(FLTK_LDADD)
+tetris_fltk_LDADD = $(FLTK_LDADD) libLilyEngineUtils/libLilyEngineUtils.a
 
 # Rule for compiling fluid file
 BUILT_SOURCES = Tetris_fltkgui.cpp Tetris_fltkgui.hpp

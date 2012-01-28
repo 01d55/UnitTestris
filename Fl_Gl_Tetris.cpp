@@ -1,8 +1,13 @@
 #include "Fl_Gl_Tetris.hpp"
 #include "glutil.hpp"
+#include "GLMatrix.h"
+
+#include <stack>
 
 #define WBUFF swapped ? 1:0;
 #define RBUFF swapped ? 0:1;
+
+
 
 struct BGRA
 {
@@ -119,9 +124,9 @@ void Fl_Gl_Tetris::reset()
 
 void Fl_Gl_Tetris::draw()
 {
-  static GLfloat Projection[16];
+  static GLFMatrix4x4 Projection,tScale;
   static int width,height;
-
+  constexpr float near=-1.0f,far=1.0f;
   if(!context_valid())
     {
       initGL();
@@ -132,32 +137,26 @@ void Fl_Gl_Tetris::draw()
       height=h();
       // Set up viewport
       glViewport(0,0,width,height);
-      // Set up projection
-      memset(Projection,0,sizeof(Projection));
-      Projection[0]=1.0f/(width);
-      Projection[5]=1.0f/(height);
-      Projection[10]=1.0f;
-      Projection[15]=1.0f;
+      // Set up projection (Ortho)
+      Projection=makeOrtho(-width/2.0f,width/2.0f,
+			   -height/2.0f,height/2.0f,
+			   near,far);
+      tScale=makeScaleMatrix( glVec(width/10,height/20,1.0f,0) );
     }
   //std::cout << "Beginning draw\n";
   //printGlError();
   const DataBuffer & gameState=mBuff.swap_and_read();
-  /* TODO: Use a proper matrix class & have a stack of said class with which to do proper
-     transform matrix composition.
-     (LilyUtils' matrix looks good. TODO: Figure out a sensible way to merge that repo 
-     into our repo)
-  */
-  GLfloat Modelview[16];
-  memset(Modelview,0,sizeof(Modelview));
-  const GLfloat scale=5.0f;
-  Modelview[0]=scale;
-  Modelview[5]=scale;
-  Modelview[10]=1.0f;
-  Modelview[15]=1.0f;
 
+  std::stack<GLFMatrix4x4> ModelviewStack;
+  GLFMatrix4x4 Modelview;
+
+  //Moddelview=tScale;
+  ModelviewStack.push(Modelview);
+
+  
   // Begin GL operations
   glClear(GL_COLOR_BUFFER_BIT);
-  glUniformMatrix4fv(projectionUniform,1,GL_FALSE,Projection);
+  glUniformMatrix4fv(projectionUniform,1,GL_FALSE,Projection.data);
   // TODO: Use a vector struct to hold color values, preferably as named constants
   // Draw a grey square for each block in the field which is set.
   glUniform4f(tintUniform, 0.8f, 0.8f, 0.8f,1.0f);// TODO: GREY_COLOR
@@ -170,15 +169,15 @@ void Fl_Gl_Tetris::draw()
 	{
 	  if(gameState.field.get(i,j))
 	    {
-	      Modelview[3]=i*Modelview[0];
-	      Modelview[7]=j*Modelview[5];
-	      glUniformMatrix4fv(modelviewUniform,1,GL_FALSE,Modelview);
+	      Modelview=ModelviewStack.top();
+	      Modelview=Modelview*makeTranslationMatrix( glVec(i,j,1.0f,0.0f) );
+	      Modelview=Modelview*tScale;
+	      glUniformMatrix4fv(modelviewUniform,1,GL_FALSE,Modelview.data);
 	      glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT,0);
 	    }
 	}
     }
-  Modelview[3]=0;
-  Modelview[7]=0;
+
 
   //std::cout << "Entering current piece loop\n";
   //printGlError();
@@ -186,19 +185,23 @@ void Fl_Gl_Tetris::draw()
   arrayt blocks=gameState.current.getBlocks();
   for(auto block : blocks)
     {
-      Modelview[3]=block.x*Modelview[0];
-      Modelview[7]=block.y*Modelview[5];
-      glUniformMatrix4fv(modelviewUniform,1,GL_FALSE,Modelview);
-      //glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT,0);
+      glUniformMatrix4fv(modelviewUniform,1,GL_FALSE,Modelview.data);
+      glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT,0);
     }
   //std::cout << "Drawing test square\n";
   //printGlError();
   // Test triangle
-  Modelview[3]=1.5f*scale;
-  Modelview[7]=1.5f*scale;
+  Modelview=ModelviewStack.top();
+  Modelview=Modelview*tScale;
+  Modelview=Modelview*makeTranslationMatrix( glVec(0.0f,0.0f,0.0f,0.0f) );
+
+  Modelview.debugDump();
+  Projection.debugDump();
+
   glUniform4f(tintUniform, 1.0f, 1.0f, 1.0f, 1.0f);
-  glUniformMatrix4fv(modelviewUniform,1,GL_FALSE,Modelview);
-  glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_SHORT,0);
+  glUniformMatrix4fv(modelviewUniform,1,GL_FALSE,Modelview.data);
+  glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT,0);
+  /**/
   //std::cout << "draw() finished\n";
   printGlError(); // Keep this to tell us if we need to go fishing.
 }
