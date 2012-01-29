@@ -13,7 +13,7 @@ typedef ExPop::Matrix<GLfloat,4,1> glVec;
 /// Make an OpenGL-compatible orthographic projection matrix
 
 inline GLFMatrix4x4 makeOrtho(GLfloat left, GLfloat right, 
-			      GLfloat top, GLfloat bottom,
+			      GLfloat bottom, GLfloat top,
 			      GLfloat near, GLfloat far)
 {
   GLFMatrix4x4 mat;

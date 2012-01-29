@@ -150,7 +150,8 @@ void Fl_Gl_Tetris::draw()
   std::stack<GLFMatrix4x4> ModelviewStack;
   GLFMatrix4x4 Modelview;
 
-  //Moddelview=tScale;
+  Modelview=tScale;
+  Modelview=Modelview*makeTranslationMatrix( glVec(-4.5f,-9.5f,0,0) );
   ModelviewStack.push(Modelview);
 
   
@@ -170,8 +171,7 @@ void Fl_Gl_Tetris::draw()
 	  if(gameState.field.get(i,j))
 	    {
 	      Modelview=ModelviewStack.top();
-	      Modelview=Modelview*makeTranslationMatrix( glVec(i,j,1.0f,0.0f) );
-	      Modelview=Modelview*tScale;
+	      Modelview=Modelview*makeTranslationMatrix( glVec(i,j,0.0f,0.0f) );
 	      glUniformMatrix4fv(modelviewUniform,1,GL_FALSE,Modelview.data);
 	      glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT,0);
 	    }
@@ -185,15 +185,16 @@ void Fl_Gl_Tetris::draw()
   arrayt blocks=gameState.current.getBlocks();
   for(auto block : blocks)
     {
+      Modelview=ModelviewStack.top();
+      Modelview=Modelview*makeTranslationMatrix( glVec(block.x,block.y,0,0) );
       glUniformMatrix4fv(modelviewUniform,1,GL_FALSE,Modelview.data);
       glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT,0);
     }
   //std::cout << "Drawing test square\n";
   //printGlError();
-  // Test triangle
+  /* Test triangle
   Modelview=ModelviewStack.top();
-  Modelview=Modelview*tScale;
-  Modelview=Modelview*makeTranslationMatrix( glVec(0.0f,0.0f,0.0f,0.0f) );
+  Modelview=Modelview*makeTranslationMatrix( glVec(1.0f,0.0f,0.0f,0.0f) );
 
   Modelview.debugDump();
   Projection.debugDump();
