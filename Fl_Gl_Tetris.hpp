@@ -26,10 +26,10 @@ struct DataBuffer
 class DataDoubleBuffer
 {
   DataBuffer buffers[2];
-  bool swapped;
+  bool swapped,dirty;
   std::mutex swap_guard;
 public:
-  DataDoubleBuffer():swapped(false),swap_guard()
+  DataDoubleBuffer():swapped(false),dirty(false),swap_guard()
   {}
 
   void write(const Field &, const Piece &, const Piece *);
@@ -48,24 +48,33 @@ public:
   void setColorMode(char mode);
   void startTetris();
   void reset();
+  // fltk event handler
+  int handle(int);
 
 protected:
   // The first call to draw will call initGL, which may throw.
   virtual void draw();
 
 private:
-  bool gmod,cmod;
+  bool gmod,cmod,running;
   GLuint squareVBO,squareTexID,squareIBO,VAO,
     shaderProgram,vertexShader,fragShader;
   GLint projectionUniform,modelviewUniform,tintUniform;
 
   DataDoubleBuffer mBuff;
-  RenderFunc<DataDoubleBuffer> mCB;
+  RenderFunc<Fl_Gl_Tetris> mCB;
   TetrisGame mGame;
 
   // Throws std::runtime_error if shader loading fails.
   void initGL();
 
+  void write_and_redraw(const Field &foo, const Piece &bar, const Piece *baz)
+  {
+    mBuff.write(foo,bar,baz);
+    Fl::lock();
+    redraw();
+    Fl::unlock();
+  }
 };
 
 

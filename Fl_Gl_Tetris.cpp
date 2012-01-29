@@ -44,12 +44,17 @@ void DataDoubleBuffer::write(const Field &field_, const Piece &cur, const Piece 
     {
       buffers[idx].holding=false;
     }
+  dirty=true;
 }
 
 const DataBuffer& DataDoubleBuffer::swap_and_read()
 {
   swap_guard.lock();
-  swapped = !swapped;
+  if(dirty)
+    {
+      swapped = !swapped;
+      dirty=false;
+    }
   swap_guard.unlock();
   auto idx = RBUFF;
   return buffers[idx];
@@ -59,11 +64,11 @@ const DataBuffer& DataDoubleBuffer::swap_and_read()
 
 Fl_Gl_Tetris::Fl_Gl_Tetris( int x,int y,int w,int h, const char *l):
   Fl_Gl_Window(x,y,w,h,l),
-  gmod(false),cmod(false),
+  gmod(false),cmod(false),running(false),
   squareVBO(0),squareTexID(0),squareIBO(0),VAO(0),
   shaderProgram(0),vertexShader(0),fragShader(0),
   projectionUniform(-1),modelviewUniform(-1),tintUniform(-1),
-  mBuff(),mCB(&mBuff,&DataDoubleBuffer::write),mGame(&mCB)
+  mBuff(),mCB(this,&Fl_Gl_Tetris::write_and_redraw),mGame(&mCB)
 {
 }
 Fl_Gl_Tetris::~Fl_Gl_Tetris()
@@ -106,7 +111,15 @@ void Fl_Gl_Tetris::setColorMode(char mode)
 }
 void Fl_Gl_Tetris::startTetris()
 {
-  mGame.run();
+  if(running)
+    {
+      mGame.pause();
+    }
+  else
+    {
+      mGame.run();
+    }
+  running = !running;
   redraw();
 }
 void Fl_Gl_Tetris::reset()
@@ -117,7 +130,51 @@ void Fl_Gl_Tetris::reset()
   mBuff.~DataDoubleBuffer();
   new(&mBuff) DataDoubleBuffer();
 
+  running = false;
+
   redraw();
+}
+
+// fltk event handler
+int Fl_Gl_Tetris::handle(int e)
+{
+  constexpr int FL_SPACEBAR=32;
+  int ret=0;
+
+
+  // Handle keyboard events if running
+  if(running && FL_SHORTCUT==e)
+    {
+      if(Fl::event_key('x'))
+	{
+	  mGame.queueInput(hard_drop);
+	  ret=1;
+	}
+      if(Fl::event_key('q'))
+	{
+	  mGame.queueInput(rotate_ccw);
+	  ret=1;
+	}
+      if(Fl::event_key('a'))
+	{
+	  mGame.queueInput(shift_left);
+	  ret=1;
+	}
+      if(Fl::event_key('e'))
+	{
+	  mGame.queueInput(rotate_cw);
+	  ret=1;
+	}
+      if(Fl::event_key('d'))
+	{
+	  mGame.queueInput(shift_right);
+	  ret=1;
+	}
+    }
+  
+  redraw();
+
+  return ret;
 }
 
 // Protected functions
@@ -194,14 +251,14 @@ void Fl_Gl_Tetris::draw()
   //printGlError();
   /* Test triangle
   Modelview=ModelviewStack.top();
-  Modelview=Modelview*makeTranslationMatrix( glVec(1.0f,0.0f,0.0f,0.0f) );
+  Modelview=Modelview*makeTranslationMatrix( glVec(1.0f,19.0f,0.0f,0.0f) );
 
   Modelview.debugDump();
   Projection.debugDump();
 
   glUniform4f(tintUniform, 1.0f, 1.0f, 1.0f, 1.0f);
   glUniformMatrix4fv(modelviewUniform,1,GL_FALSE,Modelview.data);
-  glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT,0);
+  glDrawElements(GL_TRIANGLES,3,GL_UNSIGNED_SHORT,0);
   /**/
   //std::cout << "draw() finished\n";
   printGlError(); // Keep this to tell us if we need to go fishing.
