@@ -22,4 +22,9 @@ config.status
 Makefile
 Makefile.in
 stamp-h1
-
+# Autotools can and should install these for you
+# use autoreconf -i, or -s for symlinks.
+INSTALL
+depcomp
+install-sh
+missing
