@@ -17,7 +17,7 @@ Tetris_fltkgui.cpp Tetris_fltkgui.hpp: Tetris_fltkgui.fl
 	fluid -c Tetris_fltkgui.fl
 
 # Rules for the test code (use `make check` to execute)
-TESTS = FieldCheck PieceCheck TetrisGameCheck
+TESTS = FieldCheck PieceCheck TetrisGameCheck IntegrationCheck
 check_PROGRAMS = $(TESTS)
 
 FieldCheck_SOURCES = Field.hpp Field.cpp FieldTest.hpp FieldTest.cpp\
@@ -35,3 +35,8 @@ Field.hpp FieldDummy.hpp FieldDummy.cpp Piece.hpp PieceDummy.hpp PieceDummy.cpp\
 TetrisGameCheck.cpp
 TetrisGameCheck_CXXFLAGS = $(CPPUNIT_CFLAGS) $(CXX11FLAG) -pthread
 TetrisGameCheck_LDADD = $(CPPUNIT_LIBS)
+
+IntegrationCheck_SOURCES= TetrisGame.cpp Field.cpp Piece.cpp\
+IntegrationTest.cpp IntegrationCheck.cpp
+IntegrationCheck_CXXFLAGS = $(CPPUNIT_CFLAGS) $(CXX11FLAG) -pthread
+IntegrationCheck_LDADD = $(CPPUNIT_LIBS)

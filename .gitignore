@@ -5,6 +5,7 @@ tetris_fltk
 FieldCheck
 PieceCheck
 TetrisGameCheck
+IntegrationCheck
 # from Tetris_fltkgui.fl
 Tetris_fltkgui.cpp
 Tetris_fltkgui.hpp
