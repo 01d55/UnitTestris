@@ -1,6 +1,6 @@
 #include "Piece.hpp"
 
-
+#include <algorithm>
 
 static const coord originI(5,20);
 static const coord originO(5,21);
@@ -306,6 +306,12 @@ void Piece::rotate(PieceInput in)
 void Piece::invoke_lock()
 {
   arrayt blocks=getBlocks();
+  // Blocks must be placed top-down.
+  std::sort(blocks.begin(),blocks.end(),
+	    [](const coord&l,const coord& r)
+	    {
+	      return l.y > r.y;
+	    });
   for(int i=0;i<4;++i)
     {
       field->set(blocks[i]);
