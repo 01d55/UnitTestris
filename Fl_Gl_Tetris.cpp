@@ -184,6 +184,14 @@ void Fl_Gl_Tetris::draw()
   static GLFMatrix4x4 Projection,tScale;
   static int width,height;
   constexpr float near=-1.0f,far=1.0f;
+  const glVec WHITE_COLOR(1.0f,1.0f,1.0f,1.0f);
+  const glVec I_COLOR(1.0f,0.0f,0.0f,1.0f);
+  const glVec J_COLOR(0.0f,1.0f,0.0f,1.0f);
+  const glVec L_COLOR(0.0f,0.0f,1.0f,1.0f);
+  const glVec O_COLOR(1.0f,1.0f,0.0f,1.0f);
+  const glVec S_COLOR(1.0f,0.0f,1.0f,1.0f);
+  const glVec T_COLOR(0.0f,1.0f,1.0f,1.0f);
+  const glVec Z_COLOR(0.5f,1.0f,0.5f,1.0f);
   if(!context_valid())
     {
       initGL();
@@ -215,9 +223,9 @@ void Fl_Gl_Tetris::draw()
   // Begin GL operations
   glClear(GL_COLOR_BUFFER_BIT);
   glUniformMatrix4fv(projectionUniform,1,GL_FALSE,Projection.data);
-  // TODO: Use a vector struct to hold color values, preferably as named constants
+
   // Draw a grey square for each block in the field which is set.
-  glUniform4f(tintUniform, 0.8f, 0.8f, 0.8f,1.0f);// TODO: GREY_COLOR
+  glUniform4fv(tintUniform, 1, WHITE_COLOR.data); // The texture makes this grey enough
   //std::cout << "Entering field loop\n";
   //printGlError();
   // Draw blocks set in field
@@ -240,6 +248,7 @@ void Fl_Gl_Tetris::draw()
   //printGlError();
   // Draw current piece
   arrayt blocks=gameState.current.getBlocks();
+
   for(auto block : blocks)
     {
       Modelview=ModelviewStack.top();
