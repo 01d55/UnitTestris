@@ -318,8 +318,9 @@ void Fl_Gl_Tetris::initGL()
 
 
   // Set up texture
-  // To avoid dealing with files, generate a simple texture.
   glGenTextures(1,&squareTexID);
+  glBindTexture(GL_TEXTURE_2D,squareTexID);
+  // To avoid dealing with files, generate a simple texture.
   constexpr unsigned TEXDIMENSION=256,TEXBUFFSIZE=TEXDIMENSION*TEXDIMENSION;
   BGRA *texdata=new BGRA[TEXBUFFSIZE];
   for(unsigned i=0;i<TEXDIMENSION;++i)
@@ -336,12 +337,13 @@ void Fl_Gl_Tetris::initGL()
 	}
     }
   // Copy the generated texure into GL controlled memory
-  glBindTexture(GL_TEXTURE_2D,squareTexID);
   glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,
 	       TEXDIMENSION,TEXDIMENSION,0,
 	       GL_BGRA,GL_FLOAT,
 	       texdata);
   delete[] texdata;
+  // Default filtering requires mipmaps
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
   // Set up shader program
   char constexpr VERT_SHADER_PATH[]="shaders/default.vert";
   char constexpr FRAG_SHADER_PATH[]="shaders/default.frag";

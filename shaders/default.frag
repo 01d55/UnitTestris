@@ -10,9 +10,6 @@ out vec4 gl_FragColor;
 
 void main()
 {
-  vec4 temp=tint;
   vec4 tex=texture(msampler,fg_texCoord);
-  temp.a=1.0f;
-  temp.x*=tex.x;
-  gl_FragColor=temp;
+  gl_FragColor=tint*tex;
 }
