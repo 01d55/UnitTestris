@@ -53,7 +53,10 @@ public:
 
   coord getCenter() const;
   arrayt getBlocks() const;
-
+  PieceType getType() const
+  {
+    return type;
+  }
 
 private:
   PieceType type;

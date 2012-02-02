@@ -79,6 +79,8 @@ void PieceTest::testConstructor()
   // Don't insist that the blocks be sorted in a particular way.
   // Do insist that there be exactly 4 blocks, and that they be in the correct places.
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks, test_piece->getBlocks()) );
+
+  CPPUNIT_ASSERT(I == test_piece->getType() );
    
   delete test_piece;
 
@@ -94,6 +96,8 @@ void PieceTest::testConstructor()
 
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks, test_piece->getBlocks()) );
 
+  CPPUNIT_ASSERT(J == test_piece->getType() );
+
   delete test_piece;
 
   // L block
@@ -107,6 +111,8 @@ void PieceTest::testConstructor()
   CPPUNIT_ASSERT( testCoord==originCoord );
 
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks, test_piece->getBlocks()) );
+
+  CPPUNIT_ASSERT(L == test_piece->getType() );
 
   delete test_piece;
 
@@ -122,6 +128,8 @@ void PieceTest::testConstructor()
 
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks, test_piece->getBlocks()) );
 
+  CPPUNIT_ASSERT(O == test_piece->getType() );
+
   delete test_piece;
 
   // S block
@@ -135,6 +143,8 @@ void PieceTest::testConstructor()
   CPPUNIT_ASSERT( testCoord==originCoord );
   
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks, test_piece->getBlocks()) );
+
+  CPPUNIT_ASSERT(S == test_piece->getType() );
 
   delete test_piece;
 
@@ -150,6 +160,8 @@ void PieceTest::testConstructor()
 
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks, test_piece->getBlocks()) );
 
+  CPPUNIT_ASSERT(T == test_piece->getType() );
+
   delete test_piece;
 
   // Z Block
@@ -163,6 +175,9 @@ void PieceTest::testConstructor()
   CPPUNIT_ASSERT( testCoord==originCoord );
 
   CPPUNIT_ASSERT( testSameCoords(expectedBlocks, test_piece->getBlocks()) );
+
+  CPPUNIT_ASSERT(Z == test_piece->getType() );
+
   delete test_piece;
 
 }
