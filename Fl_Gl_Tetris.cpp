@@ -64,7 +64,7 @@ const DataBuffer& DataDoubleBuffer::swap_and_read()
 
 Fl_Gl_Tetris::Fl_Gl_Tetris( int x,int y,int w,int h, const char *l):
   Fl_Gl_Window(x,y,w,h,l),
-  gmod(false),cmod(false),running(false),
+  gmod(false),cmod(true),running(false),
   squareVBO(0),squareTexID(0),squareIBO(0),VAO(0),
   shaderProgram(0),vertexShader(0),fragShader(0),
   projectionUniform(-1),modelviewUniform(-1),tintUniform(-1),
@@ -248,6 +248,37 @@ void Fl_Gl_Tetris::draw()
   //printGlError();
   // Draw current piece
   arrayt blocks=gameState.current.getBlocks();
+
+  if(cmod)
+    {
+      switch(gameState.current.getType())
+	{
+	case I:
+	  glUniform4fv(tintUniform, 1, I_COLOR.data);
+	  break;
+	case J:
+	  glUniform4fv(tintUniform, 1, J_COLOR.data);
+	  break;
+	case L:
+	  glUniform4fv(tintUniform, 1, L_COLOR.data);
+	  break;
+	case O:
+	  glUniform4fv(tintUniform, 1, O_COLOR.data);
+	  break;
+	case S:
+	  glUniform4fv(tintUniform, 1, S_COLOR.data);
+	  break;
+	case T:
+	  glUniform4fv(tintUniform, 1, T_COLOR.data);
+	  break;
+	case Z:
+	  glUniform4fv(tintUniform, 1, Z_COLOR.data);
+	  break;
+	default:
+	  std::cerr << "Unhandled case in enumerated switch statement!\n";
+	  break;
+	}
+    }
 
   for(auto block : blocks)
     {
