@@ -62,19 +62,12 @@ private:
   GLint projectionUniform,modelviewUniform,tintUniform;
 
   DataDoubleBuffer mBuff;
-  RenderFunc<Fl_Gl_Tetris> mCB;
+  RenderFunc<DataDoubleBuffer> mCB;
   TetrisGame mGame;
 
   // Throws std::runtime_error if shader loading fails.
   void initGL();
 
-  void write_and_redraw(const Field &foo, const Piece &bar, const Piece *baz)
-  {
-    mBuff.write(foo,bar,baz);
-    //Fl::lock();
-    //redraw();
-    //Fl::unlock();
-  }
 };
 
 

@@ -76,7 +76,7 @@ Fl_Gl_Tetris::Fl_Gl_Tetris( int x,int y,int w,int h, const char *l):
   squareVBO(0),squareTexID(0),squareIBO(0),VAO(0),
   shaderProgram(0),vertexShader(0),fragShader(0),
   projectionUniform(-1),modelviewUniform(-1),tintUniform(-1),
-  mBuff(),mCB(this,&Fl_Gl_Tetris::write_and_redraw),mGame(&mCB)
+  mBuff(),mCB(&mBuff,&DataDoubleBuffer::write),mGame(&mCB)
 {
 }
 Fl_Gl_Tetris::~Fl_Gl_Tetris()
