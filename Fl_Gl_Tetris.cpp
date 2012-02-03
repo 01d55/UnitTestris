@@ -7,7 +7,15 @@
 #define WBUFF swapped ? 1:0;
 #define RBUFF swapped ? 0:1;
 
+static const float delay=1/60.0f;
 
+void redraw_cb(void *vthis)
+{
+  ((Fl_Gl_Tetris*)vthis)->redraw();
+  Fl::lock();
+  Fl::repeat_timeout(delay,redraw_cb,vthis);
+  Fl::unlock();
+}
 
 struct BGRA
 {
@@ -114,10 +122,16 @@ void Fl_Gl_Tetris::startTetris()
   if(running)
     {
       mGame.pause();
+      Fl::lock();
+      Fl::remove_timeout(redraw_cb,this);
+      Fl::unlock();
     }
   else
     {
       mGame.run();
+      Fl::lock();
+      Fl::add_timeout(delay,redraw_cb,this);
+      Fl::unlock();
     }
   running = !running;
   redraw();
@@ -131,6 +145,10 @@ void Fl_Gl_Tetris::reset()
   new(&mBuff) DataDoubleBuffer();
 
   running = false;
+
+  Fl::lock();
+  Fl::remove_timeout(redraw_cb,this);
+  Fl::unlock();
 
   redraw();
 }

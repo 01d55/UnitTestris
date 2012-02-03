@@ -71,9 +71,9 @@ private:
   void write_and_redraw(const Field &foo, const Piece &bar, const Piece *baz)
   {
     mBuff.write(foo,bar,baz);
-    Fl::lock();
-    redraw();
-    Fl::unlock();
+    //Fl::lock();
+    //redraw();
+    //Fl::unlock();
   }
 };
 
