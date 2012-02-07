@@ -24,6 +24,12 @@ struct glstate
 bool init_gl();
 bool init_sdl_context();
 
+void keyboard_event(const SDL_Event &ev);
+
+void process_events();
+
+void render_gl();
+
 void terminate_gl();
 
 int main()
@@ -49,7 +55,11 @@ int main()
     }
 
 
-  
+  while(true)
+    {
+      process_events();
+      render_gl();
+    }
   terminate_gl();
   SDL_Quit();
 
@@ -246,4 +256,34 @@ void terminate_gl()
     {
       std::cerr << "WARNING: terminate_gl detected a GL error. \n";
     }
+}
+
+void process_events()
+{
+  SDL_Event ev;
+
+  while( SDL_PollEvent( &ev ) )
+    {
+      switch(ev.type)
+	{
+	case SDL_QUIT:
+	  terminate_gl();
+	  SDL_Quit();
+	  exit(0);
+	case SDL_KEYDOWN:
+	  keyboard_event(ev);
+	  break;
+	}
+    }
+}
+
+void keyboard_event(const SDL_Event &ev)
+{
+  // STUB
+}
+
+void render_gl()
+{
+  // STUB
+  SDL_GL_SwapBuffers();
 }
