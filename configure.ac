@@ -38,7 +38,8 @@ AS_IF([test "ac_cv_cxx_compile_cxx0x_native" != "yes" && test x"${CXX11FLAG}" = 
 [AC_MSG_ERROR([Cannot compile without c++11 features in the compiler])])
 
 dnl Check for packages
-PKG_CHECK_MODULES([SDL], [sdl])
+
+PKG_CHECK_MODULES([SDL], [sdl gl])
 
 dnl Get fltk compile & link flags
 AC_SUBST(FLTK_CXXFLAGS,[`fltk-config --use-gl --cxxflags`])
