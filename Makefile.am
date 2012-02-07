@@ -2,7 +2,7 @@
 ACLOCAL_AMFLAGS = -I m4
 
 #Rules for compilation
-bin_PROGRAMS = tetris_fltk
+bin_PROGRAMS = tetris_fltk tetris_sdl
 
 tetris_fltk_SOURCES = main_fltk.cpp Tetris_fltkgui.cpp Tetris_fltkgui.hpp\
 Field.hpp Field.cpp Piece.hpp Piece.cpp Fl_Gl_Tetris.hpp Fl_Gl_Tetris.cpp\
@@ -10,6 +10,13 @@ RenderFunc.hpp TetrisGame.hpp TetrisGame.cpp\
 libLilyEngineUtils/matrix.h
 tetris_fltk_CXXFLAGS = $(FLTK_CXXFLAGS) $(CXX11FLAG)
 tetris_fltk_LDADD = $(FLTK_LDADD) 
+
+tetris_sdl_SOURCES = main_sdl.cpp\
+Field.hpp Field.cpp Piece.hpp Piece.cpp\
+RenderFunc.hpp TetrisGame.hpp TetrisGame.cpp\
+libLilyEngineUtils/matrix.h
+tetris_sdl_CXXFLAGS = $(CXX11FLAG) $(SDL_CFLAGS)
+tetris_sdl_LDADD = $(SDL_LIBS)
 
 # Rule for compiling fluid file
 BUILT_SOURCES = Tetris_fltkgui.cpp Tetris_fltkgui.hpp

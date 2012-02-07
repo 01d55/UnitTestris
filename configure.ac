@@ -17,6 +17,7 @@ AC_CHECK_PROG(HAVE_FLTK_CONFIG,fltk-config,yes)
 AS_IF([test x"${HAVE_FLTK_CONFIG}" != x"yes" ],
 [AC_MSG_ERROR([Cannot compile without fltk-config])])
 
+
 AC_PROG_CC
   dnl AC_PROG_INSTALL
 AC_LANG([C++])
@@ -36,10 +37,17 @@ dnl For now, error out if C++11 isn't available
 AS_IF([test "ac_cv_cxx_compile_cxx0x_native" != "yes" && test x"${CXX11FLAG}" = x""],
 [AC_MSG_ERROR([Cannot compile without c++11 features in the compiler])])
 
+dnl Check for packages
+PKG_CHECK_MODULES([SDL], [sdl])
 
 dnl Get fltk compile & link flags
 AC_SUBST(FLTK_CXXFLAGS,[`fltk-config --use-gl --cxxflags`])
 AC_SUBST(FLTK_LDADD,[`fltk-config --use-gl --ldflags`])
+
+dnl Checks for library functions.
+AC_CHECK_FUNCS([sqrt])
+
+
 dnl AM settings
 
 AM_INIT_AUTOMAKE([-Wall -Werror])
