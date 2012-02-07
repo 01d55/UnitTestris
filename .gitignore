@@ -1,6 +1,7 @@
 #Compilation products
 *.o
 *.Po
+tetris_sdl
 tetris_fltk
 FieldCheck
 PieceCheck
