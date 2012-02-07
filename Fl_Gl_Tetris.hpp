@@ -11,30 +11,9 @@
 #include <FL/Fl.H>
 #include <FL/gl.h>
 #include <FL/Fl_Gl_Window.H>
-#include "TetrisGame.hpp"
-#include "Field.hpp"
-#include "Piece.hpp"
+#include "DataDoubleBuffer.hpp"
 
-struct DataBuffer
-{
-  Field field;
-  Piece current,hold;
-  bool holding;
-  DataBuffer():current(I,0,nullptr),hold(I,0,nullptr),holding(false)
-  {}
-};
-class DataDoubleBuffer
-{
-  DataBuffer buffers[2];
-  bool swapped,dirty;
-  std::mutex swap_guard;
-public:
-  DataDoubleBuffer():swapped(false),dirty(false),swap_guard()
-  {}
 
-  void write(const Field &, const Piece &, const Piece *);
-  const DataBuffer& swap_and_read();
-};
 
 class Fl_Gl_Tetris: public Fl_Gl_Window
 {
