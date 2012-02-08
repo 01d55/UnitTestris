@@ -32,7 +32,7 @@ struct TetrisGame_impl
 {
   IRenderFunc *cb;
   // Tetris members
-  static constexpr unsigned int lockdelay=30,minBuffer=8;
+  static constexpr unsigned int lockdelay=5,minBuffer=8;
   typedef std::ratio<1,30> gravity;
   unsigned int timeCount;
   Field mField;
