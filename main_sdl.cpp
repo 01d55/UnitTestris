@@ -7,6 +7,7 @@
 
 #include <iostream>
 
+#include "DataDoubleBuffer.hpp"
 #include "glutil.hpp"
 #include "GLMatrix.h"
 
@@ -20,17 +21,54 @@ struct glstate
 
 } GL_STATE;
 
+struct tetrisstate
+{
+  DataDoubleBuffer buffer;
+  RenderFunc<DataDoubleBuffer> rfunc;
+  TetrisGame game;
+
+  bool running;
+
+  tetrisstate():buffer(),rfunc(&buffer,&DataDoubleBuffer::write),game(&rfunc),
+		running(false)
+  {}
+
+  void toggle_pause()
+  {
+    if(running)
+      {
+	game.pause();
+      }
+    else
+      {
+	game.run();
+      }
+    running = !running;
+  }
+
+  void reset()
+  {
+    game.~TetrisGame();
+    new(&game) TetrisGame(&rfunc);
+
+    buffer.~DataDoubleBuffer();
+    new(&buffer) DataDoubleBuffer();
+
+    running = false;
+  }
+} GAME_STATE;
 
 bool init_gl();
 bool init_sdl_context();
 
-void keyboard_event(const SDL_Event &ev);
+void keyboard_event(const SDL_KeyboardEvent &ev);
 
 void process_events();
 
 void render_gl();
 
 void terminate_gl();
+void terminate_program(int ec);
 
 int main()
 {
@@ -267,23 +305,76 @@ void process_events()
       switch(ev.type)
 	{
 	case SDL_QUIT:
-	  terminate_gl();
-	  SDL_Quit();
-	  exit(0);
+	  terminate_program(0);// never returns
 	case SDL_KEYDOWN:
-	  keyboard_event(ev);
+	  keyboard_event(ev.key);
+	  break;
+	default:
 	  break;
 	}
     }
 }
 
-void keyboard_event(const SDL_Event &ev)
+void keyboard_event(const SDL_KeyboardEvent &ev)
 {
-  // STUB
+
+  switch(ev.keysym.sym)
+    {
+    case SDLK_ESCAPE:
+      terminate_program(0);// never returns
+    case SDLK_PAUSE:
+    case SDLK_p:
+      GAME_STATE.toggle_pause();
+      break;
+      // Game control
+    case SDLK_q:
+    case SDLK_UP:
+      if(GAME_STATE.running)
+	{
+	  GAME_STATE.game.queueInput(rotate_ccw);
+	}
+      break;
+    case SDLK_a:
+    case SDLK_LEFT:
+      if(GAME_STATE.running)
+	{
+	  GAME_STATE.game.queueInput(shift_left);
+	}
+      break;
+    case SDLK_e:
+      if(GAME_STATE.running)
+	{
+	  GAME_STATE.game.queueInput(rotate_cw);
+	}
+      break;
+    case SDLK_d:
+    case SDLK_RIGHT:
+      if(GAME_STATE.running)
+	{
+	  GAME_STATE.game.queueInput(shift_right);
+	}
+      break;
+    case SDLK_x:
+    case SDLK_DOWN:
+      if(GAME_STATE.running)
+	{
+	  GAME_STATE.game.queueInput(hard_drop);
+	}
+      break;
+    default:
+      break;
+    }
 }
 
 void render_gl()
 {
   // STUB
   SDL_GL_SwapBuffers();
+}
+
+void terminate_program(int ec)
+{
+	  terminate_gl();
+	  SDL_Quit();
+	  exit(ec);
 }
