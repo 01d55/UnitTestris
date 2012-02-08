@@ -2,3 +2,8 @@ For a development blog, go to 01d55.tumblr.com/tagged/Unit+Testris
 Most tags will refer to a specific post there.
 
 The Tetris Wiki (tetris.wikia.com) was an invaluable resource in developing this test suite.
+
+CONTROLS:
+In tetris_fltk, 'q' and 'e' rotate, 'a' and 's' shift, 'x' hard drops.
+
+In tetris_sdl, 'q', up arrow, and 'e' rotate; 'a', left arrow, 'd', and right arrow shift; 'x' and down arrow hard drop; return resets the game; 'p' and pause key start and pause the game; and escape key quits the program.
