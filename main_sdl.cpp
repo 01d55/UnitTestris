@@ -10,6 +10,7 @@
 #include "DataDoubleBuffer.hpp"
 #include "glutil.hpp"
 #include "GLMatrix.h"
+#include "music.hpp"
 
 constexpr unsigned WIDTH=400,HEIGHT=800;
 
@@ -92,12 +93,14 @@ int main()
       return -1;
     }
 
+  init_music();
 
   while(true)
     {
       process_events();
       render_gl();
     }
+  terminate_music();
   terminate_gl();
   SDL_Quit();
 
@@ -324,9 +327,11 @@ void keyboard_event(const SDL_KeyboardEvent &ev)
     case SDLK_PAUSE:
     case SDLK_p:
       GAME_STATE.toggle_pause();
+      toggle_play_music();
       break;
     case SDLK_RETURN:
       GAME_STATE.reset();
+      reset_music();
       break;
       // Game control
     case SDLK_q:
@@ -442,7 +447,8 @@ void render_gl()
 
 void terminate_program(int ec)
 {
-	  terminate_gl();
-	  SDL_Quit();
-	  exit(ec);
+  terminate_music();
+  terminate_gl();
+  SDL_Quit();
+  exit(ec);
 }

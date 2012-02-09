@@ -10,7 +10,7 @@ tetris_fltk_CXXFLAGS = $(FLTK_CXXFLAGS) $(CXX11FLAG)
 tetris_fltk_LDADD = $(FLTK_LDADD) 
 
 tetris_sdl_SOURCES = main_sdl.cpp Field.cpp Piece.cpp TetrisGame.cpp\
-DataDoubleBuffer.cpp
+DataDoubleBuffer.cpp music.cpp
 
 tetris_sdl_CXXFLAGS = $(CXX11FLAG) $(SDL_CFLAGS)
 tetris_sdl_LDADD = $(SDL_LIBS)

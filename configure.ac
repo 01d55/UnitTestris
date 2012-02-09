@@ -39,7 +39,7 @@ AS_IF([test "ac_cv_cxx_compile_cxx0x_native" != "yes" && test x"${CXX11FLAG}" = 
 
 dnl Check for packages
 
-PKG_CHECK_MODULES([SDL], [sdl gl])
+PKG_CHECK_MODULES([SDL], [sdl gl openal vorbisfile])
 
 dnl Get fltk compile & link flags
 AC_SUBST(FLTK_CXXFLAGS,[`fltk-config --use-gl --cxxflags`])
