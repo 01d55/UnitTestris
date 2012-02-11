@@ -233,6 +233,17 @@ namespace ExPop {
     typedef Matrix<float, 4, 1> FVec4;
     typedef Matrix<float, 4, 1> FColor4;
 
+    // Template to quickly get Matrices of commmonly used sizes
+    template<typename MatScalar>
+    struct MatSize
+    {
+        typedef Matrix<MatScalar, 4, 4> t4x4;
+        typedef Matrix<MatScalar, 3, 3> t3x3;
+        typedef Matrix<MatScalar, 2, 1> Vec2;
+        typedef Matrix<MatScalar, 3, 1> Vec3;
+        typedef Matrix<MatScalar, 4, 1> Vec4;
+        typedef Matrix<MatScalar, 4, 1> Color4;
+    };
 
     // Implementation follows...
     // ----------------------------------------------------------------------
@@ -712,19 +723,20 @@ namespace ExPop {
 
     // Utility/helper functions...
 
-    /// Make a 4x4 float perspective matrix.
-    inline FMatrix4x4 makePerspectiveMatrix(
-        float fovY,
-        float aspectRatio,
-        float zNear,
-        float zFar) {
+    /// Make a 4x4 perspective matrix.
+    template<typename MatScalar>
+    inline typename MatSize<MatScalar>::t4x4 makePerspectiveMatrix(
+        MatScalar fovY,
+        MatScalar aspectRatio,
+        MatScalar zNear,
+        MatScalar zFar) {
 
         fovY *= 3.14159 / 360.0;
 
-        float tmp1 = std::cos(fovY) / std::sin(fovY);
-        float tmp2 = zFar - zNear;
+        MatScalar tmp1 = std::cos(fovY) / std::sin(fovY);
+        MatScalar tmp2 = zFar - zNear;
 
-        FMatrix4x4 mat;
+        typename MatSize<MatScalar>::t4x4 mat;
 
         mat(0, 0) = tmp1 / aspectRatio;
         mat(1, 1) = tmp1;
@@ -737,16 +749,17 @@ namespace ExPop {
 
     }
 
-    /// Make a 4x4 float frustum matrix.
-    inline FMatrix4x4 makeFrustumMatrix(
-        float left,
-        float right,
-        float bottom,
-        float top,
-        float nearDist,
-        float farDist) {
+    /// Make a 4x4 frustum matrix.
+    template<typename MatScalar>
+    inline typename MatSize<MatScalar>::t4x4 makeFrustumMatrix(
+        MatScalar left,
+        MatScalar right,
+        MatScalar bottom,
+        MatScalar top,
+        MatScalar nearDist,
+        MatScalar farDist) {
 
-        FMatrix4x4 mat;
+        typename MatSize<MatScalar>::t4x4 mat;
 
         mat.get(0, 0) =
             (2.0 * nearDist) /
@@ -763,24 +776,54 @@ namespace ExPop {
         return mat;
     }
 
-    /// Make a 4x4 float translation matrix.
-    inline FMatrix4x4 makeTranslationMatrix(const FVec3 &t) {
+    /// Make a 4x4 Orthographic matrix.
+    template<typename MatScalar>
+    inline typename MatSize<MatScalar>::t4x4 makeOrthoMatrix(
+        MatScalar left,
+        MatScalar right,
+        MatScalar bottom,
+        MatScalar top,
+        MatScalar near,
+        MatScalar far) {
 
-        FMatrix4x4 mat;
+
+        typename MatSize<MatScalar>::t4x4 mat;
+
+        const MatScalar width=right-left;
+        const MatScalar height=top-bottom;
+        const MatScalar depth=far-near;
+
+        mat(0,0) = 2.0f/width;
+        mat(1,1) = 2.0f/height;
+        mat(2,2) = 2.0f/depth;
+        mat(3,3) = 1.0f;
+        mat(0,3) =-(right+left)/width;
+        mat(1,3) =-(top+bottom)/height;
+        mat(2,3) = -(far+near)/depth;
+
+        return mat;
+    }
+
+    /// Make a 4x4 translation matrix.
+    template<typename MatScalar>
+    inline typename MatSize<MatScalar>::t4x4 makeTranslationMatrix(const typename MatSize<MatScalar>::Vec3 &t) {
+
+        typename MatSize<MatScalar>::t4x4 mat;
         mat(0, 3) = t.x;
         mat(1, 3) = t.y;
         mat(2, 3) = t.z;
         return mat;
     }
 
-    /// Make a 4x4 float rotation matrix.
-    inline FMatrix4x4 makeRotationMatrix(const FVec3 &axis, float angle) {
+    /// Make a 4x4 rotation matrix.
+    template <typename MatScalar>
+    inline typename MatSize<MatScalar>::t4x4 makeRotationMatrix(const typename MatSize<MatScalar>::Vec3 &axis, MatScalar angle) {
 
-        float c = std::cos(angle);
-        float s = std::sin(angle);
-        float t = 1 - c;
+        MatScalar c = std::cos(angle);
+        MatScalar s = std::sin(angle);
+        MatScalar t = 1 - c;
 
-        FMatrix4x4 mat;
+        typename MatSize<MatScalar>::t4x4 mat;
 
         mat(0, 0) = t*axis.x*axis.x + c;
         mat(0, 1) = t*axis.x*axis.y + s*axis.z;
@@ -797,10 +840,11 @@ namespace ExPop {
         return mat;
     }
 
-    /// Make a 4x4 float scaling matrix.
-    inline FMatrix4x4 makeScaleMatrix(const FVec3 &scale) {
+    /// Make a 4x4 scaling matrix.
+    template <typename MatScalar>
+    inline typename MatSize<MatScalar>::t4x4 makeScaleMatrix(const typename MatSize<MatScalar>::Vec3 &scale) {
 
-        FMatrix4x4 mat;
+        typename MatSize<MatScalar>::t4x4 mat;
 
         mat(0, 0) = scale.x;
         mat(1, 1) = scale.y;
