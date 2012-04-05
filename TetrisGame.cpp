@@ -1,6 +1,6 @@
 #include "TetrisGame.hpp"
 #include "Piece.hpp"
-#include "config.h"
+#include "compat.h"
 
 #ifdef HAVE_STDCXX_SYNCH
 #include <atomic>

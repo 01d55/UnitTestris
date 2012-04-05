@@ -6,7 +6,7 @@
 // Registers the fixture
 CPPUNIT_TEST_SUITE_REGISTRATION( TetrisGameTest );
 
-#include "config.h"
+#include "compat.h"
 #ifdef HAVE_STDCXX_0X
 #include <algorithm>
 #else // HAVE_STDCXX_0X

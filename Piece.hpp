@@ -7,7 +7,7 @@
 #include "common.hpp"
 #include "Field.hpp"
 
-#include "config.h"
+#include "compat.h"
 #ifdef HAVE_STDCXX_0X
 #include <array>
 typedef std::array<coord,4> arrayt;

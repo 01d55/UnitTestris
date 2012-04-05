@@ -3,7 +3,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "config.h"
+#include "compat.h"
 #ifdef HAVE_STDCXX_SYNCH
 #include <atomic>
 #endif // HAVE_STDCXX_SYNCH
