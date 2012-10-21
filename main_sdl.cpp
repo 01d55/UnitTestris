@@ -12,7 +12,7 @@
 #include "GLMatrix.h"
 #include "music.hpp"
 
-constexpr unsigned WIDTH=400,HEIGHT=800;
+constexpr unsigned WIDTH=400,HEIGHT=800, FIELD_VIEW_HEIGHT = 20;
 
 struct glstate
 {
@@ -56,6 +56,15 @@ struct tetrisstate
     new(&buffer) DataDoubleBuffer();
 
     running = false;
+  }
+
+  void checkGameOver()
+  {
+    if(game.isGameOver())
+      {
+	reset();
+	reset_music();
+      }
   }
 } GAME_STATE;
 
@@ -319,7 +328,6 @@ void process_events()
 
 void keyboard_event(const SDL_KeyboardEvent &ev)
 {
-
   switch(ev.keysym.sym)
     {
     case SDLK_ESCAPE:
@@ -371,6 +379,7 @@ void keyboard_event(const SDL_KeyboardEvent &ev)
     default:
       break;
     }
+  GAME_STATE.checkGameOver();
 }
 
 void render_gl()
@@ -397,7 +406,7 @@ void render_gl()
   glUniform4fv(GL_STATE.tintUniform, 1, GREY_COLOR.data);
   for(unsigned i=0;i<FIELD_WIDTH;++i)
     {
-      for(unsigned j=0;j<FIELD_HEIGHT;++j)
+      for(unsigned j=0;j<FIELD_VIEW_HEIGHT;++j)
 	{
 	  if(gameState.field.get(i,j))
 	    {

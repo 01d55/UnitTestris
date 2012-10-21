@@ -61,6 +61,7 @@ bool init_music()
 void reset_music()
 {
   alSourceRewind(AL_STATE.sourceName);
+  AL_STATE.playing = false;
 }
 
 

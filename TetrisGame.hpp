@@ -39,6 +39,9 @@ public:
   // lock and consume the entire queue once each frame, processing each input in the
   // order it was recieved. 
   void queueInput(PieceInput in); //throw (GameNotRunningError);
+  // Read whether the game has ended. If the game is over, there will be no
+  // further callbacks.
+  bool isGameOver();
 protected:
 private:
   TetrisGame(const TetrisGame&) = delete; // Uncopyable

@@ -67,16 +67,20 @@ struct TetrisGame_impl
   {
     if(runner.joinable())
       {
-	cbMutex.lock();
-	cb=nullptr;
-	cbMutex.unlock();
-	isContinuing=false;
-	isPaused=false;
+	gameOver();
 	pauseCondition.notify_all();
 	runner.join();
       }
   }
 
+  void gameOver()
+  {
+    cbMutex.lock();
+    cb=nullptr;
+    cbMutex.unlock();
+    isContinuing=false;
+    isPaused=false;
+  }
 
   void threadFunc()
   {
@@ -106,7 +110,7 @@ struct TetrisGame_impl
 	    std::this_thread::sleep_for(sleep_time(1));
 	  }
       }
-    
+
   }
 
   void consumeInput()
@@ -116,14 +120,19 @@ struct TetrisGame_impl
     inputBuffer.clear();
     inputBuffer.reserve(minBuffer);
     inputMutex.unlock();
-    std::for_each(input.begin(),input.end(),
-		  [&current,this](PieceInput i)
-		  {
-		    if(current.handleInput(i))
-		      {
-			newPiece();
-		      }
-		  });
+    for(auto itor = input.begin(); itor != input.end(); ++itor)
+      {
+	if(current.handleInput(*itor))
+	  {
+	    if(scanForLoss())
+	      {
+		gameOver();
+		return;
+	      }
+	    // 'else' redundant
+	    newPiece();
+	  }
+      }
   }
 
   void newPiece()
@@ -131,6 +140,22 @@ struct TetrisGame_impl
     PieceType t=(PieceType)pieces(re);
     current.~Piece();
     new(&current) Piece(t,lockdelay,&mField);
+  }
+
+  bool scanForLoss()
+  {
+    for(int i=0; i<FIELD_WIDTH; ++i)
+      {
+	// If one desired greater performance, one would unroll this inner loop.
+	for(int j = 20; j<FIELD_HEIGHT; ++j)
+	  {
+	    if(mField.get(i,j))
+	      {
+		return true;
+	      }
+	  }
+      }
+    return false;
   }
 
   void timeStep()
@@ -174,7 +199,6 @@ TetrisGame::TetrisGame(IRenderFunc *callback):me(new TetrisGame_impl(callback))
 
 TetrisGame::~TetrisGame()
 {
-
 }
 
 // Start the thread.
@@ -217,4 +241,9 @@ void TetrisGame::queueInput(PieceInput in)
   me->inputMutex.lock();
   me->inputBuffer.push_back(in);
   me->inputMutex.unlock();
+}
+
+bool TetrisGame::isGameOver()
+{
+  return !(me->isContinuing);
 }
