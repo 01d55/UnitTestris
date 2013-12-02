@@ -40,6 +40,8 @@ AS_IF([test "ac_cv_cxx_compile_cxx0x_native" != "yes" && test x"${CXX11FLAG}" = 
 dnl Check for packages
 
 PKG_CHECK_MODULES([SDL], [sdl gl openal vorbisfile])
+dnl FLTK as of 12/1/2013 -lfltk_gl doesn't work, need -lGL
+PKG_CHECK_MODULES([GL], [gl])
 
 dnl Get fltk compile & link flags
 AC_SUBST(FLTK_CXXFLAGS,[`fltk-config --use-gl --cxxflags`])
@@ -51,7 +53,7 @@ AC_CHECK_FUNCS([sqrt])
 
 dnl AM settings
 
-AM_INIT_AUTOMAKE([-Wall -Werror])
+AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects])
 AM_PATH_CPPUNIT(1.12.1)
 
 AC_CONFIG_FILES([Makefile])
