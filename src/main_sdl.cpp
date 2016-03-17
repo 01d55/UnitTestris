@@ -175,7 +175,7 @@ bool init_gl()
       -0.5f, 0.5f,0.0f,
       -0.0f, 1.0f
     };
-  constexpr GLvoid* TEX0_OFFSET=BUFFER_OFFSET(sizeof(float)*3);
+  const GLvoid* TEX0_OFFSET=BUFFER_OFFSET(sizeof(float)*3);
   glBufferData(GL_ARRAY_BUFFER,sqSize,square,GL_STATIC_DRAW);
 
   glGenBuffers(1,&GL_STATE.squareIBO);
