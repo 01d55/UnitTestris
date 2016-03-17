@@ -9,7 +9,7 @@
 # LICENSE
 #
 #   Copyright (c) 2008 Benjamin Kosnik <bkoz@redhat.com>, 2011 Alan Richardson 
-#   <ajrich@earthlink.net>
+#   <arrlaari@gmail.com>
 #
 #   Copying and distribution of this file, with or without modification, are
 #   permitted in any medium without royalty provided the copyright notice

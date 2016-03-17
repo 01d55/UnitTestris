@@ -38,7 +38,7 @@ void printGlError()
   Code copied from 
   http://www.opengl.org/wiki/Tutorial1:_Rendering_shapes_with_glDrawRangeElements,_VAO,_VBO,_shaders_%28C%2B%2B_/_freeGLUT%29
   and therefore governed by that wiki's terms.
-  Code modified by Alan Richardson (ajrich@earthlink.net), see earliest git revision of 
+  Code modified by Alan Richardson (arlaari@gmail.com), see earliest git revision of 
   this file for code as it appeared on the wiki when I filched it.
 */
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))

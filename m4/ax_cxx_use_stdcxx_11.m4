@@ -9,7 +9,7 @@
 #
 # LICENSE
 #
-#   Copyright (c) 2012 Alan Richardson <ajrich@earthlink.net>
+#   Copyright (c) 2012 Alan Richardson <arrlaari@gmail.com>
 #
 #   Copying and distribution of this file, with or without modification, are
 #   permitted in any medium without royalty provided the copyright notice
