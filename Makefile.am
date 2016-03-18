@@ -7,12 +7,12 @@ bin_PROGRAMS = tetris_fltk tetris_sdl
 tetris_fltk_SOURCES = src/main_fltk.cpp src/Tetris_fltkgui.cpp src/Field.cpp\
 src/Piece.cpp src/Fl_Gl_Tetris.cpp src/TetrisGame.cpp src/DataDoubleBuffer.cpp
 tetris_fltk_CXXFLAGS = $(FLTK_CXXFLAGS) $(CXX11FLAG)
-tetris_fltk_LDADD = $(FLTK_LDADD) $(GL_LIBS)
+tetris_fltk_LDADD = $(FLTK_LDADD) $(GL_LIBS) -lpthread
 
 tetris_sdl_SOURCES = src/main_sdl.cpp src/Field.cpp src/Piece.cpp src/TetrisGame.cpp\
 src/DataDoubleBuffer.cpp src/music.cpp
 tetris_sdl_CXXFLAGS = $(CXX11FLAG) $(SDL_CFLAGS)
-tetris_sdl_LDADD = $(SDL_LIBS)
+tetris_sdl_LDADD = $(SDL_LIBS) -lpthread
 
 # Rule for compiling fluid file
 BUILT_SOURCES = src/Tetris_fltkgui.cpp src/Tetris_fltkgui.hpp

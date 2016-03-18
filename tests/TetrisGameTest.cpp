@@ -77,9 +77,10 @@ void TetrisGameTest::testRunCallback()
 
 #ifdef HAVE_STDCXX_SYNCH
   auto t1 = mclock::now();
-  int frames = std::chrono::duration_cast<duration_frames>(t1-t0).count();
-  //std::cerr << dummyCount;
-  CPPUNIT_ASSERT(0 == frames-dummyCount);
+  const int frames = std::chrono::duration_cast<duration_frames>(t1-t0).count();
+  //std::cerr << dummyCount << " " << frames;
+  const int difference = frames-dummyCount;
+  CPPUNIT_ASSERT(2 > difference && -2 < difference);
 #else // HAVE_STDCXX_SYNCH
   CPPUNIT_ASSERT(0 < dummyCount);
 #endif // HAVE_STDCXX_SYNCH

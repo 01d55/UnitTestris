@@ -16,10 +16,12 @@ autom4te.cache
 autoscan.log
 configure
 configure.scan
+config.guess
 config.h
 config.h.in
 config.log
 config.status
+config.sub
 Makefile
 Makefile.in
 stamp-h1
