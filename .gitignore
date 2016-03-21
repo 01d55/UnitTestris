@@ -1,4 +1,4 @@
-#Compilation products
+# C++ Compilation products
 *.o
 *.Po
 tetris_sdl
@@ -38,3 +38,6 @@ compile
 #Autotools test products
 *.log
 *.trs
+# Rust/Cargo build products
+rust/UnitTestris/Cargo.lock
+rust/UnitTestris/target

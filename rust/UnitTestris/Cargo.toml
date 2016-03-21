@@ -1,0 +1,6 @@
+[package]
+name = "UnitTestris"
+version = "0.1.0"
+authors = ["Alan Jacobs Richardson <arrlaari@gmail.com>"]
+
+[dependencies]
