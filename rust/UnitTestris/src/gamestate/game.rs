@@ -66,3 +66,28 @@ impl Game {
         unimplemented!()
     }
 }
+
+#[cfg(test)]
+#[allow(non_snake_case)]
+mod test {
+    #[test]
+    fn testNewDelete() {
+        unimplemented!()
+    }
+    #[test]
+    fn testRunCallback() {
+        unimplemented!()
+    }
+    #[test]
+    fn whitebox_testRunCallback() {
+        unimplemented!()
+    }
+    #[test]
+    fn whitebox_testInput() {
+        unimplemented!()
+    }
+    #[test]
+    fn testExceptions() {
+        unimplemented!()
+    }
+}

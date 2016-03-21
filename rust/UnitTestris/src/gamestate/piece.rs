@@ -108,4 +108,20 @@ mod tests {
         let mut testCoord = {-1;-1};
         let mut expectedBlocks:[coord;4];*/
     }
+    #[test]
+    fn testStep() {
+        unimplemented!()
+    }
+    #[test]
+    fn testShift() {
+        unimplemented!()
+    }
+    #[test]
+    fn testRotate() {
+        unimplemented!()
+    }
+    #[test]
+    fn testDrop() {
+        unimplemented!()
+    }
 }

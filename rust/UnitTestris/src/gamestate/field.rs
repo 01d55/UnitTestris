@@ -37,3 +37,19 @@ impl Field {
     }
 }
 
+#[cfg(test)]
+#[allow(non_snake_case)]
+mod test {
+    #[test]
+    fn testConstructor() {
+        unimplemented!()
+    }
+    #[test]
+    fn testSet() {
+        unimplemented!()
+    }
+    #[test]
+    fn testFieldScore() {
+        unimplemented!()
+    }
+}
