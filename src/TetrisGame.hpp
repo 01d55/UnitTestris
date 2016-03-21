@@ -41,7 +41,7 @@ public:
   void queueInput(PieceInput in); //throw (GameNotRunningError);
   // Read whether the game has ended. If the game is over, there will be no
   // further callbacks.
-  bool isGameOver();
+  bool isGameOver() const;
 protected:
 private:
   TetrisGame(const TetrisGame&) = delete; // Uncopyable

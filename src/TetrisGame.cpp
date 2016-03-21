@@ -243,7 +243,7 @@ void TetrisGame::queueInput(PieceInput in)
   me->inputMutex.unlock();
 }
 
-bool TetrisGame::isGameOver()
+bool TetrisGame::isGameOver() const
 {
   return !(me->isContinuing);
 }
