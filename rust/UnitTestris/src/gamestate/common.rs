@@ -1,9 +1,9 @@
 #[allow(dead_code)]
-const FIELD_HEIGHT: i32 = 22;
+pub const FIELD_HEIGHT:usize= 22;
 #[allow(dead_code)]
-const FIELD_WIDTH:  i32 = 10;
+pub const FIELD_WIDTH: usize= 10;
 #[allow(dead_code)]
-const FIELD_SIZE:   i32 = FIELD_HEIGHT*FIELD_WIDTH;
+pub const FIELD_SIZE:  usize= FIELD_HEIGHT*FIELD_WIDTH;
 
 
 
