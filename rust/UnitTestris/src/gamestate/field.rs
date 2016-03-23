@@ -1,7 +1,6 @@
 use std::result::Result;
-use super::common::coord;
+use super::common::Coord;
 
-#[allow(non_snake_case, non_camel_case_types)]
 #[derive(Clone, Debug)]
 pub struct Field;
 
@@ -26,18 +25,18 @@ impl FieldSpec for Vec<Vec<bool>> {
     }
 }
 
-#[allow(dead_code, non_snake_case, unused_variables)]
+#[allow(dead_code, unused_variables)]
 impl Field {
 
     pub fn new<T:FieldSpec>(spec:&T) -> Field {
         unimplemented!()
     }
 
-    pub fn get(&self, c:coord) -> Result<bool,SizeError> {
+    pub fn get(&self, c:Coord) -> Result<bool,SizeError> {
         unimplemented!()
     }
 
-    pub fn readScore(&self) -> u32 {
+    pub fn read_score(&self) -> u32 {
         unimplemented!()
     }
 
@@ -45,30 +44,29 @@ impl Field {
         unimplemented!()
     }
 
-    pub fn resetScore(&mut self) -> () {
+    pub fn reset_score(&mut self) -> () {
         unimplemented!()
     }
 
-    pub fn resetBlocks(&mut self) -> () {
+    pub fn reset_slocks(&mut self) -> () {
         unimplemented!()
     }
 }
 
 #[cfg(test)]
-#[allow(non_snake_case)]
 mod test {
     use super::Field;
     use super::super::common::FIELD_HEIGHT;
     use super::super::common::FIELD_WIDTH;
-    use super::super::common::coord;
+    use super::super::common::Coord;
     #[test]
-    fn testConstructor() {
+    fn test_constructor() {
         // Test constructing with the null type
         {
             let test_field = Field::new::<()>(&());
             for j in 0..FIELD_HEIGHT {
                 for i in 0..FIELD_WIDTH {
-                    assert_eq!(false, test_field.get(coord::new(i as i32,j as i32)).unwrap())
+                    assert_eq!(false, test_field.get(Coord::new(i as i32,j as i32)).unwrap())
                 }
             }
         }
@@ -85,7 +83,7 @@ mod test {
                 let test_field = Field::new::<Vec<Vec<bool>>>(&test_input.clone());
                 for j in 0..FIELD_HEIGHT {
                     for i in 0..FIELD_WIDTH {
-                        assert_eq!(false, test_field.get(coord::new(i as i32,j as i32)).unwrap())
+                        assert_eq!(false, test_field.get(Coord::new(i as i32,j as i32)).unwrap())
                     }
                 }
             }
@@ -100,8 +98,8 @@ mod test {
                 for j in 0..FIELD_HEIGHT {
                     for i in 0..FIELD_WIDTH {
                         match (i,j) {
-                            (0,0) | (FIELD_WEND, FIELD_HEND) => { assert!(test_field.get(coord::new(i as i32, j as i32)).unwrap()) }
-                            _ => { assert_eq!(false, test_field.get(coord::new(i as i32, j as i32)).unwrap()) }
+                            (0,0) | (FIELD_WEND, FIELD_HEND) => { assert!(test_field.get(Coord::new(i as i32, j as i32)).unwrap()) }
+                            _ => { assert_eq!(false, test_field.get(Coord::new(i as i32, j as i32)).unwrap()) }
                         }
                     }
                 }
@@ -121,8 +119,8 @@ mod test {
                 for j in 0..FIELD_HEIGHT {
                     for i in 0..FIELD_WIDTH {
                         match (i,j) {
-                            (_,0) => { assert_eq!(i%2 == 0, test_field.get(coord::new(i as i32, j as i32)).unwrap()) }
-                            _ => { assert_eq!(false, test_field.get(coord::new(i as i32, j as i32)).unwrap())}
+                            (_,0) => { assert_eq!(i%2 == 0, test_field.get(Coord::new(i as i32, j as i32)).unwrap()) }
+                            _ => { assert_eq!(false, test_field.get(Coord::new(i as i32, j as i32)).unwrap())}
                         }
                     }
                 }
@@ -146,8 +144,8 @@ mod test {
                 for j in 0 ..FIELD_HEIGHT {
                     for i in 0..FIELD_WIDTH {
                         match(i,j) {
-                            (_,3) => {assert_eq!(i%2 != 0, test_field.get(coord::new(i as i32, j as i32)).unwrap())}
-                            _ => {assert_eq!(false, test_field.get(coord::new(i as i32, j as i32)).unwrap())}
+                            (_,3) => {assert_eq!(i%2 != 0, test_field.get(Coord::new(i as i32, j as i32)).unwrap())}
+                            _ => {assert_eq!(false, test_field.get(Coord::new(i as i32, j as i32)).unwrap())}
                         }
                     }
                 }
@@ -162,7 +160,7 @@ mod test {
                 let test_field = Field::new(&test_input.clone());
                 for j in 0..FIELD_HEIGHT {
                     for i in 0..FIELD_WIDTH {
-                        assert_eq!( i == 0, test_field.get(coord::new(i as i32, j as i32)).unwrap())
+                        assert_eq!( i == 0, test_field.get(Coord::new(i as i32, j as i32)).unwrap())
                     }
                 }
             }
@@ -175,7 +173,7 @@ mod test {
                 let test_field = Field::new(&test_input.clone());
                 for j in 0..FIELD_HEIGHT {
                     for i in 0..FIELD_WIDTH {
-                        assert_eq!(false, test_field.get(coord::new(i as i32, j as i32)).unwrap())
+                        assert_eq!(false, test_field.get(Coord::new(i as i32, j as i32)).unwrap())
                     }
                 }
             }
@@ -183,11 +181,11 @@ mod test {
         }
     }
     #[test]
-    fn testSet() {
+    fn test_set() {
         unimplemented!()
     }
     #[test]
-    fn testFieldScore() {
+    fn test_field_score() {
         unimplemented!()
     }
 }

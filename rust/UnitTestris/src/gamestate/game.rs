@@ -40,7 +40,7 @@ impl Error for NotRunningError {
 
 #[allow(dead_code)]
 struct Game;
-#[allow(dead_code, non_snake_case, unused_variables)]
+#[allow(dead_code, unused_variables)]
 impl Game {
     pub fn new(callback:&Fn(&Field, &Piece, Option<&Piece>)->()) -> Game {
         unimplemented!()
@@ -54,40 +54,39 @@ impl Game {
         unimplemented!()
     }
 
-    pub fn setRenderer(&mut self) -> Option<RunningError> {
+    pub fn set_renderer(&mut self) -> Option<RunningError> {
         unimplemented!()
     }
 
-    pub fn queueInput(input: piece::Type) -> Option<NotRunningError> {
+    pub fn queue_input(input: piece::Type) -> Option<NotRunningError> {
         unimplemented!()
     }
 
-    pub fn isGameOver(&self) -> bool {
+    pub fn is_game_over(&self) -> bool {
         unimplemented!()
     }
 }
 
 #[cfg(test)]
-#[allow(non_snake_case)]
 mod test {
     #[test]
-    fn testNewDelete() {
+    fn test_new_delete() {
         unimplemented!()
     }
     #[test]
-    fn testRunCallback() {
+    fn test_run_callback() {
         unimplemented!()
     }
     #[test]
-    fn whitebox_testRunCallback() {
+    fn whitebox_test_run_callback() {
         unimplemented!()
     }
     #[test]
-    fn whitebox_testInput() {
+    fn whitebox_test_input() {
         unimplemented!()
     }
     #[test]
-    fn testExceptions() {
+    fn test_exceptions() {
         unimplemented!()
     }
 }

@@ -3,9 +3,9 @@ use std::fmt::Formatter;
 use std::error::Error;
 use std::result::Result;
 use super::field::Field;
-use super::common::coord;
+use super::common::Coord;
 
-#[allow(non_snake_case, non_camel_case_types, dead_code)]
+#[allow(dead_code)]
 pub enum Type {
     I,
     J,
@@ -15,17 +15,17 @@ pub enum Type {
     T,
     Z,
 }
-#[allow(non_snake_case, non_camel_case_types, dead_code)]
+#[allow(dead_code)]
 pub enum Input {
-    shift_right,
-    shift_left,
-    rotate_cw,
-    rotate_ccw,
-    hard_drop,
+    ShiftRight,
+    ShiftLeft,
+    RotateCW,
+    RotateCCW,
+    HardDrop,
 }
 
 #[derive(Debug)]
-#[allow(non_snake_case, non_camel_case_types, dead_code)]
+#[allow(dead_code)]
 pub struct LockError;
 
 impl Display for LockError {
@@ -42,27 +42,27 @@ impl Error for LockError {
 #[allow(dead_code)]
 pub struct Piece; // stub
 
-#[allow(non_snake_case, non_camel_case_types, dead_code, unused_variables)]
+#[allow(dead_code, unused_variables)]
 impl Piece {
 
     pub fn new(t:Type,d:u32, f:&Field) -> Piece {
         unimplemented!()
     }
 
-    pub fn timeStep(&mut self, g:u32) -> Result<bool, LockError> {
+    pub fn time_step(&mut self, g:u32) -> Result<bool, LockError> {
         unimplemented!()
     }
-    pub fn handleInput(&mut self, input:Input) -> Result<bool, LockError> {
+    pub fn handle_input(&mut self, input:Input) -> Result<bool, LockError> {
         unimplemented!()
     }
 
-    pub fn getCenter(&self) -> coord {
+    pub fn get_center(&self) -> Coord {
         unimplemented!()
     }
-    pub fn getBlocks(&self) -> [coord; 4] {
+    pub fn get_blocks(&self) -> [Coord; 4] {
         unimplemented!()
     }
-    pub fn getType(&self) -> Type {
+    pub fn get_type(&self) -> Type {
         unimplemented!()
     }
 }
@@ -70,13 +70,13 @@ impl Piece {
 
 
 #[cfg(test)]
-#[allow(dead_code, non_upper_case_globals, non_snake_case)]
+#[allow(dead_code)]
 mod tests {
-    use super::super::common::coord;
+    use super::super::common::Coord;
     // piece test
-    const originCoord : coord = coord {x:4,y:20};
-    const originI :     coord = coord {x:5,y:20};
-    const originO :     coord = coord {x:5,y:21};
+    const ORIGIN_COORD : Coord = Coord {x:4,y:20};
+    const ORIGIN_I :     Coord = Coord {x:5,y:20};
+    const ORIGIN_O :     Coord = Coord {x:5,y:21};
 
     /*
      *__________*
@@ -101,27 +101,27 @@ mod tests {
      *0123456789*
      */
     #[test]
-    fn testConstructor() {
+    fn test_constructor() {
         unimplemented!()/*
         let mut testDelay = 1;
         // let testField: Field;
         let mut testCoord = {-1;-1};
-        let mut expectedBlocks:[coord;4];*/
+        let mut expectedBlocks:[Coord;4];*/
     }
     #[test]
-    fn testStep() {
+    fn test_step() {
         unimplemented!()
     }
     #[test]
-    fn testShift() {
+    fn test_shift() {
         unimplemented!()
     }
     #[test]
-    fn testRotate() {
+    fn test_rotate() {
         unimplemented!()
     }
     #[test]
-    fn testDrop() {
+    fn test_drop() {
         unimplemented!()
     }
 }
