@@ -1,5 +1,7 @@
 use std::result::Result;
 use super::common::Coord;
+use super::common::FIELD_HEIGHT;
+use super::common::FIELD_WIDTH;
 
 #[derive(Clone, Debug, Default)]
 pub struct Field;
@@ -7,23 +9,6 @@ pub struct Field;
 #[derive(Debug)]
 #[allow(dead_code)]
 pub struct SizeError;
-
-pub trait FieldSpec {
-    fn index(&self, x:usize, y:usize) -> bool;
-}
-
-impl FieldSpec for () {
-    #[allow(unused_variables)]
-    fn index(&self, x:usize, y:usize) -> bool {
-        false
-    }
-}
-
-impl FieldSpec for Vec<Vec<bool>> {
-    fn index(&self, x:usize, y:usize) -> bool {
-        self[x][y]
-    }
-}
 
 #[allow(dead_code, unused_variables)]
 impl Field {
@@ -33,6 +18,10 @@ impl Field {
     }
 
     pub fn from_rectangular_vector(rect: & Vec<Vec<bool>>) -> Result<Field, SizeError> {
+        unimplemented!()
+    }
+
+    pub fn from_rectangular_array(rect: &[[bool; FIELD_HEIGHT]; FIELD_WIDTH]) -> Field {
         unimplemented!()
     }
 
@@ -78,8 +67,8 @@ mod test {
         let mut test_input: Vec<Vec<bool> > = Vec::new();
         // size, and set to all false
         test_input.resize(FIELD_WIDTH, Vec::new());
-        for ref mut j in & mut test_input {
-            j.resize(FIELD_HEIGHT, false)
+        for ref mut column in & mut test_input {
+            column.resize(FIELD_HEIGHT, false)
         }
         // empty field
         {
@@ -180,7 +169,56 @@ mod test {
                 }
             }
         }
-        // TODO: c++ throws FieldSizeError from constructor
+        // test for errors
+
+        // error if clear
+        test_input.clear();
+        {
+            let test_result = Field::from_rectangular_vector(&test_input);
+            assert!(test_result.is_err());
+        }
+        // error if not FIELD_WIDTH columns
+        test_input.resize(FIELD_WIDTH+1, ::std::default::Default::default());
+        for ref mut column in &mut test_input {
+            column.resize(FIELD_HEIGHT, false)
+        }
+        {
+            let test_result = Field::from_rectangular_vector(&test_input);
+            assert!(test_result.is_err())
+        }
+        test_input.resize(FIELD_WIDTH-1, ::std::default::Default::default());
+        {
+            let test_result = Field::from_rectangular_vector(&test_input);
+            assert!(test_result.is_err())
+        }
+        // error if not every column is FIELD_HEIGHT
+        test_input.resize(FIELD_WIDTH, ::std::default::Default::default()); // test_input[FIELD_WEND] is empty
+        {
+            let test_result = Field::from_rectangular_vector(&test_input);
+            assert!(test_result.is_err())
+        }
+        test_input[FIELD_WEND].resize(FIELD_HEIGHT, false);
+        test_input[0].clear();
+        {
+            let test_result = Field::from_rectangular_vector(&test_input);
+            assert!(test_result.is_err())
+        }
+        test_input[0].resize(FIELD_HEIGHT, false);
+        test_input[5].clear();
+        {
+            let test_result = Field::from_rectangular_vector(&test_input);
+            assert!(test_result.is_err())
+        }
+        test_input[5].resize(FIELD_HEIGHT+1, false);
+        {
+            let test_result = Field::from_rectangular_vector(&test_input);
+            assert!(test_result.is_err())
+        }
+        test_input[5].resize(FIELD_HEIGHT-1, false);
+        {
+            let test_result = Field::from_rectangular_vector(&test_input);
+            assert!(test_result.is_err())
+        }
     }
     #[test]
     fn test_set() {
