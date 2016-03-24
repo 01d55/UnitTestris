@@ -71,7 +71,7 @@ mod test {
         }
         // empty field
         {
-            let test_field = Field::from_rectangular_vector(&test_input.clone()).unwrap();
+            let test_field = Field::from_rectangular_vector(&test_input).unwrap();
             for j in 0..FIELD_HEIGHT {
                 for i in 0..FIELD_WIDTH {
                     assert_eq!(false, test_field.get(Coord::new(i as i32,j as i32)).unwrap())
@@ -85,7 +85,7 @@ mod test {
         const FIELD_HEND: usize = FIELD_WIDTH-1;
         test_input[FIELD_WEND][FIELD_HEND] = true;
         {
-            let test_field = Field::from_rectangular_vector(&test_input.clone()).unwrap();
+            let test_field = Field::from_rectangular_vector(&test_input).unwrap();
             for j in 0..FIELD_HEIGHT {
                 for i in 0..FIELD_WIDTH {
                     match (i,j) {
@@ -106,7 +106,7 @@ mod test {
             }
         }
         {
-            let test_field = Field::from_rectangular_vector(&test_input.clone()).unwrap();
+            let test_field = Field::from_rectangular_vector(&test_input).unwrap();
             for j in 0..FIELD_HEIGHT {
                 for i in 0..FIELD_WIDTH {
                     match (i,j) {
@@ -131,7 +131,7 @@ mod test {
             }
         }
         {
-            let test_field = Field::from_rectangular_vector(&test_input.clone()).unwrap();
+            let test_field = Field::from_rectangular_vector(&test_input).unwrap();
             for j in 0 ..FIELD_HEIGHT {
                 for i in 0..FIELD_WIDTH {
                     match(i,j) {
@@ -148,7 +148,7 @@ mod test {
             }
         }
         {
-            let test_field = Field::from_rectangular_vector(&test_input.clone()).unwrap();
+            let test_field = Field::from_rectangular_vector(&test_input).unwrap();
             for j in 0..FIELD_HEIGHT {
                 for i in 0..FIELD_WIDTH {
                     assert_eq!( i == 0, test_field.get(Coord::new(i as i32, j as i32)).unwrap())
@@ -161,7 +161,7 @@ mod test {
             x.resize(FIELD_HEIGHT, true)
         }
         {
-            let test_field = Field::from_rectangular_vector(&test_input.clone()).unwrap();
+            let test_field = Field::from_rectangular_vector(&test_input).unwrap();
             for j in 0..FIELD_HEIGHT {
                 for i in 0..FIELD_WIDTH {
                     assert_eq!(false, test_field.get(Coord::new(i as i32, j as i32)).unwrap())
