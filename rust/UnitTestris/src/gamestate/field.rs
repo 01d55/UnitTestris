@@ -1,4 +1,7 @@
-use std::result::Result;
+use std::result;
+use std::error;
+use std::fmt::Display;
+use std::fmt::Formatter;
 use super::common::Coord;
 use super::common::FIELD_HEIGHT;
 use super::common::FIELD_WIDTH;
@@ -10,6 +13,65 @@ pub struct Field;
 #[allow(dead_code)]
 pub struct SizeError;
 
+impl Display for SizeError {
+    fn fmt(&self, f: &mut Formatter) -> ::std::fmt::Result {
+        use std::error::Error;
+        write!(f, "{}", self.description())
+    }
+}
+impl error::Error for SizeError {
+    fn description(&self) -> &str {
+        "Argument does not match Tetris field dimensions."
+    }
+}
+
+#[derive(Debug)]
+#[allow(dead_code)]
+pub struct DuplicateBlockError;
+
+impl Display for DuplicateBlockError {
+    fn fmt(&self, f: &mut Formatter) -> ::std::fmt::Result {
+        use std::error::Error;
+        write!(f, "{}", self.description())
+    }
+}
+impl error::Error for DuplicateBlockError {
+    fn description(&self) -> &str {
+        "Block already exists"
+    }
+}
+
+#[derive(Debug)]
+#[allow(dead_code)]
+pub enum Error {
+    Size(SizeError),
+    DuplicateBlock(DuplicateBlockError)
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut Formatter) -> ::std::fmt::Result {
+        use std::error::Error;
+        write!(f, "{}", self.description())
+    }
+}
+
+impl error::Error for Error {
+    fn description(&self) -> &str {
+        match *self {
+            Error::Size(ref e) => {e.description()}
+            Error::DuplicateBlock(ref e) => {e.description()}
+        }
+    }
+    fn cause(&self) -> Option<&error::Error> {
+        match *self {
+            Error::Size(ref e) => {Some(e)}
+            Error::DuplicateBlock(ref e) => {Some(e)}
+        }
+    }
+}
+
+pub type Result<T> = result::Result<T, Error>;
+
 #[allow(dead_code, unused_variables)]
 impl Field {
 
@@ -17,7 +79,7 @@ impl Field {
         Field::default()
     }
 
-    pub fn from_rectangular_vector(rect: & Vec<Vec<bool>>) -> Result<Field, SizeError> {
+    pub fn from_rectangular_vector(rect: & Vec<Vec<bool>>) -> result::Result<Field, SizeError> {
         unimplemented!()
     }
 
@@ -25,7 +87,7 @@ impl Field {
         unimplemented!()
     }
 
-    pub fn get(&self, c:Coord) -> Result<bool,SizeError> {
+    pub fn get(&self, c:Coord) -> result::Result<bool, SizeError> {
         unimplemented!()
     }
 
@@ -33,7 +95,7 @@ impl Field {
         unimplemented!()
     }
 
-    pub fn set(&mut self, x:u32, y:u32) -> () {
+    pub fn set(&mut self, c:Coord) -> Result<()> {
         unimplemented!()
     }
 
@@ -41,7 +103,7 @@ impl Field {
         unimplemented!()
     }
 
-    pub fn reset_slocks(&mut self) -> () {
+    pub fn reset_blocks(&mut self) -> () {
         unimplemented!()
     }
 }
@@ -348,7 +410,109 @@ mod test {
     }
     #[test]
     fn test_set() {
-        unimplemented!()
+        let mut test_field = Field::new();
+        // check that corners set correctly
+        assert!(test_field.set(Coord::new(0, 0)).is_ok());
+        assert!(test_field.get(Coord::new(0,0)).unwrap());
+        assert!(test_field.set(Coord::new(0, (FIELD_HEIGHT-1) as i32)).is_ok());
+        assert!(test_field.get(Coord::new(0, (FIELD_HEIGHT-1) as i32)).unwrap());
+        assert!(test_field.set(Coord::new((FIELD_WIDTH-1) as i32, 0)).is_ok());
+        assert!(test_field.get(Coord::new((FIELD_WIDTH-1) as i32, 0)).unwrap());
+        assert!(test_field.set(Coord::new((FIELD_WIDTH-1) as i32, (FIELD_HEIGHT-1) as i32)).is_ok());
+
+        // Check line removal, including downward movement of lines.
+        {
+            const RANGE: ::std::ops::Range<usize> = ::std::ops::Range{start: 1, end: FIELD_WIDTH-1};
+            // `for i in 1..(FIELD_WIDTH-1)` is a syntax error :(
+            for i in RANGE {
+                assert!(test_field.set(Coord::new(i as i32,0)).is_ok())
+            }
+        }
+        for i in 0..FIELD_WIDTH {
+            for j in 0..FIELD_HEIGHT {
+                let got = test_field.get(Coord::new(i as i32, j as i32)).unwrap();
+                const TOP_LEFT: (usize, usize) = (0, FIELD_HEIGHT-1);
+                const TOP_RIGHT: (usize, usize) = (FIELD_WIDTH-1, FIELD_HEIGHT-1);
+                // expect blocks previously in top-left and top-right to shift down 1
+                const EXPECTED_LEFT: (usize, usize) = (0, FIELD_HEIGHT-2);
+                const EXPECTED_RIGHT: (usize, usize) = (FIELD_WIDTH-1, FIELD_HEIGHT-2);
+                match(i,j) {
+                    (_,0) | TOP_LEFT | TOP_RIGHT => {
+                        assert_eq!(false, got)
+                    }
+                    EXPECTED_LEFT | EXPECTED_RIGHT => {
+                        assert!(got)
+                    }
+                    _ => {
+                        assert_eq!(false, got)
+                    }
+                }
+            }
+        }
+        // Check that line removal does not disturb lower lines
+        assert!(test_field.set(Coord::new(5,2)).is_ok());
+        for i in 0..FIELD_WIDTH {
+            assert!(test_field.set(Coord::new(i as i32,3)).is_ok());
+        }
+        // we want to repeat this soon
+        let repeatable_asserts = |field: &Field| for i in 0..FIELD_WIDTH {
+            for j in 0..FIELD_HEIGHT {
+                let got = field.get(Coord::new(i as i32, j as i32)).unwrap();
+                // expect upper blocks to drop by 1
+                const PREVIOUS_LEFT: (usize, usize) = (0, FIELD_HEIGHT-2);
+                const PREVIOUS_RIGHT: (usize, usize) = (FIELD_WIDTH-1, FIELD_HEIGHT-2);
+                const EXPECTED_LEFT: (usize, usize) = (0, FIELD_HEIGHT-3);
+                const EXPECTED_RIGHT: (usize, usize) = (FIELD_WIDTH-1, FIELD_HEIGHT-3);
+                // expect block below removed line to not drop
+                const EXPECTED_UNCHANGED: (usize, usize) = (5, 2);
+                const UNEXPECTED_CHANGE: (usize, usize) = (5, 1);
+                match(i,j) {
+                    EXPECTED_LEFT | EXPECTED_RIGHT | EXPECTED_UNCHANGED => {
+                        assert!(got)
+                    }
+                    PREVIOUS_LEFT | PREVIOUS_RIGHT | UNEXPECTED_CHANGE => {
+                        assert_eq!(false, got)
+                    }
+                    _ => {
+                        assert_eq!(false, got)
+                    }
+                }
+            }
+        };
+        repeatable_asserts(&test_field);
+        // Test for errors
+        let mut err: super::Error;
+        let panic_unless_size = | e: &super::Error | match e {
+            &super::Error::DuplicateBlock(_) => {panic!("Wrong error!")}
+            &super::Error::Size(_) => {}//OK
+        };
+        let panic_unless_dup = | e: &super::Error | match e {
+            &super::Error::DuplicateBlock(_) => {}//OK
+            &super::Error::Size(_) => {panic!("Wrong error!")}
+        };
+        err = test_field.set(Coord::new(-1, 0)).unwrap_err();
+        panic_unless_size(&err);
+        err = test_field.set(Coord::new(0, -1)).unwrap_err();
+        panic_unless_size(&err);
+        err = test_field.set(Coord::new(FIELD_WIDTH as i32, 0)).unwrap_err();
+        panic_unless_size(&err);
+        err = test_field.set(Coord::new(0, FIELD_HEIGHT as i32)).unwrap_err();
+        panic_unless_size(&err);
+        err = test_field.set(Coord::new(::std::i32::MIN, 0)).unwrap_err();
+        panic_unless_size(&err);
+        err = test_field.set(Coord::new(::std::i32::MAX, 0)).unwrap_err();
+        panic_unless_size(&err);
+        err = test_field.set(Coord::new(5, 2)).unwrap_err();
+        panic_unless_dup(&err);
+        // repeat our most recent battery of assertions, to check that all of these errors haven't changed anything.
+        repeatable_asserts(&test_field);
+        // test reset
+        test_field.reset_blocks();
+        for i in 0..FIELD_WIDTH {
+            for j in 0..FIELD_HEIGHT {
+                assert_eq!(false,  test_field.get(Coord::new(i as i32, j as i32)).unwrap())
+            }
+        }
     }
     #[test]
     fn test_field_score() {
