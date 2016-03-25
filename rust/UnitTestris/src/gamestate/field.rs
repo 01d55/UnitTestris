@@ -2,9 +2,15 @@ use std::result;
 use std::error;
 use std::fmt::Display;
 use std::fmt::Formatter;
-use super::common::Coord;
-use super::common::FIELD_HEIGHT;
-use super::common::FIELD_WIDTH;
+use super::Coord;
+
+#[allow(dead_code)]
+pub const HEIGHT:usize= 22;
+#[allow(dead_code)]
+pub const WIDTH: usize= 10;
+#[allow(dead_code)]
+pub const SIZE:  usize= HEIGHT*WIDTH;
+
 
 #[derive(Clone, Debug, Default)]
 pub struct Field;
@@ -83,7 +89,7 @@ impl Field {
         unimplemented!()
     }
 
-    pub fn from_rectangular_array(rect: &[[bool; FIELD_HEIGHT]; FIELD_WIDTH]) -> Field {
+    pub fn from_rectangular_array(rect: &[[bool; HEIGHT]; WIDTH]) -> Field {
         unimplemented!()
     }
 
@@ -111,14 +117,14 @@ impl Field {
 #[cfg(test)]
 mod test {
     use super::Field;
-    use super::super::common::FIELD_HEIGHT;
-    use super::super::common::FIELD_WIDTH;
-    use super::super::common::Coord;
+    use super::HEIGHT;
+    use super::WIDTH;
+    use super::super::Coord;
     #[test]
     fn test_new() {
         let test_field = Field::new();
-        for j in 0..FIELD_HEIGHT {
-            for i in 0..FIELD_WIDTH {
+        for j in 0..HEIGHT {
+            for i in 0..WIDTH {
                 assert_eq!(false, test_field.get(Coord::new(i as i32,j as i32)).unwrap())
             }
         }
@@ -127,29 +133,29 @@ mod test {
     fn test_from_rectangular_vector() {
         let mut test_input: Vec<Vec<bool> > = Vec::new();
         // size, and set to all false
-        test_input.resize(FIELD_WIDTH, Vec::new());
+        test_input.resize(WIDTH, Vec::new());
         for ref mut column in & mut test_input {
-            column.resize(FIELD_HEIGHT, false)
+            column.resize(HEIGHT, false)
         }
         // empty field
         {
             let test_field = Field::from_rectangular_vector(&test_input).unwrap();
-            for j in 0..FIELD_HEIGHT {
-                for i in 0..FIELD_WIDTH {
+            for j in 0..HEIGHT {
+                for i in 0..WIDTH {
                     assert_eq!(false, test_field.get(Coord::new(i as i32,j as i32)).unwrap())
                 }
             }
         }
         // check extreme corners
         test_input[0][0] = true;
-        // Putting FIELD_HEIGHT-1 in a match pattern is a syntax error.
-        const FIELD_WEND: usize = FIELD_HEIGHT-1;
-        const FIELD_HEND: usize = FIELD_WIDTH-1;
+        // Putting HEIGHT-1 in a match pattern is a syntax error.
+        const FIELD_WEND: usize = HEIGHT-1;
+        const FIELD_HEND: usize = WIDTH-1;
         test_input[FIELD_WEND][FIELD_HEND] = true;
         {
             let test_field = Field::from_rectangular_vector(&test_input).unwrap();
-            for j in 0..FIELD_HEIGHT {
-                for i in 0..FIELD_WIDTH {
+            for j in 0..HEIGHT {
+                for i in 0..WIDTH {
                     match (i,j) {
                         (0,0) | (FIELD_WEND, FIELD_HEND) => { assert!(test_field.get(Coord::new(i as i32, j as i32)).unwrap()) }
                         _ => { assert_eq!(false, test_field.get(Coord::new(i as i32, j as i32)).unwrap()) }
@@ -158,8 +164,8 @@ mod test {
             }
         }
         // a non-full row placed over a full row. The non-full row should drop into the space opened when the full row is cleared.
-        for j in 0..FIELD_HEIGHT {
-            for i in 0..FIELD_WIDTH {
+        for j in 0..HEIGHT {
+            for i in 0..WIDTH {
                 match (i,j) {
                     (_,0) => {test_input[i][j] = true}
                     (_,1) => {test_input[i][j] = i%2 == 0}
@@ -169,8 +175,8 @@ mod test {
         }
         {
             let test_field = Field::from_rectangular_vector(&test_input).unwrap();
-            for j in 0..FIELD_HEIGHT {
-                for i in 0..FIELD_WIDTH {
+            for j in 0..HEIGHT {
+                for i in 0..WIDTH {
                     match (i,j) {
                         (_,0) => { assert_eq!(i%2 == 0, test_field.get(Coord::new(i as i32, j as i32)).unwrap()) }
                         _ => { assert_eq!(false, test_field.get(Coord::new(i as i32, j as i32)).unwrap())}
@@ -183,8 +189,8 @@ mod test {
         // and a row with alternating empty and full blocks above.
         // The row with alternating blocks should shift down 3 as the full
         // rows beneath it are removed.
-        for j in 0..FIELD_HEIGHT {
-            for i in 0..FIELD_WIDTH {
+        for j in 0..HEIGHT {
+            for i in 0..WIDTH {
                 match(i,j) {
                     (_,1) | (_,2) | (_,5) => { test_input[i][j] = true }
                     (_,6) => { test_input[i][j] = i%2 != 0 }
@@ -194,8 +200,8 @@ mod test {
         }
         {
             let test_field = Field::from_rectangular_vector(&test_input).unwrap();
-            for j in 0 ..FIELD_HEIGHT {
-                for i in 0..FIELD_WIDTH {
+            for j in 0 ..HEIGHT {
+                for i in 0..WIDTH {
                     match(i,j) {
                         (_,3) => {assert_eq!(i%2 != 0, test_field.get(Coord::new(i as i32, j as i32)).unwrap())}
                         _ => {assert_eq!(false, test_field.get(Coord::new(i as i32, j as i32)).unwrap())}
@@ -204,15 +210,15 @@ mod test {
             }
         }
         // Full column.
-        for j in 0..FIELD_HEIGHT {
-            for i in 0..FIELD_WIDTH {
+        for j in 0..HEIGHT {
+            for i in 0..WIDTH {
                 test_input[i][j] = i == 0
             }
         }
         {
             let test_field = Field::from_rectangular_vector(&test_input).unwrap();
-            for j in 0..FIELD_HEIGHT {
-                for i in 0..FIELD_WIDTH {
+            for j in 0..HEIGHT {
+                for i in 0..WIDTH {
                     assert_eq!( i == 0, test_field.get(Coord::new(i as i32, j as i32)).unwrap())
                 }
             }
@@ -220,12 +226,12 @@ mod test {
         // All rows full. The full rows should clear.
         for ref mut x in  &mut test_input {
             x.clear();
-            x.resize(FIELD_HEIGHT, true)
+            x.resize(HEIGHT, true)
         }
         {
             let test_field = Field::from_rectangular_vector(&test_input).unwrap();
-            for j in 0..FIELD_HEIGHT {
-                for i in 0..FIELD_WIDTH {
+            for j in 0..HEIGHT {
+                for i in 0..WIDTH {
                     assert_eq!(false, test_field.get(Coord::new(i as i32, j as i32)).unwrap())
                 }
             }
@@ -238,44 +244,44 @@ mod test {
             let test_result = Field::from_rectangular_vector(&test_input);
             assert!(test_result.is_err());
         }
-        // error if not FIELD_WIDTH columns
-        test_input.resize(FIELD_WIDTH+1, ::std::default::Default::default());
+        // error if not WIDTH columns
+        test_input.resize(WIDTH+1, ::std::default::Default::default());
         for ref mut column in &mut test_input {
-            column.resize(FIELD_HEIGHT, false)
+            column.resize(HEIGHT, false)
         }
         {
             let test_result = Field::from_rectangular_vector(&test_input);
             assert!(test_result.is_err())
         }
-        test_input.resize(FIELD_WIDTH-1, ::std::default::Default::default());
+        test_input.resize(WIDTH-1, ::std::default::Default::default());
         {
             let test_result = Field::from_rectangular_vector(&test_input);
             assert!(test_result.is_err())
         }
-        // error if not every column is FIELD_HEIGHT
-        test_input.resize(FIELD_WIDTH, ::std::default::Default::default()); // test_input[FIELD_WEND] is empty
+        // error if not every column is HEIGHT
+        test_input.resize(WIDTH, ::std::default::Default::default()); // test_input[FIELD_WEND] is empty
         {
             let test_result = Field::from_rectangular_vector(&test_input);
             assert!(test_result.is_err())
         }
-        test_input[FIELD_WEND].resize(FIELD_HEIGHT, false);
+        test_input[FIELD_WEND].resize(HEIGHT, false);
         test_input[0].clear();
         {
             let test_result = Field::from_rectangular_vector(&test_input);
             assert!(test_result.is_err())
         }
-        test_input[0].resize(FIELD_HEIGHT, false);
+        test_input[0].resize(HEIGHT, false);
         test_input[5].clear();
         {
             let test_result = Field::from_rectangular_vector(&test_input);
             assert!(test_result.is_err())
         }
-        test_input[5].resize(FIELD_HEIGHT+1, false);
+        test_input[5].resize(HEIGHT+1, false);
         {
             let test_result = Field::from_rectangular_vector(&test_input);
             assert!(test_result.is_err())
         }
-        test_input[5].resize(FIELD_HEIGHT-1, false);
+        test_input[5].resize(HEIGHT-1, false);
         {
             let test_result = Field::from_rectangular_vector(&test_input);
             assert!(test_result.is_err())
@@ -284,25 +290,25 @@ mod test {
     #[test]
     fn test_from_rectangular_array() {
         use std::default::Default;
-        let mut test_input: [[bool; FIELD_HEIGHT]; FIELD_WIDTH] = Default::default();
+        let mut test_input: [[bool; HEIGHT]; WIDTH] = Default::default();
         // empty field
         {
             let test_field = Field::from_rectangular_array(&test_input);
-            for i in 0..FIELD_WIDTH {
-                for j in 0..FIELD_HEIGHT {
+            for i in 0..WIDTH {
+                for j in 0..HEIGHT {
                     assert_eq!(false, test_field.get(Coord::new(i as i32, j as i32)).unwrap())
                 }
             }
         }
         // check extreme corners
         test_input[0][0] = true;
-        const FIELD_W_END: usize = FIELD_WIDTH - 1;
-        const FIELD_H_END: usize = FIELD_HEIGHT - 1;
+        const FIELD_W_END: usize = WIDTH - 1;
+        const FIELD_H_END: usize = HEIGHT - 1;
         test_input[FIELD_W_END][FIELD_H_END] = true;
         {
             let test_field = Field::from_rectangular_array(&test_input);
-            for i in 0..FIELD_WIDTH {
-                for j in 0..FIELD_HEIGHT {
+            for i in 0..WIDTH {
+                for j in 0..HEIGHT {
                     match (i,j) {
                         (0,0) | (FIELD_W_END, FIELD_H_END) => {
                             assert!(test_field.get(Coord::new(i as i32, j as i32)).unwrap())
@@ -315,8 +321,8 @@ mod test {
             }
         }
         // Place blocks over a full row. The blocks should drop on row when the full row is cleared.
-        for j in 0..FIELD_HEIGHT {
-            for i in 0..FIELD_WIDTH {
+        for j in 0..HEIGHT {
+            for i in 0..WIDTH {
                 match (i,j) {
                     (_,0) => {test_input[i][j] = true}
                     (_,1) => {test_input[i][j] = i%2 == 0}
@@ -326,8 +332,8 @@ mod test {
         }
         {
             let test_field = Field::from_rectangular_array(&test_input);
-            for i in 0..FIELD_WIDTH {
-                for j in 0..FIELD_HEIGHT {
+            for i in 0..WIDTH {
+                for j in 0..HEIGHT {
                     let got = test_field.get(Coord::new(i as i32, j as i32)).unwrap();
                     if i == 0 {
                         assert_eq!(i%2 == 0, got)
@@ -342,8 +348,8 @@ mod test {
         // and a row with alternating empty and full blocks above.
         // The row with alternating blocks should shift down 3 as the full
         // rows beneath it are removed.
-        for i in 0..FIELD_WIDTH {
-            for j in 0..FIELD_HEIGHT {
+        for i in 0..WIDTH {
+            for j in 0..HEIGHT {
                 match(i,j) {
                     (_,1) | (_,2) | (_,5) => { test_input[i][j] = true }
                     (_,6) => { test_input[i][j] = i%2 != 0 }
@@ -353,8 +359,8 @@ mod test {
         }
         {
             let test_field = Field::from_rectangular_array(&test_input);
-            for i in 0..FIELD_WIDTH {
-                for j in 0..FIELD_HEIGHT {
+            for i in 0..WIDTH {
+                for j in 0..HEIGHT {
                     let got = test_field.get(Coord::new(i as i32, j as i32)).unwrap();
                     if j == 3 {
                         assert_eq!(i%2 != 0, got)
@@ -365,15 +371,15 @@ mod test {
             }
         }
         // Full column.
-        for i in 0..FIELD_WIDTH {
-            for j in 0..FIELD_HEIGHT {
+        for i in 0..WIDTH {
+            for j in 0..HEIGHT {
                 test_input[i][j] = i == 0
             }
         }
         {
             let test_field = Field::from_rectangular_array(&test_input);
-            for i in 0..FIELD_WIDTH {
-                for j in 0..FIELD_HEIGHT {
+            for i in 0..WIDTH {
+                for j in 0..HEIGHT {
                     assert_eq!( i == 0, test_field.get(Coord::new(i as i32, j as i32)).unwrap())
                 }
             }
@@ -386,8 +392,8 @@ mod test {
         }
         {
             let test_field = Field::from_rectangular_array(&test_input);
-            for i in 0..FIELD_WIDTH {
-                for j in 0..FIELD_HEIGHT {
+            for i in 0..WIDTH {
+                for j in 0..HEIGHT {
                     assert_eq!(false, test_field.get(Coord::new(i as i32, j as i32)).unwrap())
                 }
             }
@@ -395,12 +401,12 @@ mod test {
     }
     #[test]
     fn test_get_bounds() {
-        const H_END:i32 = (FIELD_HEIGHT+2) as i32;
-        const W_END:i32 = (FIELD_WIDTH+2) as i32;
+        const H_END:i32 = (HEIGHT+2) as i32;
+        const W_END:i32 = (WIDTH+2) as i32;
         let test_field = Field::new();
         for i in -2..W_END {
             for j in -2..H_END {
-                if i < 0 || j < 0 || i >= FIELD_WIDTH as i32 || j >= FIELD_HEIGHT as i32 {
+                if i < 0 || j < 0 || i >= WIDTH as i32 || j >= HEIGHT as i32 {
                     assert!(test_field.get(Coord::new(i,j)).is_err())
                 } else {
                     assert!(test_field.get(Coord::new(i,j)).is_ok())
@@ -414,28 +420,28 @@ mod test {
         // check that corners set correctly
         assert!(test_field.set(Coord::new(0, 0)).is_ok());
         assert!(test_field.get(Coord::new(0,0)).unwrap());
-        assert!(test_field.set(Coord::new(0, (FIELD_HEIGHT-1) as i32)).is_ok());
-        assert!(test_field.get(Coord::new(0, (FIELD_HEIGHT-1) as i32)).unwrap());
-        assert!(test_field.set(Coord::new((FIELD_WIDTH-1) as i32, 0)).is_ok());
-        assert!(test_field.get(Coord::new((FIELD_WIDTH-1) as i32, 0)).unwrap());
-        assert!(test_field.set(Coord::new((FIELD_WIDTH-1) as i32, (FIELD_HEIGHT-1) as i32)).is_ok());
+        assert!(test_field.set(Coord::new(0, (HEIGHT-1) as i32)).is_ok());
+        assert!(test_field.get(Coord::new(0, (HEIGHT-1) as i32)).unwrap());
+        assert!(test_field.set(Coord::new((WIDTH-1) as i32, 0)).is_ok());
+        assert!(test_field.get(Coord::new((WIDTH-1) as i32, 0)).unwrap());
+        assert!(test_field.set(Coord::new((WIDTH-1) as i32, (HEIGHT-1) as i32)).is_ok());
 
         // Check line removal, including downward movement of lines.
         {
-            const RANGE: ::std::ops::Range<usize> = ::std::ops::Range{start: 1, end: FIELD_WIDTH-1};
-            // `for i in 1..(FIELD_WIDTH-1)` is a syntax error :(
+            const RANGE: ::std::ops::Range<usize> = ::std::ops::Range{start: 1, end: WIDTH-1};
+            // `for i in 1..(WIDTH-1)` is a syntax error :(
             for i in RANGE {
                 assert!(test_field.set(Coord::new(i as i32,0)).is_ok())
             }
         }
-        for i in 0..FIELD_WIDTH {
-            for j in 0..FIELD_HEIGHT {
+        for i in 0..WIDTH {
+            for j in 0..HEIGHT {
                 let got = test_field.get(Coord::new(i as i32, j as i32)).unwrap();
-                const TOP_LEFT: (usize, usize) = (0, FIELD_HEIGHT-1);
-                const TOP_RIGHT: (usize, usize) = (FIELD_WIDTH-1, FIELD_HEIGHT-1);
+                const TOP_LEFT: (usize, usize) = (0, HEIGHT-1);
+                const TOP_RIGHT: (usize, usize) = (WIDTH-1, HEIGHT-1);
                 // expect blocks previously in top-left and top-right to shift down 1
-                const EXPECTED_LEFT: (usize, usize) = (0, FIELD_HEIGHT-2);
-                const EXPECTED_RIGHT: (usize, usize) = (FIELD_WIDTH-1, FIELD_HEIGHT-2);
+                const EXPECTED_LEFT: (usize, usize) = (0, HEIGHT-2);
+                const EXPECTED_RIGHT: (usize, usize) = (WIDTH-1, HEIGHT-2);
                 match(i,j) {
                     (_,0) | TOP_LEFT | TOP_RIGHT => {
                         assert_eq!(false, got)
@@ -451,18 +457,18 @@ mod test {
         }
         // Check that line removal does not disturb lower lines
         assert!(test_field.set(Coord::new(5,2)).is_ok());
-        for i in 0..FIELD_WIDTH {
+        for i in 0..WIDTH {
             assert!(test_field.set(Coord::new(i as i32,3)).is_ok());
         }
         // we want to repeat this soon
-        let repeatable_asserts = |field: &Field| for i in 0..FIELD_WIDTH {
-            for j in 0..FIELD_HEIGHT {
+        let repeatable_asserts = |field: &Field| for i in 0..WIDTH {
+            for j in 0..HEIGHT {
                 let got = field.get(Coord::new(i as i32, j as i32)).unwrap();
                 // expect upper blocks to drop by 1
-                const PREVIOUS_LEFT: (usize, usize) = (0, FIELD_HEIGHT-2);
-                const PREVIOUS_RIGHT: (usize, usize) = (FIELD_WIDTH-1, FIELD_HEIGHT-2);
-                const EXPECTED_LEFT: (usize, usize) = (0, FIELD_HEIGHT-3);
-                const EXPECTED_RIGHT: (usize, usize) = (FIELD_WIDTH-1, FIELD_HEIGHT-3);
+                const PREVIOUS_LEFT: (usize, usize) = (0, HEIGHT-2);
+                const PREVIOUS_RIGHT: (usize, usize) = (WIDTH-1, HEIGHT-2);
+                const EXPECTED_LEFT: (usize, usize) = (0, HEIGHT-3);
+                const EXPECTED_RIGHT: (usize, usize) = (WIDTH-1, HEIGHT-3);
                 // expect block below removed line to not drop
                 const EXPECTED_UNCHANGED: (usize, usize) = (5, 2);
                 const UNEXPECTED_CHANGE: (usize, usize) = (5, 1);
@@ -494,9 +500,9 @@ mod test {
         panic_unless_size(&err);
         err = test_field.set(Coord::new(0, -1)).unwrap_err();
         panic_unless_size(&err);
-        err = test_field.set(Coord::new(FIELD_WIDTH as i32, 0)).unwrap_err();
+        err = test_field.set(Coord::new(WIDTH as i32, 0)).unwrap_err();
         panic_unless_size(&err);
-        err = test_field.set(Coord::new(0, FIELD_HEIGHT as i32)).unwrap_err();
+        err = test_field.set(Coord::new(0, HEIGHT as i32)).unwrap_err();
         panic_unless_size(&err);
         err = test_field.set(Coord::new(::std::i32::MIN, 0)).unwrap_err();
         panic_unless_size(&err);
@@ -508,8 +514,8 @@ mod test {
         repeatable_asserts(&test_field);
         // test reset
         test_field.reset_blocks();
-        for i in 0..FIELD_WIDTH {
-            for j in 0..FIELD_HEIGHT {
+        for i in 0..WIDTH {
+            for j in 0..HEIGHT {
                 assert_eq!(false,  test_field.get(Coord::new(i as i32, j as i32)).unwrap())
             }
         }

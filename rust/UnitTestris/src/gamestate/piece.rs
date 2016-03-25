@@ -3,7 +3,7 @@ use std::fmt::Formatter;
 use std::error::Error;
 use std::result::Result;
 use super::field::Field;
-use super::common::Coord;
+use super::Coord;
 
 #[allow(dead_code)]
 pub enum Type {
@@ -72,7 +72,7 @@ impl Piece {
 #[cfg(test)]
 #[allow(dead_code)]
 mod tests {
-    use super::super::common::Coord;
+    use super::super::Coord;
     // piece test
     const ORIGIN_COORD : Coord = Coord {x:4,y:20};
     const ORIGIN_I :     Coord = Coord {x:5,y:20};
