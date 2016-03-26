@@ -46,19 +46,19 @@ impl Game {
         unimplemented!()
     }
 
-    pub fn run(&mut self) -> Option<RunningError> {
+    pub fn run(&mut self) -> Result<(), RunningError> {
         unimplemented!()
     }
 
-    pub fn pause(&mut self) -> Option<NotRunningError> {
+    pub fn pause(&mut self) -> Result<(), NotRunningError> {
         unimplemented!()
     }
 
-    pub fn set_renderer(&mut self) -> Option<RunningError> {
+    pub fn set_renderer(&mut self, callback:&Fn(&Field, &Piece, Option<&Piece>) -> ()) -> Result<(), RunningError> {
         unimplemented!()
     }
 
-    pub fn queue_input(input: piece::Type) -> Option<NotRunningError> {
+    pub fn queue_input(&mut self, input: piece::Type) -> Result<(), NotRunningError> {
         unimplemented!()
     }
 
