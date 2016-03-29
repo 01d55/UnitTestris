@@ -522,6 +522,21 @@ mod test {
     }
     #[test]
     fn test_field_score() {
-        unimplemented!()
+        let mut test_field = Field::new();
+        // Score should begin at zero.
+        assert_eq!(0, test_field.read_score());
+        for i in 0..WIDTH {
+            assert!(test_field.set(Coord::new(i as i32, 0)).is_ok());
+        }
+        assert_eq!(1, test_field.read_score());
+        for i in 0..WIDTH {
+            assert!(test_field.set(Coord::new(i as i32, 6)).is_ok());
+        }
+        assert_eq!(2, test_field.read_score());
+        // test reset, and that increasing score after a reset works correctly.
+        for i in 0..WIDTH {
+            assert!(test_field.set(Coord::new(i as i32, 19)).is_ok());
+        }
+        assert_eq!(1, test_field.read_score());
     }
 }
