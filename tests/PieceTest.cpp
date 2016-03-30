@@ -58,7 +58,7 @@ void PieceTest::tearDown()
 
 void PieceTest::testConstructor()
 {
-  unsigned int testDelay = 1;
+  const unsigned int testDelay = 1;
   Field testField;
   coord testCoord(-1,-1);
   arrayt expectedBlocks;
