@@ -155,6 +155,14 @@ mod tests {
      *0123456789*
      */
 
+    // Initial blocks
+    const BLOCKS_I : [Coord; 4] = [Coord {x:4,y:20}, Coord {x:5,y:20}, Coord {x:6,y:20}, Coord {x:7,y:20}];
+    const BLOCKS_J : [Coord; 4] = [Coord {x:3,y:20}, Coord {x:3,y:21}, Coord {x:4,y:20}, Coord {x:5,y:20}];
+    const BLOCKS_L : [Coord; 4] = [Coord {x:3,y:20}, Coord {x:4,y:20}, Coord {x:5,y:20}, Coord {x:5,y:21}];
+    const BLOCKS_O : [Coord; 4] = [Coord {x:4,y:20}, Coord {x:4,y:21}, Coord {x:5,y:20}, Coord {x:5,y:21}];
+    const BLOCKS_S : [Coord; 4] = [Coord {x:3,y:20}, Coord {x:4,y:20}, Coord {x:4,y:21}, Coord {x:5,y:21}];
+    const BLOCKS_T : [Coord; 4] = [Coord {x:3,y:20}, Coord {x:4,y:20}, Coord {x:4,y:21}, Coord {x:5,y:20}];
+    const BLOCKS_Z : [Coord; 4] = [Coord {x:3,y:21}, Coord {x:4,y:20}, Coord {x:4,y:21}, Coord {x:5,y:20}];
 
     struct MockField {
         set_args: Vec<Coord>,
@@ -381,6 +389,88 @@ mod tests {
     }
     #[test]
     fn test_shift() {
+        let mut test_field = MockField {set_args: Vec::new(),get_args: Vec::new(), get_results: HashMap::new()};
+        fn per_block(test_field: &mut MockField, typ: super::Type, origin: Coord, expected_initial_blocks: [Coord; 4], space_to_right_wall: i32, space_to_left_wall: i32, rightward_block: Coord, leftward_block: Coord ) {
+            let mut test_piece: PieceImpl<MockField> = PieceImpl::new(typ, 0, test_field);
+            // Shift right
+            assert!(test_piece.handle_input(super::Input::ShiftRight).is_ok());
+
+            let mut expected_coord = origin;
+            expected_coord.x = expected_coord.x + 1;
+            let mut expected_blocks = expected_initial_blocks;
+            assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()));
+            assert_eq!(expected_coord, test_piece.get_center());
+            // Press against right wall.
+            for _ in 0..5 {
+                assert!(test_piece.handle_input(super::Input::ShiftRight).is_ok());
+            }
+            // Although we shifted 5 times, the right wall should block some.
+            expected_coord.x += space_to_right_wall;
+            for coord in expected_blocks.iter_mut() {
+                coord.x += space_to_right_wall;
+            }
+            assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()));
+            assert_eq!(expected_coord, test_piece.get_center());
+            // Shift left
+            assert!(test_piece.handle_input(super::Input::ShiftLeft).is_ok());
+            expected_coord.x -= 1;
+            for coord in expected_blocks.iter_mut() {
+                coord.x -= 1;
+            }
+            assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()));
+            assert_eq!(expected_coord, test_piece.get_center());
+            // Press against left wall
+            for _ in 0..10 {
+                assert!(test_piece.handle_input(super::Input::ShiftLeft).is_ok());
+            }
+            for coord in expected_blocks.iter_mut() {
+                coord.x -= space_to_left_wall;
+            }
+            expected_coord.x -= space_to_left_wall;
+            // Press against a block in the field
+            test_field.get_results.insert(rightward_block, true);
+            for _ in 0..2 {
+                assert!(test_piece.handle_input(super::Input::ShiftRight).is_ok());
+            }
+            for coord in expected_blocks.iter_mut() {
+                coord.x += 1;
+            }
+            expected_coord.x += 1;
+            assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()));
+            assert_eq!(expected_coord, test_piece.get_center());
+            // press left
+            test_field.get_results.insert(leftward_block, true);
+            assert!(test_piece.handle_input(super::Input::ShiftLeft).is_ok());
+            test_field.get_results.clear();
+        }
+        per_block(
+            &mut test_field,
+            super::Type::I,
+            ORIGIN_I,
+            BLOCKS_I,
+            2,
+            5,
+            Coord::new(5,20),
+            Coord::new(0,20));
+        per_block(
+            &mut test_field,
+            super::Type::O,
+            ORIGIN_O,
+            BLOCKS_O,
+            3,
+            7,
+            Coord::new(3,21),
+            Coord::new(0,20));
+        per_block(
+            &mut test_field,
+            super::Type::T,
+            ORIGIN_COORD,
+            BLOCKS_T,
+            3,
+            6,
+            Coord::new(4,20), // todo 3,21 also
+            Coord::new(3,21));
+
         unimplemented!()
     }
     #[test]
