@@ -230,6 +230,9 @@ mod tests {
             assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()));
             assert_eq!(super::Type::O, test_piece.get_type());
         }
+        // J block
+        expected_blocks = BLOCKS_J;
+        check_normal_blocks(super::Type::J, &expected_blocks, &mut test_field, test_delay);
         // L block
         expected_blocks = BLOCKS_L;
         check_normal_blocks(super::Type::L, &expected_blocks, &mut test_field, test_delay);
