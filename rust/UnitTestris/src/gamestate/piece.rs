@@ -156,7 +156,7 @@ mod tests {
      */
 
     // Initial blocks
-    const BLOCKS_I : [Coord; 4] = [Coord {x:4,y:20}, Coord {x:5,y:20}, Coord {x:6,y:20}, Coord {x:7,y:20}];
+    const BLOCKS_I : [Coord; 4] = [Coord {x:3,y:20}, Coord {x:4,y:20}, Coord {x:5,y:20}, Coord {x:6,y:20}];
     const BLOCKS_J : [Coord; 4] = [Coord {x:3,y:20}, Coord {x:3,y:21}, Coord {x:4,y:20}, Coord {x:5,y:20}];
     const BLOCKS_L : [Coord; 4] = [Coord {x:3,y:20}, Coord {x:4,y:20}, Coord {x:5,y:20}, Coord {x:5,y:21}];
     const BLOCKS_O : [Coord; 4] = [Coord {x:4,y:20}, Coord {x:4,y:21}, Coord {x:5,y:20}, Coord {x:5,y:21}];
@@ -213,10 +213,7 @@ mod tests {
         let mut expected_blocks: [Coord;4] = ::std::default::Default::default();
 
         // I block
-        expected_blocks[0] = Coord::new(3,20);
-        expected_blocks[1] = Coord::new(4,20);
-        expected_blocks[2] = Coord::new(5,20);
-        expected_blocks[3] = Coord::new(6,20);
+        expected_blocks = BLOCKS_I;
         {
             let test_piece = PieceImpl::new(super::Type::I, test_delay, &mut test_field);
             let test_coord = test_piece.get_center();
@@ -225,10 +222,7 @@ mod tests {
             assert_eq!(super::Type::I, test_piece.get_type());
         }
         // O block
-        expected_blocks[0] = Coord::new(4,20);
-        expected_blocks[1] = Coord::new(4,21);
-        expected_blocks[2] = Coord::new(5,20);
-        expected_blocks[3] = Coord::new(5,21);
+        expected_blocks = BLOCKS_O;
         {
             let test_piece = PieceImpl::new(super::Type::O, test_delay, &mut test_field);
             let test_coord = test_piece.get_center();
@@ -237,29 +231,17 @@ mod tests {
             assert_eq!(super::Type::O, test_piece.get_type());
         }
         // L block
-        expected_blocks[0] = Coord::new(3,20);
-        expected_blocks[1] = Coord::new(4,20);
-        expected_blocks[2] = Coord::new(5,20);
-        expected_blocks[3] = Coord::new(5,21);
+        expected_blocks = BLOCKS_L;
         check_normal_blocks(super::Type::L, &expected_blocks, &mut test_field, test_delay);
         // S block
-        expected_blocks[0] = Coord::new(3,20);
-        expected_blocks[1] = Coord::new(4,20);
-        expected_blocks[2] = Coord::new(4,21);
-        expected_blocks[3] = Coord::new(5,21);
+        expected_blocks = BLOCKS_S;
         check_normal_blocks(super::Type::S, &expected_blocks, &mut test_field, test_delay);
         // T block
-        expected_blocks[0] = Coord::new(3,20);
-        expected_blocks[1] = Coord::new(4,20);
-        expected_blocks[2] = Coord::new(4,21);
-        expected_blocks[3] = Coord::new(5,20);
+        expected_blocks = BLOCKS_T;
         check_normal_blocks(super::Type::T, &expected_blocks, &mut test_field, test_delay);
         // Z block
-        expected_blocks[0] = Coord::new(3,21);
-        expected_blocks[1] = Coord::new(4,20);
-        expected_blocks[2] = Coord::new(4,21);
-        expected_blocks[3] = Coord::new(5,20);
-        check_normal_blocks(super::Type::T, &expected_blocks, &mut test_field, test_delay);
+        expected_blocks = BLOCKS_Z;
+        check_normal_blocks(super::Type::Z, &expected_blocks, &mut test_field, test_delay);
     }
     #[test]
     fn test_step() {
