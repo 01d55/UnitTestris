@@ -210,7 +210,7 @@ mod tests {
         }
         let test_delay = 1;
         let mut test_field = MockField{set_args: Vec::new(),get_args: Vec::new(), get_results: HashMap::new()};
-        let mut expected_blocks: [Coord;4] = ::std::default::Default::default();
+        let mut expected_blocks: [Coord;4];
 
         // I block
         expected_blocks = BLOCKS_I;
@@ -375,7 +375,7 @@ mod tests {
     #[test]
     fn test_shift() {
         let mut test_field = MockField {set_args: Vec::new(),get_args: Vec::new(), get_results: HashMap::new()};
-        fn per_block(test_field: &mut MockField, typ: super::Type, origin: Coord, expected_initial_blocks: [Coord; 4], space_to_right_wall: i32, space_to_left_wall: i32, rightward_block: Coord, leftward_block: Coord ) {
+        fn per_block(test_field: &mut MockField, typ: super::Type, origin: Coord, expected_initial_blocks: [Coord; 4], space_to_right_wall: i32, space_to_left_wall: i32, rightward_blocks: Vec<Coord>, leftward_blocks: Vec<Coord> ) {
             let mut test_piece: PieceImpl<MockField> = PieceImpl::new(typ, 0, test_field);
             // Shift right
             assert!(test_piece.handle_input(super::Input::ShiftRight).is_ok());
@@ -413,7 +413,9 @@ mod tests {
             }
             expected_coord.x -= space_to_left_wall;
             // Press against a block in the field
-            test_field.get_results.insert(rightward_block, true);
+            for rightward_block in rightward_blocks {
+                test_field.get_results.insert(rightward_block, true);
+            }
             for _ in 0..2 {
                 assert!(test_piece.handle_input(super::Input::ShiftRight).is_ok());
             }
@@ -424,10 +426,19 @@ mod tests {
             assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()));
             assert_eq!(expected_coord, test_piece.get_center());
             // press left
-            test_field.get_results.insert(leftward_block, true);
+            for leftward_block in leftward_blocks {
+                test_field.get_results.insert(leftward_block, true);
+            }
             assert!(test_piece.handle_input(super::Input::ShiftLeft).is_ok());
             test_field.get_results.clear();
         }
+        /*
+         *__________*
+         *          *21
+         *XIIIIX    *20
+         *          *19
+         *          *18
+         *0123456789*/
         per_block(
             &mut test_field,
             super::Type::I,
@@ -435,8 +446,15 @@ mod tests {
             BLOCKS_I,
             2,
             5,
-            Coord::new(5,20),
-            Coord::new(0,20));
+            [Coord::new(5,20),].into_iter().cloned().collect(),
+            [Coord::new(0,20),].into_iter().cloned().collect());
+        /*
+         *__________*
+         * OOX      *21
+         *XOO       *20
+         *          *19
+         *          *18
+         *0123456789*/
         per_block(
             &mut test_field,
             super::Type::O,
@@ -444,8 +462,15 @@ mod tests {
             BLOCKS_O,
             3,
             7,
-            Coord::new(3,21),
-            Coord::new(0,20));
+            [Coord::new(3,21)].into_iter().cloned().collect(),
+            [Coord::new(0,20)].into_iter().cloned().collect());
+        /*
+         *__________*
+         * XTX      *21
+         * TTTX     *20
+         *          *19
+         *          *18
+         *0123456789*/
         per_block(
             &mut test_field,
             super::Type::T,
@@ -453,13 +478,108 @@ mod tests {
             BLOCKS_T,
             3,
             6,
-            Coord::new(4,20), // todo 3,21 also
-            Coord::new(3,21));
-
-        unimplemented!()
+            [Coord::new(4,20), Coord::new(3,21)].into_iter().cloned().collect(),
+            [Coord::new(1,21)].into_iter().cloned().collect());
+        /*
+         *__________*
+         *XJX       *21
+         * JJJ      *20
+         *          *19
+         *          *18
+         *0123456789*/
+        per_block(
+            &mut test_field,
+            super::Type::J,
+            ORIGIN_COORD,
+            BLOCKS_J,
+            3,
+            6,
+            [Coord::new(2,21)].into_iter().cloned().collect(),
+            [Coord::new(0,21)].into_iter().cloned().collect());
+        /*
+         *__________*
+         *  XLX     *21
+         * LLL      *20
+         *          *19
+         *          *18
+         *0123456789*/
+        per_block(
+            &mut test_field,
+            super::Type::L,
+            ORIGIN_COORD,
+            BLOCKS_L,
+            3,
+            6,
+            [Coord::new(4,21)].into_iter().cloned().collect(),
+            [Coord::new(2,21)].into_iter().cloned().collect());
+        /*
+         *__________*
+         * XSS      *21
+         * SSX      *20
+         *          *19
+         *          *18
+         *0123456789*/
+        per_block(
+            &mut test_field,
+            super::Type::L,
+            ORIGIN_COORD,
+            BLOCKS_S,
+            3,
+            6,
+            [Coord::new(3,20)].into_iter().cloned().collect(),
+            [Coord::new(1,21)].into_iter().cloned().collect());
+        /*
+         *__________*
+         * ZZX      *21
+         * XZZ      *20
+         *          *19
+         *          *18
+         *0123456789*/
+        per_block(
+            &mut test_field,
+            super::Type::Z,
+            ORIGIN_COORD,
+            BLOCKS_Z,
+            3,
+            6,
+            [Coord::new(3,21)].into_iter().cloned().collect(),
+            [Coord::new(1,20)].into_iter().cloned().collect());
     }
     #[test]
     fn test_rotate() {
+        let mut test_field = MockField {set_args: Vec::new(),get_args: Vec::new(), get_results: HashMap::new()};
+        // L block
+        // Turn CCW
+        /*
+         *__________*
+         *     L    *21
+         *   LcL    *20
+         *          *19
+         *          *18
+         *0123456789*
+        1 rotation
+         *__________*
+         *   LL     *21
+         *    c     *20
+         *    L     *19
+         *          *18
+         *0123456789*
+        2 rotations
+         *__________*
+         *          *21
+         *   LcL    *20
+         *   L      *19
+         *          *18
+         *0123456789*
+        3 rotations
+         *__________*
+         *    L     *21
+         *    c     *20
+         *    LL    *19
+         *          *18
+         *0123456789*
+         */
+
         unimplemented!()
     }
     #[test]
