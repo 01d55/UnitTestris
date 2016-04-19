@@ -579,7 +579,110 @@ mod tests {
          *          *18
          *0123456789*
          */
-
+        // CW
+        /*
+         *__________*
+         *          *21
+         *     L    *20
+         *   LcL    *19
+         *          *18
+         *          *17
+         *0123456789*
+        1 rotation
+         *__________*
+         *          *21
+         *    L     *20
+         *    c     *19
+         *    LL    *18
+         *          *17
+         *0123456789*
+        2 rotations
+         *__________*
+         *          *21
+         *          *20
+         *   LcL    *19
+         *   L      *18
+         *          *17
+         *0123456789*
+        3 rotations
+         *__________*
+         *          *21
+         *   LL     *20
+         *    c     *19
+         *    L     *18
+         *          *17
+         *0123456789*
+         */
+        // Blocked rotations
+        /* Prevent CW rotation, but not CCW
+         *__________*
+         *          *21
+         *   LLb    *20
+         *    c     *19
+         *    L     *18
+         *          *17
+         *0123456789*
+         *__________*
+         *          *21
+         *     b    *20
+         *   LcL    *19
+         *          *18
+         *          *17
+         *0123456789*
+         *__________*
+         *          *21
+         *     b    *20
+         *   LcL    *19
+         *   L      *18
+         *          *17
+         *0123456789*
+         */
+        {
+            fn asserts(piece: &mut PieceImpl<MockField>, input: super::Input, center: Coord, expected_blocks: & [Coord; 4]) {
+                assert!(piece.handle_input(input).is_ok());
+                assert_eq!(center, piece.get_center());
+                assert!(test_same_coords(expected_blocks, &piece.get_blocks()));
+            }
+            let mut test_piece = PieceImpl::new(super::Type::L, 0, &mut test_field);
+            // CCW
+            // 1
+            let expected_blocks_1 = [Coord::new(3,21), Coord::new(4,19), Coord::new(4,20), Coord::new(4,21)];
+            asserts(& mut test_piece, super::Input::RotateCCW, ORIGIN_COORD, &expected_blocks_1);
+            //2
+            let expected_blocks_2 = [Coord::new(3,19), Coord::new(3,20), Coord::new(4,20), Coord::new(5,20)];
+            asserts(& mut test_piece, super::Input::RotateCCW, ORIGIN_COORD, & expected_blocks_2);
+            //3
+            let mut expected_blocks_3 = [Coord::new(4,19), Coord::new(4,20), Coord::new(4,21), Coord::new(5,19)];
+            asserts(& mut test_piece, super::Input::RotateCCW, ORIGIN_COORD, &expected_blocks_3);
+            // Does rotation persist through timestep?
+            for block in expected_blocks_3.iter_mut() {
+                block.y -= 1;
+            }
+            assert!(test_piece.time_step(1).is_ok());
+            const DROP_ONCE: Coord = Coord {x:ORIGIN_COORD.x, y:ORIGIN_COORD.y-1};
+            assert_eq!(DROP_ONCE, test_piece.get_center());
+            assert!(test_same_coords(&expected_blocks_3, &test_piece.get_blocks()));
+            // Return to original orientation (but not original position)
+            let expected_blocks_4 = [Coord::new(3,19), Coord::new(3,20), Coord::new(4,19), Coord::new(5,19)];
+            asserts(& mut test_piece, super::Input::RotateCCW, DROP_ONCE, &expected_blocks_4);
+            // CW
+            // 1
+            let expected_blocks_5 = [Coord::new(4,20), Coord::new(4,19), Coord::new(4,18), Coord::new(5,18)];
+            asserts(& mut test_piece, super::Input::RotateCW, DROP_ONCE, &expected_blocks_5);
+            //2
+            let expected_blocks_6 = [Coord::new(3,18), Coord::new(4,19), Coord::new(4,19), Coord::new(5,19)];
+            asserts(& mut test_piece, super::Input::RotateCW, DROP_ONCE, &expected_blocks_6);
+            //3
+            let expected_blocks_7 = [Coord::new(3,20), Coord::new(4,18), Coord::new(4,19), Coord::new(4,20)];
+            asserts(& mut test_piece, super::Input::RotateCW, DROP_ONCE, &expected_blocks_7);
+            // Blocked rotations
+            test_field.get_results.insert(Coord::new(5,20), true);
+            // rotation is blocked, expected blocks unchanged
+            asserts(& mut test_piece, super::Input::RotateCW, DROP_ONCE, &expected_blocks_7);
+            let expected_blocks_8 = [Coord::new(3,18), Coord::new(3,19), Coord::new(4,19), Coord::new(5,19)];
+            asserts(& mut test_piece, super::Input::RotateCCW, DROP_ONCE, &expected_blocks_8);
+            test_field.get_results.insert(Coord::new(5,20), false);
+        }
         unimplemented!()
     }
     #[test]
