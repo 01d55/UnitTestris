@@ -548,7 +548,7 @@ mod tests {
     #[test]
     fn test_rotate() {
         let mut test_field = MockField {set_args: Vec::new(),get_args: Vec::new(), get_results: HashMap::new()};
-        fn per_block(test_field: &mut MockField, typ: super::Type, expected_blocks: [[Coord; 4]; 8], obstruction: &Coord)
+        fn per_block(test_field: &mut MockField, typ: super::Type, expected_blocks: [[Coord; 4]; 7], obstruction: &Coord)
         {
             fn asserts(piece: &mut PieceImpl<MockField>, input: super::Input, center: Coord, expected_blocks: & [Coord; 4]) {
                 assert!(piece.handle_input(input).is_ok());
@@ -585,7 +585,7 @@ mod tests {
             test_field.get_results.insert(*obstruction, true);
             // rotation is blocked, expected blocks unchanged
             asserts(& mut test_piece, super::Input::RotateCW, DROP_ONCE, &expected_blocks[6]);
-            asserts(& mut test_piece, super::Input::RotateCCW, DROP_ONCE, &expected_blocks[7]);
+            asserts(& mut test_piece, super::Input::RotateCCW, DROP_ONCE, &expected_blocks[5]);
             test_field.get_results.insert(*obstruction, false);
         }
         // L block
@@ -677,15 +677,14 @@ mod tests {
          *          *17
          *0123456789*
          */
-        const EXPECTED_BLOCKS_L: [[Coord; 4]; 8] =
+        const EXPECTED_BLOCKS_L: [[Coord; 4]; 7] =
             [[Coord{x:3,y:21}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:4,y:21}],
              [Coord{x:3,y:19}, Coord{x:3,y:20}, Coord{x:4,y:20}, Coord{x:5,y:20}],
              [Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:4,y:21}, Coord{x:5,y:19}],
              [Coord{x:3,y:19}, Coord{x:3,y:20}, Coord{x:4,y:19}, Coord{x:5,y:19}],
              [Coord{x:4,y:20}, Coord{x:4,y:19}, Coord{x:4,y:18}, Coord{x:5,y:18}],
              [Coord{x:3,y:18}, Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:19}],
-             [Coord{x:3,y:20}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}],
-             [Coord{x:3,y:18}, Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:19}]];
+             [Coord{x:3,y:20}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}]];
         per_block(&mut test_field, super::Type::L, EXPECTED_BLOCKS_L, &Coord{x:5,y:20});
         // J block
         // Turn CCW
@@ -776,15 +775,14 @@ mod tests {
          *          *17
          *0123456789*
          */
-        const EXPECTED_BLOCKS_J: [[Coord; 4]; 8] = [
+        const EXPECTED_BLOCKS_J: [[Coord; 4]; 7] = [
             [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:4,y:21}],
             [Coord{x:3,y:20}, Coord{x:4,y:20}, Coord{x:5,y:20}, Coord{x:5,y:19}],
             [Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:4,y:21}, Coord{x:5,y:21}],
             [Coord{x:3,y:19}, Coord{x:3,y:20}, Coord{x:4,y:19}, Coord{x:5,y:19}],
             [Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:20}],
             [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:18}, Coord{x:5,y:19}],
-            [Coord{x:3,y:18}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}],
-            [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:18}, Coord{x:5,y:19}]];
+            [Coord{x:3,y:18}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}]];
         per_block(&mut test_field, super::Type::J, EXPECTED_BLOCKS_J, &Coord{x:3,y:20});
         // S block
         // Turn CCW
@@ -874,15 +872,14 @@ mod tests {
          *          *17
          *0123456789*
          */
-        const EXPECTED_BLOCKS_S: [[Coord; 4]; 8] = [
+        const EXPECTED_BLOCKS_S: [[Coord; 4]; 7] = [
             [Coord{x:3,y:20}, Coord{x:3,y:21}, Coord{x:4,y:19}, Coord{x:4,y:20}],
             [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:20}],
             [Coord{x:4,y:20}, Coord{x:4,y:21}, Coord{x:5,y:19}, Coord{x:5,y:20}],
             [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:20}],
             [Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:18}, Coord{x:5,y:19}],
             [Coord{x:3,y:18}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:19}],
-            [Coord{x:3,y:19}, Coord{x:3,y:20}, Coord{x:4,y:18}, Coord{x:4,y:19}],
-            [Coord{x:3,y:18}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:19}]];
+            [Coord{x:3,y:19}, Coord{x:3,y:20}, Coord{x:4,y:18}, Coord{x:4,y:19}]];
         per_block(&mut test_field, super::Type::S, EXPECTED_BLOCKS_S, &Coord{x:4,y:20});
         // Z block
         // Turn CCW
@@ -950,39 +947,38 @@ mod tests {
          *0123456789*
          */
         // Blocked rotations
-        /* Prevent CCW rotation, but not CW
+        /* Prevent CW rotation, but not CCW
          *__________*
          *          *21
          *    Z     *20
-         *   Zc     *19
-         *   Zb     *18
-         *          *17
-         *0123456789*
-         *__________*
-         *          *21
-         *          *20
-         *   Zc     *19
-         *    bZ    *18
+         *   ZcB    *19
+         *   Z      *18
          *          *17
          *0123456789*
          *__________*
          *          *21
          *   ZZ     *20
-         *    cZ    *19
-         *    b     *18
+         *    cB    *19
+         *          *18
+         *          *17
+         *0123456789*
+         *__________*
+         *          *21
+         *          *20
+         *   ZcB    *19
+         *    ZZ    *18
          *          *17
          *0123456789*
          */
-        const EXPECTED_BLOCKS_Z:  [[Coord; 4]; 8] = [
+        const EXPECTED_BLOCKS_Z:  [[Coord; 4]; 7] = [
             [Coord{x:3,y:19}, Coord{x:3,y:20}, Coord{x:4,y:20}, Coord{x:4,y:21}],
             [Coord{x:3,y:20}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:19}],
             [Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:20}, Coord{x:5,y:21}],
             [Coord{x:3,y:20}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:19}],
             [Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:19}, Coord{x:5,y:20}],
             [Coord{x:3,y:19}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:18}],
-            [Coord{x:3,y:18}, Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:4,y:20}],
-            [Coord{x:3,y:20}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:19}]];
-        per_block(&mut test_field, super::Type::Z, EXPECTED_BLOCKS_Z, &Coord{x:4,y:18});
+            [Coord{x:3,y:18}, Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:4,y:20}]];
+        per_block(&mut test_field, super::Type::Z, EXPECTED_BLOCKS_Z, &Coord{x:5,y:19});
         // T block
         // Turn CCW
         /*
@@ -1072,15 +1068,14 @@ mod tests {
          *          *17
          *0123456789*
          */
-        const EXPECTED_BLOCKS_T:  [[Coord; 4]; 8] = [
+        const EXPECTED_BLOCKS_T:  [[Coord; 4]; 7] = [
             [Coord{x:3,y:20}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:4,y:21}],
             [Coord{x:3,y:20}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:20}],
             [Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:4,y:21}, Coord{x:5,y:20}],
             [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:19}, Coord{x:4,y:20}],
             [Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:19}],
             [Coord{x:3,y:19}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:19}],
-            [Coord{x:3,y:19}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}],
-            [Coord{x:3,y:19}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:19}]];
+            [Coord{x:3,y:19}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}]];
         per_block(&mut test_field, super::Type::T, EXPECTED_BLOCKS_T, &Coord{x:4,y:20});
         // I block
         // Turn CCW
@@ -1171,15 +1166,14 @@ mod tests {
          *          *17
          *0123456789*
          */
-        const EXPECTED_BLOCKS_I:  [[Coord; 4]; 8] = [
+        const EXPECTED_BLOCKS_I:  [[Coord; 4]; 7] = [
             [Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:4,y:21}],
             [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:19}, Coord{x:6,y:19}],
             [Coord{x:5,y:21}, Coord{x:5,y:20}, Coord{x:5,y:19}, Coord{x:5,y:18}],
             [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:19}, Coord{x:6,y:19}],
             [Coord{x:5,y:20}, Coord{x:5,y:19}, Coord{x:5,y:18}, Coord{x:5,y:17}],
             [Coord{x:3,y:18}, Coord{x:4,y:18}, Coord{x:5,y:18}, Coord{x:6,y:18}],
-            [Coord{x:4,y:20}, Coord{x:4,y:19}, Coord{x:4,y:18}, Coord{x:4,y:17}],
-            [Coord{x:3,y:18}, Coord{x:4,y:18}, Coord{x:5,y:18}, Coord{x:6,y:18}]];
+            [Coord{x:4,y:20}, Coord{x:4,y:19}, Coord{x:4,y:18}, Coord{x:4,y:17}]];
         // per-block assumes normal center
         //per_block(&mut test_field, super::Type::_, EXPECTED_BLOCKS__, &Coord{x:_,y:_});
         // O rly? yarly.
