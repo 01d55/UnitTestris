@@ -687,6 +687,512 @@ mod tests {
              [Coord{x:3,y:20}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}],
              [Coord{x:3,y:18}, Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:19}]];
         per_block(&mut test_field, super::Type::L, EXPECTED_BLOCKS_L, &Coord{x:5,y:20});
+        // J block
+        // Turn CCW
+        /*
+         *__________*
+         *   J      *21
+         *   JcJ    *20
+         *          *19
+         *          *18
+         *0123456789*
+        1 rotation
+         *__________*
+         *    J     *21
+         *    c     *20
+         *   JJ     *19
+         *          *18
+         *0123456789*
+        2 rotations
+         *__________*
+         *          *21
+         *   JcJ    *20
+         *     J    *19
+         *          *18
+         *0123456789*
+        3 rotations
+         *__________*
+         *    JJ    *21
+         *    c     *20
+         *    J     *19
+         *          *18
+         *0123456789*
+         */
+        // CW
+        /*
+         *__________*
+         *          *21
+         *   J      *20
+         *   JcJ    *19
+         *          *18
+         *          *17
+         *0123456789*
+        1 rotation
+         *__________*
+         *          *21
+         *    JJ    *20
+         *    c     *19
+         *    J     *18
+         *          *17
+         *0123456789*
+        2 rotations
+         *__________*
+         *          *21
+         *          *20
+         *   JcJ    *19
+         *     J    *18
+         *          *17
+         *0123456789*
+        3 rotations
+         *__________*
+         *          *21
+         *    J     *20
+         *    c     *19
+         *   JJ     *18
+         *          *17
+         *0123456789*
+         */
+        // Blocked rotations
+        /* Prevent CW rotation, but not CCW
+         *__________*
+         *          *21
+         *   bJ     *20
+         *    c     *19
+         *   JJ     *18
+         *          *17
+         *0123456789*
+         *__________*
+         *          *21
+         *   b      *20
+         *   JcJ    *19
+         *          *18
+         *          *17
+         *0123456789*
+         *__________*
+         *          *21
+         *   b      *20
+         *   JcJ    *19
+         *     J    *18
+         *          *17
+         *0123456789*
+         */
+        const EXPECTED_BLOCKS_J: [[Coord; 4]; 8] = [
+            [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:4,y:21}],
+            [Coord{x:3,y:20}, Coord{x:4,y:20}, Coord{x:5,y:20}, Coord{x:5,y:19}],
+            [Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:4,y:21}, Coord{x:5,y:21}],
+            [Coord{x:3,y:19}, Coord{x:3,y:20}, Coord{x:4,y:19}, Coord{x:5,y:19}],
+            [Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:20}],
+            [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:18}, Coord{x:5,y:19}],
+            [Coord{x:3,y:18}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}],
+            [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:18}, Coord{x:5,y:19}]];
+        per_block(&mut test_field, super::Type::J, EXPECTED_BLOCKS_J, &Coord{x:3,y:20});
+        // S block
+        // Turn CCW
+        /*
+         *__________*
+         *    SS    *21
+         *   Sc     *20
+         *          *19
+         *          *18
+         *0123456789*
+        1 rotation
+         *__________*
+         *   S      *21
+         *   Sc     *20
+         *    S     *19
+         *          *18
+         *0123456789*
+        2 rotations
+         *__________*
+         *          *21
+         *    cS    *20
+         *   SS     *19
+         *          *18
+         *0123456789*
+        3 rotations
+         *__________*
+         *    S     *21
+         *    cS    *20
+         *     S    *19
+         *          *18
+         *0123456789*
+         */
+        // CW
+        /*
+         *__________*
+         *          *21
+         *    SS    *20
+         *   Sc     *19
+         *          *18
+         *          *17
+         *0123456789*
+        1 rotation
+         *__________*
+         *          *21
+         *    S     *20
+         *    cS    *19
+         *     S    *18
+         *          *17
+         *0123456789*
+        2 rotations
+         *__________*
+         *          *21
+         *          *20
+         *    cS    *19
+         *   SS     *18
+         *          *17
+         *0123456789*
+        3 rotations
+         *__________*
+         *          *21
+         *   S      *20
+         *   Sc     *19
+         *    S     *18
+         *          *17
+         *0123456789*
+         */
+        /* Prevent CW rotation, but not CCW
+         *__________*
+         *          *21
+         *   Sb     *20
+         *   Sc     *19
+         *    S     *18
+         *          *17
+         *0123456789*
+         *__________*
+         *          *21
+         *    bS    *20
+         *   Sc     *19
+         *          *18
+         *          *17
+         *0123456789*
+         *__________*
+         *          *21
+         *    b     *20
+         *    cS    *19
+         *   SS     *18
+         *          *17
+         *0123456789*
+         */
+        const EXPECTED_BLOCKS_S: [[Coord; 4]; 8] = [
+            [Coord{x:3,y:20}, Coord{x:3,y:21}, Coord{x:4,y:19}, Coord{x:4,y:20}],
+            [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:20}],
+            [Coord{x:4,y:20}, Coord{x:4,y:21}, Coord{x:5,y:19}, Coord{x:5,y:20}],
+            [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:20}],
+            [Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:18}, Coord{x:5,y:19}],
+            [Coord{x:3,y:18}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:19}],
+            [Coord{x:3,y:19}, Coord{x:3,y:20}, Coord{x:4,y:18}, Coord{x:4,y:19}],
+            [Coord{x:3,y:18}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:19}]];
+        per_block(&mut test_field, super::Type::S, EXPECTED_BLOCKS_S, &Coord{x:4,y:20});
+        // Z block
+        // Turn CCW
+        /*
+         *__________*
+         *   ZZ     *21
+         *    cZ    *20
+         *          *19
+         *          *18
+         *0123456789*
+        1 rotation
+         *__________*
+         *    Z     *21
+         *   Zc     *20
+         *   Z      *19
+         *          *18
+         *0123456789*
+        2 rotations
+         *__________*
+         *          *21
+         *   Zc     *20
+         *    ZZ    *19
+         *          *18
+         *0123456789*
+        3 rotations
+         *__________*
+         *     Z    *21
+         *    cZ    *20
+         *    Z     *19
+         *          *18
+         *0123456789*
+         */
+        // CW
+        /*
+         *__________*
+         *          *21
+         *   ZZ     *20
+         *    cZ    *19
+         *          *18
+         *          *17
+         *0123456789*
+        1 rotation
+         *__________*
+         *          *21
+         *     Z    *20
+         *    cZ    *19
+         *    Z     *18
+         *          *17
+         *0123456789*
+        2 rotations
+         *__________*
+         *          *21
+         *          *20
+         *   Zc     *19
+         *    ZZ    *18
+         *          *17
+         *0123456789*
+        3 rotations
+         *__________*
+         *          *21
+         *    Z     *20
+         *   Zc     *19
+         *   Z      *18
+         *          *17
+         *0123456789*
+         */
+        // Blocked rotations
+        /* Prevent CCW rotation, but not CW
+         *__________*
+         *          *21
+         *    Z     *20
+         *   Zc     *19
+         *   Zb     *18
+         *          *17
+         *0123456789*
+         *__________*
+         *          *21
+         *          *20
+         *   Zc     *19
+         *    bZ    *18
+         *          *17
+         *0123456789*
+         *__________*
+         *          *21
+         *   ZZ     *20
+         *    cZ    *19
+         *    b     *18
+         *          *17
+         *0123456789*
+         */
+        const EXPECTED_BLOCKS_Z:  [[Coord; 4]; 8] = [
+            [Coord{x:3,y:19}, Coord{x:3,y:20}, Coord{x:4,y:20}, Coord{x:4,y:21}],
+            [Coord{x:3,y:20}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:19}],
+            [Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:20}, Coord{x:5,y:21}],
+            [Coord{x:3,y:20}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:19}],
+            [Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:19}, Coord{x:5,y:20}],
+            [Coord{x:3,y:19}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:18}],
+            [Coord{x:3,y:18}, Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:4,y:20}],
+            [Coord{x:3,y:20}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:19}]];
+        per_block(&mut test_field, super::Type::Z, EXPECTED_BLOCKS_Z, &Coord{x:4,y:18});
+        // T block
+        // Turn CCW
+        /*
+         *__________*
+         *    T     *21
+         *   TcT    *20
+         *          *19
+         *          *18
+         *0123456789*
+        1 rotation
+         *__________*
+         *    T     *21
+         *   Tc     *20
+         *    T     *19
+         *          *18
+         *0123456789*
+        2 rotations
+         *__________*
+         *          *21
+         *   TcT    *20
+         *    T     *19
+         *          *18
+         *0123456789*
+        3 rotations
+         *__________*
+         *    T     *21
+         *    cT    *20
+         *    T     *19
+         *          *18
+         *0123456789*
+         */
+        // CW
+        /*
+         *__________*
+         *          *21
+         *    T     *20
+         *   TcT    *19
+         *          *18
+         *          *17
+         *0123456789*
+        1 rotation
+         *__________*
+         *          *21
+         *    T     *20
+         *    cT    *19
+         *    T     *18
+         *          *17
+         *0123456789*
+        2 rotations
+         *__________*
+         *          *21
+         *          *20
+         *   TcT    *19
+         *    T     *18
+         *          *17
+         *0123456789*
+        3 rotations
+         *__________*
+         *          *21
+         *    T     *20
+         *   Tc     *19
+         *    T     *18
+         *          *17
+         *0123456789*
+         */
+        // Blocked rotations
+        /* Prevent CW rotation, but not CCW
+         *__________*
+         *          *21
+         *    T     *20
+         *   Tc     *19
+         *    T     *18
+         *          *17
+         *0123456789*
+         *__________*
+         *          *21
+         *    b     *20
+         *   TcT    *19
+         *          *18
+         *          *17
+         *0123456789*
+         *__________*
+         *          *21
+         *    b     *20
+         *   TcT    *19
+         *    T     *18
+         *          *17
+         *0123456789*
+         */
+        const EXPECTED_BLOCKS_T:  [[Coord; 4]; 8] = [
+            [Coord{x:3,y:20}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:4,y:21}],
+            [Coord{x:3,y:20}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:20}],
+            [Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:4,y:21}, Coord{x:5,y:20}],
+            [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:19}, Coord{x:4,y:20}],
+            [Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:19}],
+            [Coord{x:3,y:19}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:19}],
+            [Coord{x:3,y:19}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}],
+            [Coord{x:3,y:19}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:19}]];
+        per_block(&mut test_field, super::Type::T, EXPECTED_BLOCKS_T, &Coord{x:4,y:20});
+        // I block
+        // Turn CCW
+        /*
+         *__________*
+         *          *21
+         *   IIcI   *20
+         *          *19
+         *          *18
+         *0123456789*
+        1 rotation
+         *__________*
+         *    I     *21
+         *    Ic    *20
+         *    I     *19
+         *    I     *18
+         *0123456789*
+        2 rotations
+         *__________*
+         *          *21
+         *     c    *20
+         *   IIII   *19
+         *          *18
+         *0123456789*
+        3 rotations
+         *__________*
+         *     I    *21
+         *     c    *20
+         *     I    *19
+         *     I    *18
+         *0123456789*
+         */
+        // CW
+        /*
+         *__________*
+         *          *21
+         *          *20
+         *   IIcI   *19
+         *          *18
+         *          *17
+         *0123456789*
+        1 rotation
+         *__________*
+         *          *21
+         *     I    *20
+         *     c    *19
+         *     I    *18
+         *     I    *17
+         *0123456789*
+        2 rotations
+         *__________*
+         *          *21
+         *          *20
+         *     c    *19
+         *   IIII   *18
+         *          *17
+         *0123456789*
+        3 rotations
+         *__________*
+         *          *21
+         *    I     *20
+         *    Ic    *19
+         *    I     *18
+         *    I     *17
+         *0123456789*
+         */
+        // Blocked rotations
+        /* Prevent CW rotation, but not CCW
+         *__________*
+         *          *21
+         *    I     *20
+         *   bIc    *19
+         *    I     *18
+         *    I     *17
+         *0123456789*
+         *__________*
+         *          *21
+         *          *20
+         *   bIcI   *19
+         *          *18
+         *          *17
+         *0123456789*
+         *__________*
+         *          *21
+         *          *20
+         *   b c    *19
+         *   IIII   *18
+         *          *17
+         *0123456789*
+         */
+        const EXPECTED_BLOCKS_I:  [[Coord; 4]; 8] = [
+            [Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:4,y:21}],
+            [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:19}, Coord{x:6,y:19}],
+            [Coord{x:5,y:21}, Coord{x:5,y:20}, Coord{x:5,y:19}, Coord{x:5,y:18}],
+            [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:19}, Coord{x:6,y:19}],
+            [Coord{x:5,y:20}, Coord{x:5,y:19}, Coord{x:5,y:18}, Coord{x:5,y:17}],
+            [Coord{x:3,y:18}, Coord{x:4,y:18}, Coord{x:5,y:18}, Coord{x:6,y:18}],
+            [Coord{x:4,y:20}, Coord{x:4,y:19}, Coord{x:4,y:18}, Coord{x:4,y:17}],
+            [Coord{x:3,y:18}, Coord{x:4,y:18}, Coord{x:5,y:18}, Coord{x:6,y:18}]];
+        // per-block assumes normal center
+        //per_block(&mut test_field, super::Type::_, EXPECTED_BLOCKS__, &Coord{x:_,y:_});
+        // O rly? yarly.
+        /* O block should not change when rotated.
+         *__________*
+         *    Oc    *21
+         *    OO    *20
+         *          *19
+         *          *18
+         *          *17
+         *0123456789*
+         */
+        const EXPECTED_BLOCKS_O: [Coord; 4] = [Coord{x:4,y:20}, Coord{x:4,y:21}, Coord{x:5,y:20}, Coord{x:5,y:21}];
         unimplemented!()
     }
     #[test]
