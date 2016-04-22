@@ -548,13 +548,13 @@ mod tests {
     #[test]
     fn test_rotate() {
         let mut test_field = MockField {set_args: Vec::new(),get_args: Vec::new(), get_results: HashMap::new()};
+        fn asserts(piece: &mut PieceImpl<MockField>, input: super::Input, center: Coord, expected_blocks: & [Coord; 4]) {
+            assert!(piece.handle_input(input).is_ok());
+            assert_eq!(center, piece.get_center());
+            assert!(test_same_coords(expected_blocks, &piece.get_blocks()));
+        }
         fn per_block(test_field: &mut MockField, typ: super::Type, center: Coord, expected_blocks: [[Coord; 4]; 7], obstruction: &Coord)
         {
-            fn asserts(piece: &mut PieceImpl<MockField>, input: super::Input, center: Coord, expected_blocks: & [Coord; 4]) {
-                assert!(piece.handle_input(input).is_ok());
-                assert_eq!(center, piece.get_center());
-                assert!(test_same_coords(expected_blocks, &piece.get_blocks()));
-            }
             let mut test_piece = PieceImpl::new(typ, 0, test_field);
             // CCW
             // 1
@@ -1185,8 +1185,25 @@ mod tests {
          *          *17
          *0123456789*
          */
-        const EXPECTED_BLOCKS_O: [Coord; 4] = BLOCKS_O;
-        unimplemented!()
+        {
+            let mut test_piece = PieceImpl::new(super::Type::O, 0, &mut test_field);
+            asserts(&mut test_piece, super::Input::RotateCW, ORIGIN_O, &BLOCKS_O);
+            assert!(test_piece.handle_input(super::Input::RotateCCW).is_ok());
+            asserts(&mut test_piece, super::Input::RotateCCW, ORIGIN_O, &BLOCKS_O);
+        }
+        // Check error (but not with an O block)
+        {
+            let mut test_piece = PieceImpl::new(super::Type::L, 0, &mut test_field);
+            assert!(test_piece.handle_input(super::Input::RotateCW).is_ok());
+            assert!(test_piece.time_step(20).is_ok());
+            let mut expected_blocks: [Coord; 4] = [Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:4,y:21}, Coord{x:5,y:19}];
+            for block in expected_blocks.iter_mut() {
+                block.y -= 19;
+            }
+            assert!(test_piece.handle_input(super::Input::RotateCW).is_err());
+            assert_eq!(ORIGIN_COORD, test_piece.get_center());
+            assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()));
+        }
     }
     #[test]
     fn test_drop() {
