@@ -548,7 +548,7 @@ mod tests {
     #[test]
     fn test_rotate() {
         let mut test_field = MockField {set_args: Vec::new(),get_args: Vec::new(), get_results: HashMap::new()};
-        fn per_block(test_field: &mut MockField, typ: super::Type, expected_blocks: [[Coord; 4]; 7], obstruction: &Coord)
+        fn per_block(test_field: &mut MockField, typ: super::Type, center: Coord, expected_blocks: [[Coord; 4]; 7], obstruction: &Coord)
         {
             fn asserts(piece: &mut PieceImpl<MockField>, input: super::Input, center: Coord, expected_blocks: & [Coord; 4]) {
                 assert!(piece.handle_input(input).is_ok());
@@ -558,34 +558,34 @@ mod tests {
             let mut test_piece = PieceImpl::new(typ, 0, test_field);
             // CCW
             // 1
-            asserts(& mut test_piece, super::Input::RotateCCW, ORIGIN_COORD, &expected_blocks[0]);
+            asserts(& mut test_piece, super::Input::RotateCCW, center, &expected_blocks[0]);
             //2
-            asserts(& mut test_piece, super::Input::RotateCCW, ORIGIN_COORD, & expected_blocks[1]);
+            asserts(& mut test_piece, super::Input::RotateCCW, center, & expected_blocks[1]);
             //3
-            asserts(& mut test_piece, super::Input::RotateCCW, ORIGIN_COORD, &expected_blocks[2]);
+            asserts(& mut test_piece, super::Input::RotateCCW, center, &expected_blocks[2]);
             // Does rotation persist through timestep?
             let mut expected_blocks_dropped = expected_blocks[2];
             for block in expected_blocks_dropped.iter_mut() {
                 block.y -= 1;
             }
             assert!(test_piece.time_step(1).is_ok());
-            const DROP_ONCE: Coord = Coord {x:ORIGIN_COORD.x, y:ORIGIN_COORD.y-1};
-            assert_eq!(DROP_ONCE, test_piece.get_center());
+            let drop_once: Coord = Coord{x:center.x, y:center.y-1};
+            assert_eq!(drop_once, test_piece.get_center());
             assert!(test_same_coords(&expected_blocks_dropped, &test_piece.get_blocks()));
             // Return to original orientation (but not original position)
-            asserts(& mut test_piece, super::Input::RotateCCW, DROP_ONCE, &expected_blocks[3]);
+            asserts(& mut test_piece, super::Input::RotateCCW, drop_once, &expected_blocks[3]);
             // CW
             // 1
-            asserts(& mut test_piece, super::Input::RotateCW, DROP_ONCE, &expected_blocks[4]);
+            asserts(& mut test_piece, super::Input::RotateCW, drop_once, &expected_blocks[4]);
             //2
-            asserts(& mut test_piece, super::Input::RotateCW, DROP_ONCE, &expected_blocks[5]);
+            asserts(& mut test_piece, super::Input::RotateCW, drop_once, &expected_blocks[5]);
             //3
-            asserts(& mut test_piece, super::Input::RotateCW, DROP_ONCE, &expected_blocks[6]);
+            asserts(& mut test_piece, super::Input::RotateCW, drop_once, &expected_blocks[6]);
             // Blocked rotations
             test_field.get_results.insert(*obstruction, true);
             // rotation is blocked, expected blocks unchanged
-            asserts(& mut test_piece, super::Input::RotateCW, DROP_ONCE, &expected_blocks[6]);
-            asserts(& mut test_piece, super::Input::RotateCCW, DROP_ONCE, &expected_blocks[5]);
+            asserts(& mut test_piece, super::Input::RotateCW, drop_once, &expected_blocks[6]);
+            asserts(& mut test_piece, super::Input::RotateCCW, drop_once, &expected_blocks[5]);
             test_field.get_results.insert(*obstruction, false);
         }
         // L block
@@ -685,7 +685,7 @@ mod tests {
              [Coord{x:4,y:20}, Coord{x:4,y:19}, Coord{x:4,y:18}, Coord{x:5,y:18}],
              [Coord{x:3,y:18}, Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:19}],
              [Coord{x:3,y:20}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}]];
-        per_block(&mut test_field, super::Type::L, EXPECTED_BLOCKS_L, &Coord{x:5,y:20});
+        per_block(&mut test_field, super::Type::L, ORIGIN_COORD, EXPECTED_BLOCKS_L, &Coord{x:5,y:20});
         // J block
         // Turn CCW
         /*
@@ -783,7 +783,7 @@ mod tests {
             [Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:20}],
             [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:18}, Coord{x:5,y:19}],
             [Coord{x:3,y:18}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}]];
-        per_block(&mut test_field, super::Type::J, EXPECTED_BLOCKS_J, &Coord{x:3,y:20});
+        per_block(&mut test_field, super::Type::J, ORIGIN_COORD, EXPECTED_BLOCKS_J, &Coord{x:3,y:20});
         // S block
         // Turn CCW
         /*
@@ -880,7 +880,7 @@ mod tests {
             [Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:18}, Coord{x:5,y:19}],
             [Coord{x:3,y:18}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:19}],
             [Coord{x:3,y:19}, Coord{x:3,y:20}, Coord{x:4,y:18}, Coord{x:4,y:19}]];
-        per_block(&mut test_field, super::Type::S, EXPECTED_BLOCKS_S, &Coord{x:4,y:20});
+        per_block(&mut test_field, super::Type::S, ORIGIN_COORD, EXPECTED_BLOCKS_S, &Coord{x:4,y:20});
         // Z block
         // Turn CCW
         /*
@@ -978,7 +978,7 @@ mod tests {
             [Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:19}, Coord{x:5,y:20}],
             [Coord{x:3,y:19}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:18}],
             [Coord{x:3,y:18}, Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:4,y:20}]];
-        per_block(&mut test_field, super::Type::Z, EXPECTED_BLOCKS_Z, &Coord{x:5,y:19});
+        per_block(&mut test_field, super::Type::Z, ORIGIN_COORD, EXPECTED_BLOCKS_Z, &Coord{x:5,y:19});
         // T block
         // Turn CCW
         /*
@@ -1076,7 +1076,7 @@ mod tests {
             [Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:5,y:19}],
             [Coord{x:3,y:19}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:5,y:19}],
             [Coord{x:3,y:19}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}]];
-        per_block(&mut test_field, super::Type::T, EXPECTED_BLOCKS_T, &Coord{x:4,y:20});
+        per_block(&mut test_field, super::Type::T, ORIGIN_COORD, EXPECTED_BLOCKS_T, &Coord{x:4,y:20});
         // I block
         // Turn CCW
         /*
@@ -1174,8 +1174,7 @@ mod tests {
             [Coord{x:5,y:20}, Coord{x:5,y:19}, Coord{x:5,y:18}, Coord{x:5,y:17}],
             [Coord{x:3,y:18}, Coord{x:4,y:18}, Coord{x:5,y:18}, Coord{x:6,y:18}],
             [Coord{x:4,y:20}, Coord{x:4,y:19}, Coord{x:4,y:18}, Coord{x:4,y:17}]];
-        // per-block assumes normal center
-        //per_block(&mut test_field, super::Type::_, EXPECTED_BLOCKS__, &Coord{x:_,y:_});
+        per_block(&mut test_field, super::Type::I, ORIGIN_I, EXPECTED_BLOCKS_I, &Coord{x:5,y:19});
         // O rly? yarly.
         /* O block should not change when rotated.
          *__________*
@@ -1186,7 +1185,7 @@ mod tests {
          *          *17
          *0123456789*
          */
-        const EXPECTED_BLOCKS_O: [Coord; 4] = [Coord{x:4,y:20}, Coord{x:4,y:21}, Coord{x:5,y:20}, Coord{x:5,y:21}];
+        const EXPECTED_BLOCKS_O: [Coord; 4] = BLOCKS_O;
         unimplemented!()
     }
     #[test]
