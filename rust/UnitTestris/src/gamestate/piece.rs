@@ -186,17 +186,19 @@ mod tests {
             }
         }
     }
-    // helper fns
-    //
-    fn test_same_coords(a: &[Coord;4], b: &[Coord;4]) -> bool {
-        let (mut ah, mut bh): (HashSet<Coord>, HashSet<Coord>) = (HashSet::with_capacity(4), HashSet::with_capacity(4));
-        for x in a.into_iter() {
-            ah.insert(*x);
-        }
-        for x in b.into_iter() {
-            bh.insert(*x);
-        }
+    // helpers
+    fn test_same_coords<'a, 'b, T_A, T_B> (a: T_A, b: T_B) -> bool
+        where T_A: IntoIterator <Item = &'a Coord>,
+              T_B: IntoIterator <Item = &'b Coord>
+    {
+        let (ah, bh): (HashSet<Coord>, HashSet<Coord>) = (a.into_iter().cloned().collect(), b.into_iter().cloned().collect());
         ah == bh
+    }
+    fn compare_to_set<'a, T>(a: T, b: &HashSet<Coord>) -> bool
+        where T: IntoIterator <Item = &'a Coord>
+    {
+        let ah: HashSet<Coord> = a.into_iter().cloned().collect();
+        ah == *b
     }
     //tests
     #[test]
@@ -249,16 +251,6 @@ mod tests {
     #[test]
     fn test_step() {
         fn test_center_and_lock(test_field: &mut MockField, t: super::Type) {
-            fn test_same_coords(blocks: &[Coord; 4], args: &Vec<Coord>) -> bool {
-                let (mut blocks_set, mut args_set) =  (HashSet::with_capacity(4), HashSet::with_capacity(4));
-                for item in blocks {
-                    blocks_set.insert(item);
-                }
-                for item in args {
-                    args_set.insert(item);
-                }
-                blocks_set == args_set
-            }
             let fail_safe = 44;
             let test_delay = 0;
             let mut i = 0;
