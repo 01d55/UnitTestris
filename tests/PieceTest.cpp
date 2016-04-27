@@ -1955,7 +1955,6 @@ void PieceTest::testDrop()
   // Test falling against blocks in the field
   FieldDummy::populate_get_results(testCoord(2,5));
   FieldDummy::populate_get_results(testCoord(3,4));
-  FieldDummy::populate_get_results(testCoord(3,4));
   FieldDummy::populate_get_results(testCoord(4,2));
   FieldDummy::populate_get_results(testCoord(6,4));
   testPieces.push_back(Piece(S,testDelay,&testField));
