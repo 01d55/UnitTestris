@@ -1199,6 +1199,113 @@ mod tests {
     }
     #[test]
     fn test_drop() {
-        unimplemented!()
+        const TEST_DELAY: u32 = 60;
+        let mut test_field: MockField = MockField {set_args: Vec::new(),get_args: Vec::new(), get_results: HashMap::new()};
+        fn per_block(test_field: &mut MockField, typ: super::Type, center: Coord, expected_coords: &[Coord; 4]) {
+            let mut test_piece = PieceImpl::new(typ, TEST_DELAY, test_field);
+            assert!(test_piece.handle_input(super::Input::HardDrop).is_ok());
+            assert!(test_piece.handle_input(super::Input::HardDrop).is_err());
+            assert!(test_same_coords(&test_piece.get_blocks(), &test_field.set_args));
+            assert!(test_same_coords(&test_piece.get_blocks(), expected_coords));
+            assert_eq!(center, test_piece.get_center());
+            test_field.set_args.clear();
+        }
+        const DROPPED_CENTER: Coord = Coord{x: ORIGIN_COORD.x, y: 0};
+
+        const DROPPED_BOTTOM_J: [Coord; 4] = [
+            Coord{x:BLOCKS_J[0].x,y:BLOCKS_J[0].y-20},
+            Coord{x:BLOCKS_J[1].x,y:BLOCKS_J[1].y-20},
+            Coord{x:BLOCKS_J[2].x,y:BLOCKS_J[2].y-20},
+            Coord{x:BLOCKS_J[3].x,y:BLOCKS_J[3].y-20},
+            ];
+        per_block(&mut test_field, super::Type::J, DROPPED_CENTER, &DROPPED_BOTTOM_J);
+        const DROPPED_BOTTOM_L: [Coord; 4] = [
+            Coord{x:BLOCKS_L[0].x,y:BLOCKS_L[0].y-20},
+            Coord{x:BLOCKS_L[1].x,y:BLOCKS_L[1].y-20},
+            Coord{x:BLOCKS_L[2].x,y:BLOCKS_L[2].y-20},
+            Coord{x:BLOCKS_L[3].x,y:BLOCKS_L[3].y-20},
+            ];
+        per_block(&mut test_field, super::Type::L, DROPPED_CENTER, &DROPPED_BOTTOM_L);
+        const DROPPED_BOTTOM_S: [Coord; 4] = [
+            Coord{x:BLOCKS_S[0].x,y:BLOCKS_S[0].y-20},
+            Coord{x:BLOCKS_S[1].x,y:BLOCKS_S[1].y-20},
+            Coord{x:BLOCKS_S[2].x,y:BLOCKS_S[2].y-20},
+            Coord{x:BLOCKS_S[3].x,y:BLOCKS_S[3].y-20},
+            ];
+        per_block(&mut test_field, super::Type::S, DROPPED_CENTER, &DROPPED_BOTTOM_S);
+        const DROPPED_BOTTOM_Z: [Coord; 4] = [
+            Coord{x:BLOCKS_Z[0].x,y:BLOCKS_Z[0].y-20},
+            Coord{x:BLOCKS_Z[1].x,y:BLOCKS_Z[1].y-20},
+            Coord{x:BLOCKS_Z[2].x,y:BLOCKS_Z[2].y-20},
+            Coord{x:BLOCKS_Z[3].x,y:BLOCKS_Z[3].y-20},
+            ];
+        per_block(&mut test_field, super::Type::Z, DROPPED_CENTER, &DROPPED_BOTTOM_Z);
+        const DROPPED_BOTTOM_T: [Coord; 4] = [
+            Coord{x:BLOCKS_T[0].x,y:BLOCKS_T[0].y-20},
+            Coord{x:BLOCKS_T[1].x,y:BLOCKS_T[1].y-20},
+            Coord{x:BLOCKS_T[2].x,y:BLOCKS_T[2].y-20},
+            Coord{x:BLOCKS_T[3].x,y:BLOCKS_T[3].y-20},
+            ];
+        per_block(&mut test_field, super::Type::T, DROPPED_CENTER, &DROPPED_BOTTOM_T);
+        const DROPPED_I: Coord = Coord{x: ORIGIN_I.x, y: ORIGIN_I.y-20};
+        const DROPPED_BOTTOM_I: [Coord; 4] = [
+            Coord{x:BLOCKS_I[0].x,y:BLOCKS_I[0].y-20},
+            Coord{x:BLOCKS_I[1].x,y:BLOCKS_I[1].y-20},
+            Coord{x:BLOCKS_I[2].x,y:BLOCKS_I[2].y-20},
+            Coord{x:BLOCKS_I[3].x,y:BLOCKS_I[3].y-20},
+            ];
+        per_block(&mut test_field, super::Type::I, DROPPED_I, &DROPPED_BOTTOM_I);
+        const DROPPED_O: Coord = Coord{x: ORIGIN_O.x, y:ORIGIN_O.y-20};
+        const DROPPED_BOTTOM_O: [Coord; 4] = [
+            Coord{x:BLOCKS_O[0].x,y:BLOCKS_O[0].y-20},
+            Coord{x:BLOCKS_O[1].x,y:BLOCKS_O[1].y-20},
+            Coord{x:BLOCKS_O[2].x,y:BLOCKS_O[2].y-20},
+            Coord{x:BLOCKS_O[3].x,y:BLOCKS_O[3].y-20},
+            ];
+        per_block(&mut test_field, super::Type::O, DROPPED_O, &DROPPED_BOTTOM_O);
+
+        // Test falling against blocks in the field
+        test_field.get_results.insert(Coord::new(2,5), true);
+        test_field.get_results.insert(Coord::new(3,4), true);
+        test_field.get_results.insert(Coord::new(4,2), true);
+        test_field.get_results.insert(Coord::new(6,4), true);
+
+        /*
+         *__________*
+         *    SS    *06
+         *  xSc     *05
+         *   x  x   *04
+         *          *03
+         *    x     *02
+         *0123456789*
+         */
+        per_block(&mut test_field, super::Type::S, Coord{x:4,y:5}, &[Coord{x:3,y:5},Coord{x:4,y:5},Coord{x:4,y:6},Coord{x:5,y:6}]);
+        /*
+         *__________*
+         *  xZZ     *05
+         *   xcZx   *04
+         *          *03
+         *    x     *02
+         *0123456789*
+         */
+        per_block(&mut test_field, super::Type::Z, Coord{x:4,y:4}, &[Coord{x:3,y:5},Coord{x:4,y:5},Coord{x:4,y:4},Coord{x:5,y:4}]);
+        /*
+         *__________*
+         *  xIIcI   *05
+         *   x  x   *04
+         *          *03
+         *    x     *02
+         *0123456789*
+         */
+        per_block(&mut test_field, super::Type::I, Coord{x:5,y:5}, &[Coord{x:3,y:5},Coord{x:5,y:5},Coord{x:4,y:5},Coord{x:6,y:5}]);
+        /*
+         *__________*
+         *  x       *05
+         *   xOcx   *04
+         *    OO    *03
+         *    x     *02
+         *0123456789*
+         */
+        per_block(&mut test_field, super::Type::O, Coord{x:5,y:4}, &[Coord{x:4,y:3},Coord{x:5,y:3},Coord{x:4,y:4},Coord{x:5,y:4}]);
     }
 }
