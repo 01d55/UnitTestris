@@ -7,7 +7,7 @@ use super::piece;
 
 #[allow(dead_code)]
 #[derive(Debug)]
-struct RunningError;
+pub struct RunningError;
 
 impl Display for RunningError {
     fn fmt(&self, f: &mut Formatter) -> ::std::fmt::Result {
@@ -23,7 +23,7 @@ impl Error for RunningError {
 
 #[allow(dead_code)]
 #[derive(Debug)]
-struct NotRunningError;
+pub struct NotRunningError;
 
 impl Display for NotRunningError {
     fn fmt(&self, f: &mut Formatter) -> ::std::fmt::Result {
@@ -37,9 +37,28 @@ impl Error for NotRunningError {
     }
 }
 
+trait IField {
+}
+
+impl IField for Field {
+}
+
+trait IPiece {
+}
+
+impl IPiece for Piece {
+}
 
 #[allow(dead_code)]
-struct Game;
+struct GameImpl<F: IField, P: IPiece> {
+    field: F,
+    piece: P
+}
+
+#[allow(dead_code)]
+pub struct Game {
+    pimpl: GameImpl<Field, Piece>
+}
 #[allow(dead_code, unused_variables)]
 impl Game {
     pub fn new(callback:&Fn(&Field, &Piece, Option<&Piece>)->()) -> Game {
@@ -63,6 +82,33 @@ impl Game {
     }
 
     pub fn is_game_over(&self) -> bool {
+        unimplemented!()
+    }
+}
+
+#[allow(dead_code, unused_variables)]
+impl<F: IField, P: IPiece> GameImpl<F, P> {
+    fn new(callback: &Fn(&F, &P, Option<&P>)->()) -> Self {
+        unimplemented!()
+    }
+
+    fn run(&mut self) -> Result<(), RunningError> {
+        unimplemented!()
+    }
+
+    fn pause(&mut self) -> Result<(), NotRunningError> {
+        unimplemented!()
+    }
+
+    fn set_renderer(&mut self, callback: &Fn(&F, &P, Option<&P>) -> ()) {
+        unimplemented!()
+    }
+
+    fn queue_input(&mut self, input: piece::Input) -> Result<(), NotRunningError> {
+        unimplemented!()
+    }
+
+    fn is_game_over(&self) -> bool {
         unimplemented!()
     }
 }
