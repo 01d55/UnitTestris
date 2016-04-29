@@ -58,7 +58,7 @@ impl Game {
         unimplemented!()
     }
 
-    pub fn queue_input(&mut self, input: piece::Type) -> Result<(), NotRunningError> {
+    pub fn queue_input(&mut self, input: piece::Input) -> Result<(), NotRunningError> {
         unimplemented!()
     }
 
@@ -69,24 +69,81 @@ impl Game {
 
 #[cfg(test)]
 mod test {
+    use super::Game;
+    use super::super::field::Field;
+    use super::super::piece::{Piece, Input};
+    use std::thread::sleep;
+    use std::time::Duration;
+    use std::sync::Mutex;
+    fn dummy_render_function(_: &Field, _: &Piece, _: Option<&Piece>) {
+    }
+    fn alt_render_function(_: &Field, _: &Piece, _: Option<&Piece>) {
+    }
     #[test]
-    fn test_new_delete() {
-        unimplemented!()
+    fn test_new() {
+        // check that the constructor doesn't panic
+        let _test_game: Game = Game::new(&dummy_render_function);
     }
     #[test]
     fn test_run_callback() {
-        unimplemented!()
+        let mut test_game: Game = Game::new(&dummy_render_function);
+        // set callback
+        assert!(test_game.set_renderer(&alt_render_function).is_ok());
+        // check run/stop
+        assert!(test_game.run().is_ok());
+        sleep(Duration::from_secs(1));
+        assert!(test_game.pause().is_ok());
+        // c++ tests attempt to verify that game runs approx 60fps
+        //   but it's squirrely, so skipping that for now
+
+        // test that destructor drops the internal thread
+        {
+            let count_mutex: Mutex<u32> = Mutex::new(0);
+            let counting_render_function = |_: &Field, _: &Piece, _: Option<&Piece>| {
+                let mut count = count_mutex.lock().unwrap();
+                *count += 1;
+            };
+            assert!(test_game.set_renderer(&counting_render_function).is_ok());
+            assert!(test_game.run().is_ok());
+            drop(test_game);
+            {
+                let mut count = count_mutex.lock().unwrap();
+                *count = 0;
+            }
+            sleep(Duration::from_secs(1));
+            let count = count_mutex.lock().unwrap();
+            assert_eq!(0, *count);
+        }
     }
     #[test]
+    #[ignore]
     fn whitebox_test_run_callback() {
+        // In c++ version this test relies on PieceDummy
+        // to check whether game is time stepping a piece
         unimplemented!()
     }
     #[test]
     fn whitebox_test_input() {
-        unimplemented!()
+        let mut test_game: Game = Game::new(&dummy_render_function);
+        const INPUTS: [Input; 5] = [Input::RotateCCW, Input::RotateCW, Input::ShiftLeft, Input::ShiftRight, Input::HardDrop];
+        assert!(test_game.run().is_ok());
+        for input in &INPUTS {
+            assert!(test_game.queue_input(*input).is_ok());
+        }
+        sleep(Duration::from_secs(2));
+        assert!(test_game.pause().is_ok());
+        // Todo: port this?
+        // CPPUNIT_ASSERT( PieceDummy::compare_handleInput_arg(inputs) );
     }
     #[test]
     fn test_exceptions() {
-        unimplemented!()
+        let mut test_game: Game = Game::new(&dummy_render_function);
+        assert!(test_game.queue_input(Input::ShiftRight).is_err());
+        assert!(test_game.pause().is_err());
+
+        assert!(test_game.run().is_ok());
+
+        assert!(test_game.set_renderer(&alt_render_function).is_err());
+        assert!(test_game.run().is_err());
     }
 }
