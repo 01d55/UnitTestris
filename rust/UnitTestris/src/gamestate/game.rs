@@ -2,7 +2,7 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 use std::error::Error;
 use super::field::Field;
-use super::piece::Piece;
+use super::piece::{Piece, Type};
 use super::piece;
 
 #[allow(dead_code)]
@@ -38,19 +38,39 @@ impl Error for NotRunningError {
 }
 
 trait IField {
+    fn new() -> Self;
 }
 
 impl IField for Field {
+    fn new() -> Self {
+        Field::new()
+    }
 }
 
-trait IPiece {
+trait IPiece <F: IField>{
+    fn new(Type, u32, &mut F) -> Self;
+
+    fn time_step(&mut self, u32) -> Result<bool, piece::LockError>;
+
+    fn handle_input(&mut self, input: piece::Input) -> Result<bool, piece::LockError>;
 }
 
-impl IPiece for Piece {
+impl IPiece<Field> for Piece {
+    fn new(t: Type, d: u32, f: &mut Field) -> Self {
+        Piece::new(t, d, f)
+    }
+
+    fn time_step(&mut self, g:u32) -> Result<bool, piece::LockError> {
+        self.time_step(g)
+    }
+
+    fn handle_input(&mut self, input: piece::Input) -> Result<bool, piece::LockError> {
+        self.handle_input(input)
+    }
 }
 
 #[allow(dead_code)]
-struct GameImpl<F: IField, P: IPiece> {
+struct GameImpl<F: IField, P: IPiece<F>> {
     field: F,
     piece: P
 }
@@ -87,7 +107,7 @@ impl Game {
 }
 
 #[allow(dead_code, unused_variables)]
-impl<F: IField, P: IPiece> GameImpl<F, P> {
+impl<F: IField, P: IPiece<F>> GameImpl<F, P> {
     fn new(callback: &Fn(&F, &P, Option<&P>)->()) -> Self {
         unimplemented!()
     }
@@ -116,16 +136,43 @@ impl<F: IField, P: IPiece> GameImpl<F, P> {
 #[cfg(test)]
 mod test {
     use super::{GameImpl, IField, IPiece};
-    use super::super::piece::Input;
+    use super::super::piece::{Type, Input, LockError};
+    use super::super::piece;
     use std::thread::sleep;
     use std::time::Duration;
     use std::sync::Mutex;
 
     struct MockField;
     impl IField for MockField {
+        fn new() -> Self {
+            MockField
+        }
     }
-    struct MockPiece;
-    impl IPiece for MockPiece {
+    struct MockPiece {
+        time_step_call_count: u32,
+        time_step_step_count: u32,
+        input_log: Vec<Input>
+    }
+    impl IPiece<MockField> for MockPiece {
+
+        fn new(_: Type, _: u32, _: &mut MockField) -> Self {
+            MockPiece {
+                time_step_call_count: 0,
+                time_step_step_count: 0,
+                input_log: Vec::new()
+            }
+        }
+
+        fn time_step(&mut self, g:u32) -> Result<bool, LockError> {
+            self.time_step_call_count += 1;
+            self.time_step_step_count += g;
+            Ok(false)
+        }
+
+        fn handle_input(&mut self, input: piece::Input) -> Result<bool, piece::LockError> {
+            self.input_log.push(input);
+            Ok(false)
+        }
     }
 
     fn dummy_render_function(_: &MockField, _: &MockPiece, _: Option<&MockPiece>) {
