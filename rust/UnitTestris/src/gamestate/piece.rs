@@ -6,7 +6,7 @@ use super::field;
 use super::field::Field;
 use super::Coord;
 
-#[derive(PartialEq, Eq, Debug, Clone, Copy)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
 #[allow(dead_code)]
 pub enum Type {
     I,
@@ -18,7 +18,7 @@ pub enum Type {
     Z,
 }
 #[allow(dead_code)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Input {
     ShiftRight,
     ShiftLeft,
