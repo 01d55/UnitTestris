@@ -100,7 +100,7 @@ impl<F: IField, P: IPiece> GameImpl<F, P> {
         unimplemented!()
     }
 
-    fn set_renderer(&mut self, callback: &Fn(&F, &P, Option<&P>) -> ()) {
+    fn set_renderer(&mut self, callback: &Fn(&F, &P, Option<&P>) -> ()) -> Result<(), RunningError> {
         unimplemented!()
     }
 
@@ -115,24 +115,31 @@ impl<F: IField, P: IPiece> GameImpl<F, P> {
 
 #[cfg(test)]
 mod test {
-    use super::Game;
-    use super::super::field::Field;
-    use super::super::piece::{Piece, Input};
+    use super::{GameImpl, IField, IPiece};
+    use super::super::piece::Input;
     use std::thread::sleep;
     use std::time::Duration;
     use std::sync::Mutex;
-    fn dummy_render_function(_: &Field, _: &Piece, _: Option<&Piece>) {
+
+    struct MockField;
+    impl IField for MockField {
     }
-    fn alt_render_function(_: &Field, _: &Piece, _: Option<&Piece>) {
+    struct MockPiece;
+    impl IPiece for MockPiece {
+    }
+
+    fn dummy_render_function(_: &MockField, _: &MockPiece, _: Option<&MockPiece>) {
+    }
+    fn alt_render_function(_: &MockField, _: &MockPiece, _: Option<&MockPiece>) {
     }
     #[test]
     fn test_new() {
         // check that the constructor doesn't panic
-        let _test_game: Game = Game::new(&dummy_render_function);
+        let _test_game: GameImpl<MockField, MockPiece> = GameImpl::new(&dummy_render_function);
     }
     #[test]
     fn test_run_callback() {
-        let mut test_game: Game = Game::new(&dummy_render_function);
+        let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(&dummy_render_function);
         // set callback
         assert!(test_game.set_renderer(&alt_render_function).is_ok());
         // check run/stop
@@ -145,7 +152,7 @@ mod test {
         // test that destructor drops the internal thread
         {
             let count_mutex: Mutex<u32> = Mutex::new(0);
-            let counting_render_function = |_: &Field, _: &Piece, _: Option<&Piece>| {
+            let counting_render_function = |_: &MockField, _: &MockPiece, _: Option<&MockPiece>| {
                 let mut count = count_mutex.lock().unwrap();
                 *count += 1;
             };
@@ -170,7 +177,7 @@ mod test {
     }
     #[test]
     fn whitebox_test_input() {
-        let mut test_game: Game = Game::new(&dummy_render_function);
+        let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(&dummy_render_function);
         const INPUTS: [Input; 5] = [Input::RotateCCW, Input::RotateCW, Input::ShiftLeft, Input::ShiftRight, Input::HardDrop];
         assert!(test_game.run().is_ok());
         for input in &INPUTS {
@@ -183,7 +190,7 @@ mod test {
     }
     #[test]
     fn test_exceptions() {
-        let mut test_game: Game = Game::new(&dummy_render_function);
+        let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(&dummy_render_function);
         assert!(test_game.queue_input(Input::ShiftRight).is_err());
         assert!(test_game.pause().is_err());
 
