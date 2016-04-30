@@ -138,9 +138,9 @@ mod test {
     use super::{GameImpl, IField, IPiece};
     use super::super::piece::{Type, Input, LockError};
     use super::super::piece;
+    use std::sync::Mutex;
     use std::thread::sleep;
     use std::time::Duration;
-    use std::sync::Mutex;
 
     struct MockField;
     impl IField for MockField {
@@ -216,15 +216,33 @@ mod test {
         }
     }
     #[test]
-    #[ignore]
     fn whitebox_test_run_callback() {
-        // In c++ version this test relies on PieceDummy
-        // to check whether game is time stepping a piece
-        unimplemented!()
+        let most_recent_time_step_call_mutex: Mutex<u32> = Mutex::new(0);
+        let most_recent_time_step_step_mutex: Mutex<u32> = Mutex::new(0);
+        let matching_render_function = |_: &MockField, piece: &MockPiece, _: Option<&MockPiece>| {
+            let mut call = most_recent_time_step_call_mutex.lock().unwrap();
+            let mut step = most_recent_time_step_step_mutex.lock().unwrap();
+            *call = (*piece).time_step_call_count;
+            *step = (*piece).time_step_step_count;
+        };
+        let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(&matching_render_function);
+        assert!(test_game.run().is_ok());
+        sleep(Duration::from_secs(1));
+        assert!(test_game.pause().is_ok());
+        let calls = most_recent_time_step_call_mutex.lock().unwrap();
+        let step = most_recent_time_step_step_mutex.lock().unwrap();
+        assert!(*calls > 0);
+        assert!(*step > 0);
     }
     #[test]
     fn whitebox_test_input() {
-        let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(&dummy_render_function);
+        use std::collections::HashSet;
+        let most_recent_input_log_mutex: Mutex<Vec<Input>> = Mutex::new(Vec::new());
+        let logging_callback = |_: &MockField, piece: &MockPiece, _: Option<&MockPiece>| {
+            let mut log = most_recent_input_log_mutex.lock().unwrap();
+            *log = piece.input_log.clone();// this is a lot of copying but it's a test
+        };
+        let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(&logging_callback);
         const INPUTS: [Input; 5] = [Input::RotateCCW, Input::RotateCW, Input::ShiftLeft, Input::ShiftRight, Input::HardDrop];
         assert!(test_game.run().is_ok());
         for input in &INPUTS {
@@ -234,6 +252,9 @@ mod test {
         assert!(test_game.pause().is_ok());
         // Todo: port this?
         // CPPUNIT_ASSERT( PieceDummy::compare_handleInput_arg(inputs) );
+        let log = most_recent_input_log_mutex.lock().unwrap();
+        let (observed_set, expected_set): (HashSet<Input>, HashSet<Input>) = (log.iter().cloned().collect(), INPUTS.iter().cloned().collect());
+        assert_eq!(observed_set, expected_set);
     }
     #[test]
     fn test_exceptions() {
