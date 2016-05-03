@@ -1,6 +1,8 @@
 use std::fmt::Display;
 use std::fmt::Formatter;
 use std::error::Error;
+use std::cell::RefCell;
+use std::rc::Rc;
 use super::field::Field;
 use super::piece::{Piece, Type};
 use super::piece;
@@ -48,7 +50,7 @@ impl IField for Field {
 }
 
 trait IPiece <F: IField>{
-    fn new(Type, u32, &mut F) -> Self;
+    fn new(Type, u32, Rc<RefCell<F>>) -> Self;
 
     fn time_step(&mut self, u32) -> Result<bool, piece::LockError>;
 
@@ -56,7 +58,7 @@ trait IPiece <F: IField>{
 }
 
 impl IPiece<Field> for Piece {
-    fn new(t: Type, d: u32, f: &mut Field) -> Self {
+    fn new(t: Type, d: u32, f: Rc<RefCell<Field>>) -> Self {
         Piece::new(t, d, f)
     }
 
@@ -71,7 +73,7 @@ impl IPiece<Field> for Piece {
 
 #[allow(dead_code)]
 struct GameImpl<F: IField, P: IPiece<F>> {
-    field: F,
+    field: Rc<RefCell<F>>,
     piece: P
 }
 
@@ -109,7 +111,11 @@ impl Game {
 #[allow(dead_code, unused_variables)]
 impl<F: IField, P: IPiece<F>> GameImpl<F, P> {
     fn new(callback: &Fn(&F, &P, Option<&P>)->()) -> Self {
-        unimplemented!()
+        let f: Rc<RefCell<F>> = Rc::new(RefCell::new(F::new()));
+        GameImpl {
+            field: f.clone(),
+            piece: P::new(Type::I, 0, f)
+        }
     }
 
     fn run(&mut self) -> Result<(), RunningError> {
@@ -141,6 +147,8 @@ mod test {
     use std::sync::Mutex;
     use std::thread::sleep;
     use std::time::Duration;
+    use std::rc::Rc;
+    use std::cell::RefCell;
 
     struct MockField;
     impl IField for MockField {
@@ -155,7 +163,7 @@ mod test {
     }
     impl IPiece<MockField> for MockPiece {
 
-        fn new(_: Type, _: u32, _: &mut MockField) -> Self {
+        fn new(_: Type, _: u32, _: Rc<RefCell<MockField>>) -> Self {
             MockPiece {
                 time_step_call_count: 0,
                 time_step_step_count: 0,
