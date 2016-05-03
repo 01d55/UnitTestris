@@ -19,3 +19,10 @@ impl Coord {
     }
 
 }
+
+impl ::std::ops::Add for Coord {
+    type Output = Self;
+    fn add(self, rhs: Self) -> Self {
+        Coord{x:self.x+rhs.x, y:self.y+rhs.y}
+    }
+}

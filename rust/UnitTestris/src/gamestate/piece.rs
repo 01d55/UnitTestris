@@ -191,13 +191,18 @@ impl<F: IField> PieceImpl<F> {
     }
 
     pub fn get_center(&self) -> Coord {
-        unimplemented!()
+        self.center
     }
     pub fn get_blocks(&self) -> [Coord; 4] {
-        unimplemented!()
+        [
+            self.relative_blocks[0]+self.center,
+            self.relative_blocks[1]+self.center,
+            self.relative_blocks[2]+self.center,
+            self.relative_blocks[3]+self.center
+        ]
     }
     pub fn get_type(&self) -> Type {
-        unimplemented!()
+        self.typ
     }
 }
 
