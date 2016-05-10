@@ -351,13 +351,10 @@ mod tests {
 
     struct MockField {
         set_args: Vec<Coord>,
-        get_args: Vec<Coord>,
         get_results: HashMap<Coord, bool>,
     }
     impl super::IField for MockField {
         fn get(&self, c:Coord) -> Result<bool, field::SizeError> {
-            // TODO: Find a way to allow this
-            //self.get_args.push(c);
             if c.x < 0 || c.y < 0 {
                 return Err(field::SizeError);
             }
@@ -399,7 +396,7 @@ mod tests {
             assert_eq!(t, test_piece.get_type());
         }
         let test_delay = 1;
-        let test_field = Rc::new(RefCell::new(MockField{set_args: Vec::new(),get_args: Vec::new(), get_results: HashMap::new()}));
+        let test_field = Rc::new(RefCell::new(MockField{set_args: Vec::new(), get_results: HashMap::new()}));
         let mut expected_blocks: [Coord;4];
 
         // I block
@@ -467,7 +464,7 @@ mod tests {
             assert!(test_same_coords(&test_piece.get_blocks(), &test_field.borrow().set_args));
             test_field.borrow_mut().set_args.clear();
         }
-        let test_field: Rc<RefCell<MockField>> = Rc::new(RefCell::new(MockField{set_args: Vec::new(), get_args: Vec::new(), get_results: HashMap::new()}));
+        let test_field: Rc<RefCell<MockField>> = Rc::new(RefCell::new(MockField{set_args: Vec::new(), get_results: HashMap::new()}));
         test_center_and_lock(test_field.clone(), super::Type::J);
         test_center_and_lock(test_field.clone(), super::Type::L);
         test_center_and_lock(test_field.clone(), super::Type::S);
@@ -544,7 +541,7 @@ mod tests {
     }
     #[test]
     fn test_shift() {
-        let test_field = Rc::new(RefCell::new(MockField{set_args: Vec::new(),get_args: Vec::new(), get_results: HashMap::new()}));
+        let test_field = Rc::new(RefCell::new(MockField{set_args: Vec::new(), get_results: HashMap::new()}));
         fn per_block(test_field: Rc<RefCell<MockField>>, typ: super::Type, origin: Coord, expected_initial_blocks: [Coord; 4], space_to_right_wall: i32, space_to_left_wall: i32, rightward_blocks: Vec<Coord>, leftward_blocks: Vec<Coord> ) {
             let mut test_piece: PieceImpl<MockField> = PieceImpl::new(typ, 0, test_field.clone());
             // Shift right
@@ -717,7 +714,7 @@ mod tests {
     }
     #[test]
     fn test_rotate() {
-        let test_field = Rc::new(RefCell::new(MockField{set_args: Vec::new(),get_args: Vec::new(), get_results: HashMap::new()}));
+        let test_field = Rc::new(RefCell::new(MockField{set_args: Vec::new(), get_results: HashMap::new()}));
         fn asserts(piece: &mut PieceImpl<MockField>, input: super::Input, center: Coord, expected_blocks: & [Coord; 4]) {
             assert!(piece.handle_input(input).is_ok());
             assert_eq!(center, piece.get_center());
@@ -1378,7 +1375,7 @@ mod tests {
     #[test]
     fn test_drop() {
         const TEST_DELAY: u32 = 60;
-        let test_field = Rc::new(RefCell::new(MockField {set_args: Vec::new(),get_args: Vec::new(), get_results: HashMap::new()}));
+        let test_field = Rc::new(RefCell::new(MockField {set_args: Vec::new(), get_results: HashMap::new()}));
         fn per_block(test_field: Rc<RefCell<MockField>>, typ: super::Type, center: Coord, expected_coords: &[Coord; 4]) {
             let mut test_piece = PieceImpl::new(typ, TEST_DELAY, test_field.clone());
             assert!(test_piece.handle_input(super::Input::HardDrop).is_ok());
