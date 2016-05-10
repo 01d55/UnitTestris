@@ -2,6 +2,8 @@ mod game;
 mod field;
 mod piece;
 
+use std::ops::*;
+
 #[derive(PartialEq, PartialOrd, Eq, Ord, Default, Debug, Hash, Clone, Copy)]
 #[allow(dead_code)]
 pub struct Coord {
@@ -20,9 +22,30 @@ impl Coord {
 
 }
 
-impl ::std::ops::Add for Coord {
+impl Add<Coord> for Coord {
     type Output = Self;
     fn add(self, rhs: Self) -> Self {
+        Coord{x:self.x+rhs.x, y:self.y+rhs.y}
+    }
+}
+
+impl<'a> Add<&'a Coord> for Coord {
+    type Output = Self;
+    fn add(self, rhs: &'a Coord) -> Self {
+        Coord{x:self.x+rhs.x, y:self.y+rhs.y}
+    }
+}
+
+impl<'a> Add<Coord> for &'a Coord {
+    type Output = Coord;
+    fn add(self, rhs: Coord) -> Coord {
+        Coord{x:self.x+rhs.x, y:self.y+rhs.y}
+    }
+}
+
+impl<'a, 'b> Add<&'b Coord> for &'a Coord {
+    type Output = Coord;
+    fn add(self, rhs: &'b Coord) -> Coord {
         Coord{x:self.x+rhs.x, y:self.y+rhs.y}
     }
 }

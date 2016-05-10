@@ -104,6 +104,7 @@ impl Piece {
 }
 
 // I'd like these consts to be associated, but that feature is experimental
+// block coords
 const RELATIVE_I: [Coord; 4] = [
     Coord{x:-2,y:0},
     Coord{x:-1,y:0},
@@ -145,20 +146,70 @@ const ORIGIN_I :     Coord = Coord {x:5,y:20};
 const ORIGIN_O :     Coord = Coord {x:5,y:21};
 #[allow(dead_code, unused_variables)]
 impl<F: IField> PieceImpl<F> {
-
+    // 'private' helpers
     fn cw(a: &Coord) -> Coord {
         Coord{x:a.y,y:-a.x}
     }
     fn ccw(a: &Coord) -> Coord {
         Coord{x:-a.y,y:a.x}
     }
+    fn can_place(&self, blocks: &[Coord; 4]) -> bool {
+        for block in blocks {
+            let result = self.field.borrow().get(*block);
+            match result {
+                Ok(false) => {}
+                _ => return false
+            }
+        }
+        true
+    }
     fn can_shift(&self, displacement: &Coord) -> bool {
-        unimplemented!()
+        for block in &self.get_blocks() {
+            let result = self.field.borrow().get(block+displacement);
+            match result {
+                Ok(false) => {}
+                _ => return false
+            }
+        }
+        true
     }
     fn can_drop(&self) -> bool {
         self.can_shift(&Coord{x:0,y:-1})
     }
+    fn rotate(&mut self, i: Input) {
+        assert!(match i {
+            Input::RotateCCW | Input::RotateCW => {true}
+            _ => {false}
+        },"Incorrect input passed to PieceImpl::rotate");
+        match self.typ {
+            Type::O => {}
+            Type::I => {
+                // TODO
+            }
+            _ => {
 
+            }
+        }
+    }
+    fn invoke_lock(&mut self) -> () {
+        use std::cmp::Ordering;
+        let mut blocks: [Coord; 4] = self.get_blocks();
+        // blocks must be placed top-down
+        blocks.sort_by(|a: &Coord, b: &Coord| -> Ordering {
+            match a.y.cmp(&(b.y)) {
+                Ordering::Equal => Ordering::Equal,
+                Ordering::Greater => Ordering::Less,
+                Ordering::Less => Ordering::Greater
+            }
+        });
+        let mut field = self.field.borrow_mut();
+        for block in &blocks {
+            let result = field.set(*block);
+            assert!(result.is_ok());
+        }
+        self.lock = true;
+    }
+    // fns used by Piece
     fn new(t:Type, d:u32, f:Rc<RefCell<F>>) -> Self {
         PieceImpl {
             typ: t,
@@ -184,10 +235,54 @@ impl<F: IField> PieceImpl<F> {
     }
 
     pub fn time_step(&mut self, g:u32) -> Result<bool, LockError> {
-        unimplemented!()
+        if self.lock {
+            return Err(LockError);
+        }
+        for _ in 0..g {
+            if self.can_drop() {
+                self.center.y -= 1;
+                if ! (self.can_drop()) {
+                    if 0 == self.lock_delay {
+                        self.invoke_lock();
+                        break;
+                    }
+                    else {
+                        self.lock_delay -= 1;
+                    }
+                }
+            } else {
+                if 0 == self.lock_delay {
+                    self.invoke_lock();
+                    break;
+                } else {
+                    self.lock_delay -= 1;
+                }
+            }
+        }
+        Ok(self.lock)
     }
     pub fn handle_input(&mut self, input:Input) -> Result<bool, LockError> {
-        unimplemented!()
+        if self.lock {
+            return Err(LockError);
+        }
+        match input {
+            Input::HardDrop => {
+                let steps = 22 + self.lock_delay;
+                return self.time_step(steps);
+            }
+            Input::RotateCCW | Input::RotateCW => {self.rotate(input);}
+            Input::ShiftLeft => {
+                if self.can_shift(&Coord::new(-1,0)) {
+                    self.center.x -= 1;
+                }
+            }
+            Input::ShiftRight => {
+                if self.can_shift(&Coord::new(1,0)) {
+                    self.center.x += 1;
+                }
+            }
+        }
+        Ok(self.lock)
     }
 
     pub fn get_center(&self) -> Coord {
@@ -263,7 +358,10 @@ mod tests {
         fn get(&self, c:Coord) -> Result<bool, field::SizeError> {
             // TODO: Find a way to allow this
             //self.get_args.push(c);
-            Result::Ok(*(self.get_results.get(&c).unwrap()))
+            if c.x < 0 || c.y < 0 {
+                return Err(field::SizeError);
+            }
+            Result::Ok(*(self.get_results.get(&c).unwrap_or(&false)))
         }
         fn set(&mut self, c:Coord) -> field::Result<()> {
             const WIDTH: i32 = field::WIDTH as i32;
@@ -355,7 +453,7 @@ mod tests {
                 // we need to detect and fail.
                 i = i+1;
                 assert!(i < fail_safe);
-                --expected_coord.y;
+                expected_coord.y -= 1;
                 assert_eq!(expected_coord, test_piece.get_center());
             }
             // Test that we hit bottom
@@ -367,6 +465,7 @@ mod tests {
             assert_eq!(expected_coord, test_piece.get_center());
             // Test that the piece attempted to place its blocks into the field
             assert!(test_same_coords(&test_piece.get_blocks(), &test_field.borrow().set_args));
+            test_field.borrow_mut().set_args.clear();
         }
         let test_field: Rc<RefCell<MockField>> = Rc::new(RefCell::new(MockField{set_args: Vec::new(), get_args: Vec::new(), get_results: HashMap::new()}));
         test_center_and_lock(test_field.clone(), super::Type::J);
@@ -427,17 +526,6 @@ mod tests {
         test_field.borrow_mut().get_results.insert(Coord::new(3,0), true);
         test_field.borrow_mut().set_args.clear();
         {
-            fn compare_arguments(blocks: &[Coord; 4], args: &Vec<Coord>) -> bool {
-                let mut blocks_set: HashSet<Coord> = HashSet::new();
-                let mut args_set: HashSet<Coord> = HashSet::new();
-                for x in blocks {
-                    blocks_set.insert(*x);
-                }
-                for x in args {
-                    args_set.insert(*x);
-                }
-                blocks_set == args_set
-            }
             let test_delay = 0;
             let mut test_T = PieceImpl::new(super::Type::T, test_delay, test_field.clone());
             let mut test_Z = PieceImpl::new(super::Type::Z, test_delay, test_field.clone());
@@ -447,11 +535,11 @@ mod tests {
 
             let mut expected_blocks = [Coord::new(3,1), Coord::new(4,1), Coord::new(5,1), Coord::new(4,2)];
             assert!(test_same_coords(&expected_blocks, &test_T.get_blocks()));
-            assert!(compare_arguments(&expected_blocks, &test_field.borrow().set_args));
+            assert!(test_same_coords(&expected_blocks, &test_field.borrow().set_args));
             test_field.borrow_mut().set_args.clear();
             expected_blocks = [Coord::new(3,1), Coord::new(4,1), Coord::new(4,0), Coord::new(5,0)];
             assert!(test_same_coords(&expected_blocks, &test_Z.get_blocks()));
-            assert!(compare_arguments(&expected_blocks, &test_field.borrow().set_args));
+            assert!(test_same_coords(&expected_blocks, &test_field.borrow().set_args));
         }
     }
     #[test]
