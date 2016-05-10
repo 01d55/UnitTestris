@@ -528,12 +528,12 @@ mod tests {
             let mut test_Z = PieceImpl::new(super::Type::Z, test_delay, test_field.clone());
 
             assert!(test_T.time_step(30).unwrap());
-            assert!(test_Z.time_step(30).unwrap());
-
             let mut expected_blocks = [Coord::new(3,1), Coord::new(4,1), Coord::new(5,1), Coord::new(4,2)];
             assert!(test_same_coords(&expected_blocks, &test_T.get_blocks()));
             assert!(test_same_coords(&expected_blocks, &test_field.borrow().set_args));
             test_field.borrow_mut().set_args.clear();
+
+            assert!(test_Z.time_step(30).unwrap());
             expected_blocks = [Coord::new(3,1), Coord::new(4,1), Coord::new(4,0), Coord::new(5,0)];
             assert!(test_same_coords(&expected_blocks, &test_Z.get_blocks()));
             assert!(test_same_coords(&expected_blocks, &test_field.borrow().set_args));
