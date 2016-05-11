@@ -45,7 +45,7 @@ impl Error for LockError {
     }
 }
 
-trait IField {
+trait IField : ::std::fmt::Debug {
     fn get(&self, c:Coord) -> Result<bool, field::SizeError>;
     fn set(&mut self, c:Coord) -> field::Result<()>;
 }
@@ -60,6 +60,7 @@ impl IField for Field {
 }
 
 #[allow(dead_code)]
+#[derive(Debug)]
 struct PieceImpl<F: IField> {
     typ: Type,
     base_delay: u32,
@@ -71,6 +72,7 @@ struct PieceImpl<F: IField> {
 }
 
 #[allow(dead_code)]
+#[derive(Debug)]
 pub struct Piece {
     pimpl: PieceImpl<Field>
 }
@@ -181,13 +183,83 @@ impl<F: IField> PieceImpl<F> {
             Input::RotateCCW | Input::RotateCW => {true}
             _ => {false}
         },"Incorrect input passed to PieceImpl::rotate");
+        let mut rblocks = self.relative_blocks;
         match self.typ {
             Type::O => {}
             Type::I => {
-                // TODO
+                /*
+                 *__________*     *__________*
+                 *          * 2   *          * 2
+                 *          * 1   *   II II  * 1
+                 *   IIcI   * 0   *     c    * 0
+                 *          * 1   *          * 1
+                 *          * 2   *          * 2
+                 *5432101234*     *5432101234*
+                1 rotation
+                 *__________*     *__________*
+                 *          * 2   *    I     * 2
+                 *    I     * 1   *    I     * 1
+                 *    Ic    * 0   *     c    * 0
+                 *    I     * 1   *    I     * 1
+                 *    I     * 2   *    I     * 2
+                 *5432101234*     *5432101234*
+                2 rotations
+                 *__________*     *__________*
+                 *          * 2   *          * 2
+                 *          * 1   *          * 1
+                 *     c    * 0   *     c    * 0
+                 *   IIII   * 1   *   II II  * 1
+                 *          * 2   *          * 2
+                 *5432101234*     *5432101234*
+                3 rotations
+                 *__________*     *__________*
+                 *          * 2   *      I   * 2
+                 *     I    * 1   *      I   * 1
+                 *     c    * 0   *     c    * 0
+                 *     I    * 1   *      I   * 1
+                 *     I    * 2   *      I   * 2
+                 *5432101234*     *5432101234*
+                 */
+                for block in &mut rblocks {
+                    // Shift all nonnegative co-ordinates up by 1
+                    if block.x >= 0 {
+                        block.x += 1;
+                    }
+                    if block.y >= 0 {
+                        block.y += 1;
+                    }
+                    // rotate
+                    *block = if i == Input::RotateCW {PieceImpl::<F>::cw(block)} else {PieceImpl::<F>::ccw(block)};
+                    // un-shift
+                    if block.x > 0 {
+                        block.x -= 1;
+                    }
+                    if block.y > 0 {
+                        block.y -= 1;
+                    }
+                }
+                let blocks: [Coord; 4] = [
+                    rblocks[0] + self.center,
+                    rblocks[1] + self.center,
+                    rblocks[2] + self.center,
+                    rblocks[3] + self.center];
+                if self.can_place(&blocks) {
+                    self.relative_blocks = rblocks;
+                }
             }
             _ => {
-
+                let mut rblocks: [Coord; 4] = self.relative_blocks;
+                for block in &mut rblocks {
+                    *block = if i == Input::RotateCW {PieceImpl::<F>::cw(block)} else {PieceImpl::<F>::ccw(block)};
+                }
+                let blocks: [Coord; 4] = [
+                    rblocks[0] + self.center,
+                    rblocks[1] + self.center,
+                    rblocks[2] + self.center,
+                    rblocks[3] + self.center];
+                if self.can_place(&blocks) {
+                    self.relative_blocks = rblocks;
+                }
             }
         }
     }
@@ -349,6 +421,7 @@ mod tests {
     const BLOCKS_T : [Coord; 4] = [Coord {x:3,y:20}, Coord {x:4,y:20}, Coord {x:4,y:21}, Coord {x:5,y:20}];
     const BLOCKS_Z : [Coord; 4] = [Coord {x:3,y:21}, Coord {x:4,y:20}, Coord {x:4,y:21}, Coord {x:5,y:20}];
 
+    #[derive(Debug)]
     struct MockField {
         set_args: Vec<Coord>,
         get_results: HashMap<Coord, bool>,
@@ -723,7 +796,8 @@ mod tests {
         fn asserts(piece: &mut PieceImpl<MockField>, input: super::Input, center: Coord, expected_blocks: & [Coord; 4]) {
             assert!(piece.handle_input(input).is_ok());
             assert_eq!(center, piece.get_center());
-            assert!(test_same_coords(expected_blocks, &piece.get_blocks()));
+            assert!(test_same_coords(expected_blocks, &piece.get_blocks()),
+                    "Piece {:?} \ninput {:?} \nexpected_blocks {:?} \nobserved {:?}", piece, input, expected_blocks, &piece.get_blocks());
         }
         fn per_block(test_field: Rc<RefCell<MockField>>, typ: super::Type, center: Coord, expected_blocks: [[Coord; 4]; 7], obstruction: &Coord)
         {
@@ -853,7 +927,7 @@ mod tests {
             [[Coord{x:3,y:21}, Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:4,y:21}],
              [Coord{x:3,y:19}, Coord{x:3,y:20}, Coord{x:4,y:20}, Coord{x:5,y:20}],
              [Coord{x:4,y:19}, Coord{x:4,y:20}, Coord{x:4,y:21}, Coord{x:5,y:19}],
-             [Coord{x:3,y:19}, Coord{x:3,y:20}, Coord{x:4,y:19}, Coord{x:5,y:19}],
+             [Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:19}, Coord{x:5,y:20}],
              [Coord{x:4,y:20}, Coord{x:4,y:19}, Coord{x:4,y:18}, Coord{x:5,y:18}],
              [Coord{x:3,y:18}, Coord{x:3,y:19}, Coord{x:4,y:19}, Coord{x:5,y:19}],
              [Coord{x:3,y:20}, Coord{x:4,y:18}, Coord{x:4,y:19}, Coord{x:4,y:20}]];
@@ -1373,7 +1447,7 @@ mod tests {
                 block.y -= 19;
             }
             assert!(test_piece.handle_input(super::Input::RotateCW).is_err());
-            assert_eq!(ORIGIN_COORD, test_piece.get_center());
+            assert_eq!(ORIGIN_COORD+Coord{x:0,y:-19}, test_piece.get_center());
             assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()));
         }
     }
