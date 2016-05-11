@@ -355,7 +355,9 @@ mod tests {
     }
     impl super::IField for MockField {
         fn get(&self, c:Coord) -> Result<bool, field::SizeError> {
-            if c.x < 0 || c.y < 0 {
+            const WIDTH: i32 = field::WIDTH as i32;
+            const HEIGHT: i32 = field::HEIGHT as i32;
+            if c.x < 0 || c.y < 0 || c.x >= WIDTH || c.y >= HEIGHT {
                 return Err(field::SizeError);
             }
             Result::Ok(*(self.get_results.get(&c).unwrap_or(&false)))
@@ -550,7 +552,10 @@ mod tests {
             let mut expected_coord = origin;
             expected_coord.x = expected_coord.x + 1;
             let mut expected_blocks = expected_initial_blocks;
-            assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()));
+            for block in expected_blocks.iter_mut() {
+                block.x += 1;
+            }
+            assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()), "expected {:?} observed {:?}", &expected_blocks, &test_piece.get_blocks());
             assert_eq!(expected_coord, test_piece.get_center());
             // Press against right wall.
             for _ in 0..5 {
@@ -561,7 +566,7 @@ mod tests {
             for coord in expected_blocks.iter_mut() {
                 coord.x += space_to_right_wall;
             }
-            assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()));
+            assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()), "expected {:?} observed {:?}", &expected_blocks, &test_piece.get_blocks());
             assert_eq!(expected_coord, test_piece.get_center());
             // Shift left
             assert!(test_piece.handle_input(super::Input::ShiftLeft).is_ok());
@@ -569,7 +574,7 @@ mod tests {
             for coord in expected_blocks.iter_mut() {
                 coord.x -= 1;
             }
-            assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()));
+            assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()), "expected {:?} observed {:?}", &expected_blocks, &test_piece.get_blocks());
             assert_eq!(expected_coord, test_piece.get_center());
             // Press against left wall
             for _ in 0..10 {
@@ -590,7 +595,7 @@ mod tests {
                 coord.x += 1;
             }
             expected_coord.x += 1;
-            assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()));
+            assert!(test_same_coords(&expected_blocks, &test_piece.get_blocks()), "expected {:?} observed {:?}", &expected_blocks, &test_piece.get_blocks());
             assert_eq!(expected_coord, test_piece.get_center());
             // press left
             for leftward_block in leftward_blocks {
@@ -688,7 +693,7 @@ mod tests {
          *0123456789*/
         per_block(
             test_field.clone(),
-            super::Type::L,
+            super::Type::S,
             ORIGIN_COORD,
             BLOCKS_S,
             3,
