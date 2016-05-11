@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use std::fmt::Debug;
 use std::fmt::Formatter;
 use std::error::Error;
 use std::cell::RefCell;
@@ -39,7 +40,7 @@ impl Error for NotRunningError {
     }
 }
 
-trait IField {
+trait IField : Debug {
     fn new() -> Self;
 }
 
@@ -49,7 +50,7 @@ impl IField for Field {
     }
 }
 
-trait IPiece <F: IField>{
+trait IPiece <F: IField> : Debug {
     fn new(Type, u32, Rc<RefCell<F>>) -> Self;
 
     fn time_step(&mut self, u32) -> Result<bool, piece::LockError>;
@@ -150,12 +151,14 @@ mod test {
     use std::rc::Rc;
     use std::cell::RefCell;
 
+    #[derive(Debug)]
     struct MockField;
     impl IField for MockField {
         fn new() -> Self {
             MockField
         }
     }
+    #[derive(Debug)]
     struct MockPiece {
         time_step_call_count: u32,
         time_step_step_count: u32,
