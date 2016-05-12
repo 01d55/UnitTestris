@@ -13,7 +13,10 @@ pub const SIZE:  usize= HEIGHT*WIDTH;
 
 
 #[derive(Clone, Debug, Default)]
-pub struct Field;
+pub struct Field {
+    blocks: [[bool; HEIGHT]; WIDTH],
+    score: u32
+}
 
 #[derive(Debug)]
 #[allow(dead_code)]
@@ -80,13 +83,29 @@ pub type Result<T> = result::Result<T, Error>;
 
 #[allow(dead_code, unused_variables)]
 impl Field {
+    // true if coord is in the field
+    fn size_check(c: &Coord) -> bool {
+        !(c.x < 0 || c.y < 0 || c.x >= WIDTH as i32 || c.y >= HEIGHT as i32)
+    }
 
     pub fn new() -> Field {
         Field::default()
     }
 
     pub fn from_rectangular_vector(rect: & Vec<Vec<bool>>) -> result::Result<Field, SizeError> {
-        unimplemented!()
+        let mut field = Field::default();
+        for (i,column) in rect.into_iter().enumerate() {
+            for (j,block) in column.into_iter().enumerate() {
+                if *block {
+                    match field.set(Coord{x:i as i32, y:j as i32}) {
+                        Ok(_) => {}
+                        Err(Error::Size(SizeError)) => return Err(SizeError),
+                        _ => panic!("this should be impossible")
+                    }
+                }
+            }
+        }
+        Ok(field)
     }
 
     pub fn from_rectangular_array(rect: &[[bool; HEIGHT]; WIDTH]) -> Field {
@@ -94,11 +113,15 @@ impl Field {
     }
 
     pub fn get(&self, c:Coord) -> result::Result<bool, SizeError> {
-        unimplemented!()
+        if Field::size_check(&c) {
+            Ok(self.blocks[c.x as usize][c.y as usize])
+        } else {
+            Err(SizeError)
+        }
     }
 
     pub fn read_score(&self) -> u32 {
-        unimplemented!()
+        self.score
     }
 
     pub fn set(&mut self, c:Coord) -> Result<()> {
