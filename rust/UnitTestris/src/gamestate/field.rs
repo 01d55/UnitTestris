@@ -123,7 +123,18 @@ impl Field {
     }
 
     pub fn from_rectangular_array(rect: &[[bool; HEIGHT]; WIDTH]) -> Field {
-        unimplemented!()
+        let mut field = Field::default();
+        for (i, column) in rect.into_iter().enumerate() {
+            for (j, block) in column.into_iter().enumerate().rev() {
+                if *block {
+                    match field.set(Coord{x:i as i32, y:j as i32}) {
+                        Ok(_) => {}
+                        _ => panic!("this should be impossible")
+                    }
+                }
+            }
+        }
+        field
     }
 
     pub fn get(&self, c:Coord) -> result::Result<bool, SizeError> {
@@ -380,7 +391,7 @@ mod test {
             for i in 0..WIDTH {
                 for j in 0..HEIGHT {
                     let got = test_field.get(Coord::new(i as i32, j as i32)).unwrap();
-                    if i == 0 {
+                    if j == 0 {
                         assert_eq!(i%2 == 0, got)
                     } else {
                         assert_eq!(false, got)
