@@ -107,12 +107,13 @@ impl Field {
 
     pub fn from_rectangular_vector(rect: & Vec<Vec<bool>>) -> result::Result<Field, SizeError> {
         let mut field = Field::default();
-        for (j,row) in rect.into_iter().enumerate() {
-            for (i,block) in row.into_iter().enumerate() {
+        if rect.len() != WIDTH {return Err(SizeError)}
+        for (i,column) in rect.into_iter().enumerate() {
+            if column.len() != HEIGHT {return Err(SizeError)}
+            for (j,block) in column.into_iter().enumerate().rev() {
                 if *block {
                     match field.set(Coord{x:i as i32, y:j as i32}) {
                         Ok(_) => {}
-                        Err(Error::Size(SizeError)) => return Err(SizeError),
                         _ => panic!("this should be impossible")
                     }
                 }
@@ -193,8 +194,8 @@ mod test {
         // check extreme corners
         test_input[0][0] = true;
         // Putting HEIGHT-1 in a match pattern is a syntax error.
-        const FIELD_WEND: usize = HEIGHT-1;
-        const FIELD_HEND: usize = WIDTH-1;
+        const FIELD_HEND: usize = HEIGHT-1;
+        const FIELD_WEND: usize = WIDTH-1;
         test_input[FIELD_WEND][FIELD_HEND] = true;
         {
             let test_field = Field::from_rectangular_vector(&test_input).unwrap();
