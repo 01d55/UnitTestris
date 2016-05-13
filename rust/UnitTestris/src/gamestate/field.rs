@@ -14,7 +14,7 @@ pub const SIZE:  usize= HEIGHT*WIDTH;
 
 #[derive(Clone, Debug, Default)]
 pub struct Field {
-    blocks: [[bool; HEIGHT]; WIDTH],
+    blocks: [[bool; WIDTH]; HEIGHT],
     score: u32
 }
 
@@ -87,6 +87,19 @@ impl Field {
     fn size_check(c: &Coord) -> bool {
         !(c.x < 0 || c.y < 0 || c.x >= WIDTH as i32 || c.y >= HEIGHT as i32)
     }
+    fn check_line(&mut self, y: usize) {
+        for block in & self.blocks[y] {
+            if !*block {return;}
+        }
+        self.score += 1;
+        for j in y..HEIGHT {
+            self.blocks[j] = if j == HEIGHT-1 {
+                Default::default()
+            } else {
+                self.blocks[j+1]
+            }
+        }
+    }
 
     pub fn new() -> Field {
         Field::default()
@@ -94,8 +107,8 @@ impl Field {
 
     pub fn from_rectangular_vector(rect: & Vec<Vec<bool>>) -> result::Result<Field, SizeError> {
         let mut field = Field::default();
-        for (i,column) in rect.into_iter().enumerate() {
-            for (j,block) in column.into_iter().enumerate() {
+        for (j,row) in rect.into_iter().enumerate() {
+            for (i,block) in row.into_iter().enumerate() {
                 if *block {
                     match field.set(Coord{x:i as i32, y:j as i32}) {
                         Ok(_) => {}
@@ -114,7 +127,7 @@ impl Field {
 
     pub fn get(&self, c:Coord) -> result::Result<bool, SizeError> {
         if Field::size_check(&c) {
-            Ok(self.blocks[c.x as usize][c.y as usize])
+            Ok(self.blocks[c.y as usize][c.x as usize])
         } else {
             Err(SizeError)
         }
@@ -125,7 +138,15 @@ impl Field {
     }
 
     pub fn set(&mut self, c:Coord) -> Result<()> {
-        unimplemented!()
+        match self.get(c) {
+            Ok(false) => {
+                self.blocks[c.y as usize][c.x as usize] = true;
+                self.check_line(c.y as usize);
+                Ok(())
+            }
+            Ok(true) => Err(Error::DuplicateBlock(DuplicateBlockError)),
+            Err(SizeError) => Err(Error::Size(SizeError))
+        }
     }
 
     pub fn reset_score(&mut self) -> () {
@@ -133,7 +154,7 @@ impl Field {
     }
 
     pub fn reset_blocks(&mut self) -> () {
-        unimplemented!()
+        self.blocks = Default::default();
     }
 }
 
@@ -454,7 +475,8 @@ mod test {
             const RANGE: ::std::ops::Range<usize> = ::std::ops::Range{start: 1, end: WIDTH-1};
             // `for i in 1..(WIDTH-1)` is a syntax error :(
             for i in RANGE {
-                assert!(test_field.set(Coord::new(i as i32,0)).is_ok())
+                let result = test_field.set(Coord::new(i as i32,0));
+                assert!(result.is_ok(), "{}, {:?}", i, result);
             }
         }
         for i in 0..WIDTH {
@@ -467,7 +489,7 @@ mod test {
                 const EXPECTED_RIGHT: (usize, usize) = (WIDTH-1, HEIGHT-2);
                 match(i,j) {
                     (_,0) | TOP_LEFT | TOP_RIGHT => {
-                        assert_eq!(false, got)
+                        assert!(!got, "{:?}, {:?}", (i,j), &test_field)
                     }
                     EXPECTED_LEFT | EXPECTED_RIGHT => {
                         assert!(got)
