@@ -150,7 +150,7 @@ impl Field {
     }
 
     pub fn reset_score(&mut self) -> () {
-        unimplemented!()
+        self.score = 0
     }
 
     pub fn reset_blocks(&mut self) -> () {
@@ -579,6 +579,7 @@ mod test {
         }
         assert_eq!(2, test_field.read_score());
         // test reset, and that increasing score after a reset works correctly.
+        test_field.reset_score();
         for i in 0..WIDTH {
             assert!(test_field.set(Coord::new(i as i32, 19)).is_ok());
         }
