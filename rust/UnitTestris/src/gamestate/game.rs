@@ -2,8 +2,12 @@ use std::fmt::Display;
 use std::fmt::Debug;
 use std::fmt::Formatter;
 use std::error::Error;
+use std::cell;
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::sync::{Mutex, Arc};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::thread;
 use super::field::Field;
 use super::piece::{Piece, Type};
 use super::piece;
@@ -72,13 +76,30 @@ impl IPiece<Field> for Piece {
     }
 }
 
+/*
+ * Oh, how dearly I wish to say
+type Callback<F, P> = Fn(cell::Ref<F>, &P, Option<&P>)->() + Send
+ * so that Arc<Mutex<Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>>>
+ * could be Arc<Mutex<Box<Callback>>>
+ * alas.
+ */
 
-#[allow(dead_code)]
-struct GameImpl<'closure, F: IField, P: IPiece<F>> {
+struct GameInfo<F: IField, P:IPiece<F>> {
     field: Rc<RefCell<F>>,
     piece: P,
-    callback: Box<Fn(&F, &P, Option<&P>)->() + 'closure>
+    // shared
+    callback: Arc<Mutex<Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>>>,
+    input_queue: Arc<Mutex<Vec<piece::Input>>>,
+    game_live: Arc<AtomicBool>,
+}
 
+#[allow(dead_code)]
+struct GameImpl<F : IField + 'static, P : IPiece<F> + 'static> {
+    join_token: Option<thread::JoinHandle<()>>,
+    // shared
+    callback: Arc<Mutex<Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>>>,
+    input_queue: Arc<Mutex<Vec<piece::Input>>>,
+    game_live: Arc<AtomicBool>,
 }
 /*
 #[allow(dead_code)]
@@ -113,35 +134,119 @@ impl Game {
 }*/
 
 #[allow(dead_code, unused_variables)]
-impl<'closure, F: IField, P: IPiece<F>> GameImpl<'closure, F, P> {
-    fn new(callback: Box<Fn(&F, &P, Option<&P>)->() + 'closure>) -> Self {
-        let f: Rc<RefCell<F>> = Rc::new(RefCell::new(F::new()));
+impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
+    // internal stuff
+    fn consume_input(game: &mut GameInfo<F, P>) -> () {
+        let queue: Vec<piece::Input>;
+        {
+            /*
+            this lock should live for only the statement which drains the vec, but:
+
+            error: borrowed value does not live long enough
+            let queue: Vec<piece::Input> = self.input_queue.lock().unwrap().drain(0..).collect();
+
+            note: reference must be valid for the destruction scope surrounding statement at
+            let queue: Vec<piece::Input> = self.input_queue.lock().unwrap().drain(0..).collect();
+
+            note: ...but borrowed value is only valid for the statement at
+            let queue: Vec<piece::Input> = self.input_queue.lock().unwrap().drain(0..).collect();
+
+            help: consider using a `let` binding to increase its lifetime
+            let queue: Vec<piece::Input> = self.input_queue.lock().unwrap().drain(0..).collect();
+             */
+            let mut weird_lifetime_bullshit = game.input_queue.lock().unwrap();
+            queue = weird_lifetime_bullshit.drain(0..).collect();
+        }
+        for input in queue {
+            let result = game.piece.handle_input(input).unwrap();
+            if result {
+                // scan for loss
+                // if loss game over
+                // else new piece
+            }
+        }
+    }
+    fn game_over(&mut self) -> () {
+        // can't panic here because this is called by drop
+        self.game_live.store(false, Ordering::Relaxed);
+        // joining directly would move, which we can't do anywhere because impl Drop
+        let option = self.join_token.take();
+        match option {
+            Some(token) => {
+                let result = token.join();
+            }
+            None => ()
+        };
+    }
+    fn scan_for_loss(game: &GameInfo<F, P>) -> bool {
+        unimplemented!()
+    }
+    fn thread_func(mut game_info: GameInfo<F, P>) -> () {
+        while game_info.game_live.load(Ordering::Relaxed) {
+            GameImpl::consume_input(&mut game_info);
+            let cb = game_info.callback.lock().unwrap();
+            cb(game_info.field.borrow(), &game_info.piece, None);
+        }
+    }
+    // used by Game's pub functions
+    fn new(callback: Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>) -> Self {
         GameImpl {
-            field: f.clone(),
-            piece: P::new(Type::I, 0, f),
-            callback: callback
+            callback: Arc::new(Mutex::new(callback)),
+            input_queue: Arc::new(Mutex::new(Vec::new())),
+            game_live: Arc::new(AtomicBool::new(true)),
+            join_token: None
         }
     }
 
     fn run(&mut self) -> Result<(), RunningError> {
-        unimplemented!()
+        // field & piece should belong to the internal thread while it is running,
+        // but return ownership to the thread that owns the game when paused.
+        if self.join_token.is_none() {
+            let i = self.input_queue.clone();
+            let cb = self.callback.clone();
+            let live = self.game_live.clone();
+            self.join_token = Some(thread::Builder::new().name("GameImpl internal thread".to_string()).spawn(move || {
+                let f: Rc<RefCell<F>> = Rc::new(RefCell::new(F::new()));
+                let info = GameInfo {
+                    field: f.clone(),
+                    piece: P::new(Type::I, 0, f),
+                    callback: cb,
+                    input_queue: i,
+                    game_live: live,
+                };
+
+                GameImpl::thread_func(info)
+            }).unwrap());
+            Ok(())
+        } else {
+            Err(RunningError)
+        }
     }
 
     fn pause(&mut self) -> Result<(), NotRunningError> {
         unimplemented!()
     }
 
-    fn set_renderer(&mut self, callback: Box<Fn(&F, &P, Option<&P>) -> () + 'closure>) -> Result<(), RunningError> {
-        self.callback = callback;
+    fn set_renderer(&mut self, callback: Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>) -> Result<(), RunningError> {
+        let mut my_cb = self.callback.lock().unwrap();
+        *my_cb = callback;
         Ok(())
     }
 
     fn queue_input(&mut self, input: piece::Input) -> Result<(), NotRunningError> {
-        unimplemented!()
+        let mut queue = self.input_queue.lock().unwrap();
+        queue.push(input);
+        Ok(())
     }
 
     fn is_game_over(&self) -> bool {
         unimplemented!()
+    }
+}
+
+impl<F: IField + 'static, P: IPiece<F> + 'static> Drop for GameImpl<F, P> {
+    fn drop(&mut self) -> () {
+        self.game_over();
     }
 }
 
@@ -150,10 +255,11 @@ mod test {
     use super::{GameImpl, IField, IPiece};
     use super::super::piece::{Type, Input, LockError};
     use super::super::piece;
-    use std::sync::Mutex;
+    use std::sync::{Mutex, Arc};
     use std::thread::sleep;
     use std::time::Duration;
     use std::rc::Rc;
+    use std::cell;
     use std::cell::RefCell;
 
     #[derive(Debug)]
@@ -191,9 +297,9 @@ mod test {
         }
     }
 
-    fn dummy_render_function(_: &MockField, _: &MockPiece, _: Option<&MockPiece>) {
+    fn dummy_render_function(_: cell::Ref<MockField>, _: &MockPiece, _: Option<&MockPiece>) {
     }
-    fn alt_render_function(_: &MockField, _: &MockPiece, _: Option<&MockPiece>) {
+    fn alt_render_function(_: cell::Ref<MockField>, _: &MockPiece, _: Option<&MockPiece>) {
     }
     #[test]
     fn test_new() {
@@ -202,7 +308,6 @@ mod test {
     }
     #[test]
     fn test_run_callback() {
-        let count_mutex: Mutex<u32> = Mutex::new(0);
         let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(Box::new(dummy_render_function));
         // set callback
         assert!(test_game.set_renderer(Box::new(alt_render_function)).is_ok());
@@ -215,13 +320,15 @@ mod test {
 
         // test that destructor drops the internal thread
         {
-            // count_mutex used only here, but borrowck demands
-            // that it live as long as test_game
-            let counting_render_function = |_: &MockField, _: &MockPiece, _: Option<&MockPiece>| {
-                let mut count = count_mutex.lock().unwrap();
-                *count += 1;
-            };
-            assert!(test_game.set_renderer(Box::new(counting_render_function)).is_ok());
+            let count_mutex: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
+            {
+                let count_mutex = count_mutex.clone();
+                let counting_render_function = move |_: cell::Ref<MockField>, _: &MockPiece, _: Option<&MockPiece>| {
+                    let mut count = count_mutex.lock().unwrap();
+                    *count += 1;
+                };
+                assert!(test_game.set_renderer(Box::new(counting_render_function)).is_ok());
+            }
             assert!(test_game.run().is_ok());
             drop(test_game);
             {
@@ -235,15 +342,20 @@ mod test {
     }
     #[test]
     fn whitebox_test_run_callback() {
-        let most_recent_time_step_call_mutex: Mutex<u32> = Mutex::new(0);
-        let most_recent_time_step_step_mutex: Mutex<u32> = Mutex::new(0);
-        let matching_render_function = |_: &MockField, piece: &MockPiece, _: Option<&MockPiece>| {
-            let mut call = most_recent_time_step_call_mutex.lock().unwrap();
-            let mut step = most_recent_time_step_step_mutex.lock().unwrap();
-            *call = (*piece).time_step_call_count;
-            *step = (*piece).time_step_step_count;
-        };
-        let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(Box::new(matching_render_function));
+        let most_recent_time_step_call_mutex: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
+        let most_recent_time_step_step_mutex: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
+        let mut test_game: GameImpl<MockField, MockPiece>;
+        {
+            let most_recent_time_step_call_mutex = most_recent_time_step_call_mutex.clone();
+            let most_recent_time_step_step_mutex = most_recent_time_step_step_mutex.clone();
+            let matching_render_function = move |_: cell::Ref<MockField>, piece: &MockPiece, _: Option<&MockPiece>| {
+                let mut call = most_recent_time_step_call_mutex.lock().unwrap();
+                let mut step = most_recent_time_step_step_mutex.lock().unwrap();
+                *call = (*piece).time_step_call_count;
+                *step = (*piece).time_step_step_count;
+            };
+            test_game = GameImpl::new(Box::new(matching_render_function));
+        }
         assert!(test_game.run().is_ok());
         sleep(Duration::from_secs(1));
         assert!(test_game.pause().is_ok());
@@ -255,12 +367,16 @@ mod test {
     #[test]
     fn whitebox_test_input() {
         use std::collections::HashSet;
-        let most_recent_input_log_mutex: Mutex<Vec<Input>> = Mutex::new(Vec::new());
-        let logging_callback = |_: &MockField, piece: &MockPiece, _: Option<&MockPiece>| {
-            let mut log = most_recent_input_log_mutex.lock().unwrap();
-            *log = piece.input_log.clone();// this is a lot of copying but it's a test
-        };
-        let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(Box::new(logging_callback));
+        let most_recent_input_log_mutex: Arc<Mutex<Vec<Input>>> = Arc::new(Mutex::new(Vec::new()));
+        let mut test_game: GameImpl<MockField, MockPiece>;
+        {
+            let most_recent_input_log_mutex = most_recent_input_log_mutex.clone();
+            let logging_callback = move |_: cell::Ref<MockField>, piece: &MockPiece, _: Option<&MockPiece>| {
+                let mut log = most_recent_input_log_mutex.lock().unwrap();
+                *log = piece.input_log.clone();// this is a lot of copying but it's a test
+            };
+            test_game = GameImpl::new(Box::new(logging_callback));
+        }
         const INPUTS: [Input; 5] = [Input::RotateCCW, Input::RotateCW, Input::ShiftLeft, Input::ShiftRight, Input::HardDrop];
         assert!(test_game.run().is_ok());
         for input in &INPUTS {
