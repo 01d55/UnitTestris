@@ -199,8 +199,12 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
             while *paused {
                 paused = pause_var.wait(paused).unwrap();
             }
+            drop(paused);
             // consume input
             GameImpl::consume_input(&mut game_info);
+            // time step
+            const TIME: u32 = 1;
+            let piece_locked = game_info.piece.time_step(TIME).unwrap();
             // render callback
             let cb = game_info.callback.lock().unwrap();
             cb(game_info.field.borrow(), &game_info.piece, None);
