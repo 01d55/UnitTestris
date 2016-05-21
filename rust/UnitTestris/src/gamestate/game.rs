@@ -5,7 +5,7 @@ use std::error::Error;
 use std::cell;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::{Mutex, Arc};
+use std::sync::{Arc, Condvar, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 use super::field::Field;
@@ -91,6 +91,8 @@ struct GameInfo<F: IField, P:IPiece<F>> {
     callback: Arc<Mutex<Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>>>,
     input_queue: Arc<Mutex<Vec<piece::Input>>>,
     game_live: Arc<AtomicBool>,
+    pause_pair: Arc<(Condvar, Mutex<bool>)>,
+
 }
 
 #[allow(dead_code)]
@@ -100,6 +102,7 @@ struct GameImpl<F : IField + 'static, P : IPiece<F> + 'static> {
     callback: Arc<Mutex<Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>>>,
     input_queue: Arc<Mutex<Vec<piece::Input>>>,
     game_live: Arc<AtomicBool>,
+    pause_pair: Arc<(Condvar, Mutex<bool>)>,
 }
 /*
 #[allow(dead_code)]
@@ -168,7 +171,14 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
     }
     fn game_over(&mut self) -> () {
         // can't panic here because this is called by drop
+
+        let (ref pause_cond, ref pause_lock) = *self.pause_pair;
+
+        *pause_lock.lock().unwrap() = false;
+        pause_cond.notify_all();
+
         self.game_live.store(false, Ordering::Relaxed);
+
         // joining directly would move, which we can't do anywhere because impl Drop
         let option = self.join_token.take();
         match option {
@@ -182,8 +192,16 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
         unimplemented!()
     }
     fn thread_func(mut game_info: GameInfo<F, P>) -> () {
+        let (ref pause_var, ref pause_lock) = *game_info.pause_pair.clone();
         while game_info.game_live.load(Ordering::Relaxed) {
+            // check pause
+            let mut paused = pause_lock.lock().unwrap();
+            while *paused {
+                paused = pause_var.wait(paused).unwrap();
+            }
+            // consume input
             GameImpl::consume_input(&mut game_info);
+            // render callback
             let cb = game_info.callback.lock().unwrap();
             cb(game_info.field.borrow(), &game_info.piece, None);
         }
@@ -194,17 +212,22 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
             callback: Arc::new(Mutex::new(callback)),
             input_queue: Arc::new(Mutex::new(Vec::new())),
             game_live: Arc::new(AtomicBool::new(true)),
+            pause_pair: Arc::new((Condvar::new(), Mutex::new(true))),
             join_token: None
         }
     }
 
     fn run(&mut self) -> Result<(), RunningError> {
-        // field & piece should belong to the internal thread while it is running,
-        // but return ownership to the thread that owns the game when paused.
-        if self.join_token.is_none() {
+        let (ref pause_cond, ref pause_lock) = *self.pause_pair;
+        let mut paused = pause_lock.lock().unwrap();
+        if ! *paused {
+            Err(RunningError)
+        } else if self.join_token.is_none() {
             let i = self.input_queue.clone();
             let cb = self.callback.clone();
             let live = self.game_live.clone();
+            let p = self.pause_pair.clone();
+            *paused = false;
             self.join_token = Some(thread::Builder::new().name("GameImpl internal thread".to_string()).spawn(move || {
                 let f: Rc<RefCell<F>> = Rc::new(RefCell::new(F::new()));
                 let info = GameInfo {
@@ -213,30 +236,52 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
                     callback: cb,
                     input_queue: i,
                     game_live: live,
+                    pause_pair: p,
                 };
 
                 GameImpl::thread_func(info)
             }).unwrap());
             Ok(())
         } else {
-            Err(RunningError)
+            *paused = false;
+            pause_cond.notify_all();
+            Ok(())
         }
     }
 
     fn pause(&mut self) -> Result<(), NotRunningError> {
-        unimplemented!()
+        let (_, ref pause_lock) = *self.pause_pair;
+        let mut paused = pause_lock.lock().unwrap();
+        if *paused || self.join_token.is_none() {
+            Err(NotRunningError)
+        } else {
+            *paused = true;
+            Ok(())
+        }
     }
 
     fn set_renderer(&mut self, callback: Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>) -> Result<(), RunningError> {
-        let mut my_cb = self.callback.lock().unwrap();
-        *my_cb = callback;
-        Ok(())
+        let (_, ref pause_lock) = *self.pause_pair;
+        let paused = *pause_lock.lock().unwrap();
+        if !paused {
+            Err(RunningError)
+        } else {
+            let mut my_cb = self.callback.lock().unwrap();
+            *my_cb = callback;
+            Ok(())
+        }
     }
 
     fn queue_input(&mut self, input: piece::Input) -> Result<(), NotRunningError> {
-        let mut queue = self.input_queue.lock().unwrap();
-        queue.push(input);
-        Ok(())
+        let (_, ref pause_lock) = *self.pause_pair;
+        let paused = *pause_lock.lock().unwrap();
+        if paused {
+            Err(NotRunningError)
+        } else {
+            let mut queue = self.input_queue.lock().unwrap();
+            queue.push(input);
+            Ok(())
+        }
     }
 
     fn is_game_over(&self) -> bool {
