@@ -8,9 +8,11 @@ use std::rc::Rc;
 use std::sync::{Arc, Condvar, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
+use super::Coord;
+use super::field;
 use super::field::Field;
-use super::piece::{Piece, Type};
 use super::piece;
+use super::piece::{Piece, Type};
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -46,11 +48,17 @@ impl Error for NotRunningError {
 
 trait IField : Debug {
     fn new() -> Self;
+
+    fn get(&self, Coord) -> Result<bool, field::SizeError>;
 }
 
 impl IField for Field {
     fn new() -> Self {
         Field::new()
+    }
+
+    fn get(&self, c:Coord) -> Result<bool, field::SizeError> {
+        self.get(c)
     }
 }
 
@@ -174,10 +182,11 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
 
         let (ref pause_cond, ref pause_lock) = *self.pause_pair;
 
+        self.game_live.store(false, Ordering::Relaxed);
+
         *pause_lock.lock().unwrap() = false;
         pause_cond.notify_all();
 
-        self.game_live.store(false, Ordering::Relaxed);
 
         // joining directly would move, which we can't do anywhere because impl Drop
         let option = self.join_token.take();
@@ -289,7 +298,7 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
     }
 
     fn is_game_over(&self) -> bool {
-        unimplemented!()
+        ! self.game_live.load(Ordering::Relaxed)
     }
 }
 
@@ -302,26 +311,47 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> Drop for GameImpl<F, P> {
 #[cfg(test)]
 mod test {
     use super::{GameImpl, IField, IPiece};
+    use super::super::Coord;
+    use super::super::field;
     use super::super::piece::{Type, Input, LockError};
     use super::super::piece;
+    use std::collections::HashMap;
     use std::sync::{Mutex, Arc};
     use std::thread::sleep;
     use std::time::Duration;
     use std::rc::Rc;
     use std::cell;
-    use std::cell::RefCell;
+    use std::cell::{Cell, RefCell};
 
     #[derive(Debug)]
-    struct MockField;
+    struct MockField {
+        get_results: RefCell<HashMap<Coord, bool>>,
+    }
+    impl MockField {
+        pub fn size_check(c: &Coord) -> bool {
+            (c.x < 0 || c.y < 0 || c.x >= field::WIDTH as i32 || c.y >= field::HEIGHT as i32)
+        }
+    }
     impl IField for MockField {
         fn new() -> Self {
-            MockField
+            MockField {
+                get_results: RefCell::new(HashMap::new())
+            }
+        }
+
+        fn get(&self, c:Coord) -> Result<bool, field::SizeError> {
+            if MockField::size_check(&c) {
+                Err(field::SizeError)
+            } else {
+                Ok(*(self.get_results.borrow().get(&c).unwrap_or(&false)))
+            }
         }
     }
     #[derive(Debug)]
     struct MockPiece {
         time_step_call_count: u32,
         time_step_step_count: u32,
+        time_step_result: Cell<bool>,
         input_log: Vec<Input>
     }
     impl IPiece<MockField> for MockPiece {
@@ -330,6 +360,7 @@ mod test {
             MockPiece {
                 time_step_call_count: 0,
                 time_step_step_count: 0,
+                time_step_result: Cell::new(false),
                 input_log: Vec::new()
             }
         }
@@ -337,15 +368,18 @@ mod test {
         fn time_step(&mut self, g:u32) -> Result<bool, LockError> {
             self.time_step_call_count += 1;
             self.time_step_step_count += g;
-            Ok(false)
+            Ok(self.time_step_result.get())
         }
 
         fn handle_input(&mut self, input: piece::Input) -> Result<bool, piece::LockError> {
-            self.input_log.push(input);
-            Ok(false)
+            if self.time_step_result.get() {
+                Err(piece::LockError)
+            } else {
+                self.input_log.push(input);
+                Ok(self.time_step_result.get())
+            }
         }
     }
-
     fn dummy_render_function(_: cell::Ref<MockField>, _: &MockPiece, _: Option<&MockPiece>) {
     }
     fn alt_render_function(_: cell::Ref<MockField>, _: &MockPiece, _: Option<&MockPiece>) {
@@ -449,5 +483,32 @@ mod test {
 
         assert!(test_game.set_renderer(Box::new(alt_render_function)).is_err());
         assert!(test_game.run().is_err());
+    }
+    #[test]
+    fn test_game_over() {
+        use std::sync::mpsc;
+        let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(Box::new(dummy_render_function));
+        let (send, recieve) = mpsc::channel();
+        // check that blocks in each corner cause game over
+        const RIGHT: i32 = field::WIDTH as i32 - 1;
+        const TOP: i32 = field::HEIGHT as i32 - 1;
+        for block_ref in [Coord{x:0,y:20}, Coord{x:RIGHT,y:20}, Coord{x:0, y:TOP}, Coord{x:RIGHT,y:TOP}].iter() {
+            let send = send.clone();
+            let block = *block_ref;
+            let game_ending_render_function = move |field: cell::Ref<MockField>, piece: &MockPiece, _: Option<&MockPiece>|->() {
+                if field.get(block).unwrap() {
+                    field.get_results.borrow_mut().insert(block, false);
+                    send.send(());
+                } else {
+                    field.get_results.borrow_mut().insert(block, true);
+                    piece.time_step_result.set(true);
+                }
+            };
+            test_game.set_renderer(Box::new(game_ending_render_function)).expect("set_renderer not ok");
+            test_game.run();
+            recieve.recv().expect("send hung up?");
+            assert!(test_game.is_game_over(), "block {:?}", block);
+            assert!(test_game.pause().is_err(), "block {:?}", block);
+        }
     }
 }
