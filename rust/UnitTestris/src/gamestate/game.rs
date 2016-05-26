@@ -105,7 +105,7 @@ struct GameInfo<F: IField, P:IPiece<F>> {
 
 #[allow(dead_code)]
 struct GameImpl<F : IField + 'static, P : IPiece<F> + 'static> {
-    join_token: Option<thread::JoinHandle<()>>,
+    join_token: RefCell<Option<thread::JoinHandle<()>>>,
     // shared
     callback: Arc<Mutex<Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>>>,
     input_queue: Arc<Mutex<Vec<piece::Input>>>,
@@ -147,6 +147,8 @@ impl Game {
 #[allow(dead_code, unused_variables)]
 impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
     // internal stuff
+
+    // static fns used by thread
     fn consume_input(game: &mut GameInfo<F, P>) -> () {
         let queue: Vec<piece::Input>;
         {
@@ -171,34 +173,26 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
         for input in queue {
             let result = game.piece.handle_input(input).unwrap();
             if result {
-                // scan for loss
-                // if loss game over
-                // else new piece
+                if GameImpl::scan_for_loss(game) {
+                    GameImpl::game_over(game)
+                } else {
+                    // new piece
+                }
             }
         }
     }
-    fn game_over(&mut self) -> () {
-        // can't panic here because this is called by drop
-
-        let (ref pause_cond, ref pause_lock) = *self.pause_pair;
-
-        self.game_live.store(false, Ordering::Relaxed);
-
-        *pause_lock.lock().unwrap() = false;
-        pause_cond.notify_all();
-
-
-        // joining directly would move, which we can't do anywhere because impl Drop
-        let option = self.join_token.take();
-        match option {
-            Some(token) => {
-                let result = token.join();
-            }
-            None => ()
-        };
+    fn game_over(game: &mut GameInfo<F, P>) -> () {
+        game.game_live.store(false, Ordering::Relaxed);
     }
     fn scan_for_loss(game: &GameInfo<F, P>) -> bool {
-        unimplemented!()
+        for i in 0..field::WIDTH {
+            for j in 0..field::HEIGHT {
+                if game.field.borrow().get(Coord{x:i as i32,y:j as i32}).unwrap() {
+                    return true;
+                }
+            }
+        }
+        false
     }
     fn thread_func(mut game_info: GameInfo<F, P>) -> () {
         let (ref pause_var, ref pause_lock) = *game_info.pause_pair.clone();
@@ -214,97 +208,160 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
             // time step
             const TIME: u32 = 1;
             let piece_locked = game_info.piece.time_step(TIME).unwrap();
+            if piece_locked {
+                if GameImpl::scan_for_loss(&game_info) {
+                    GameImpl::game_over(&mut game_info);
+                } else {
+                    // new piece
+                }
+            }
             // render callback
             let cb = game_info.callback.lock().unwrap();
             cb(game_info.field.borrow(), &game_info.piece, None);
         }
     }
+    // private fns
+    fn end_game(&mut self) -> () {
+        // can't panic here because this is called by drop
+        self.game_live.store(false, Ordering::Relaxed);
+        {
+            let (ref pause_cond, ref pause_lock) = *self.pause_pair;
+
+            match pause_lock.lock() {
+                Ok(mut paused) => {
+                    if *paused {
+                        *paused = false;
+                        pause_cond.notify_all();
+                    }
+                }
+                Err(err) => println!("internal thread panicked. {:?}", err)
+            }
+        }
+
+        // joining directly would move, which we can't do anywhere because impl Drop
+        let option = self.join_token.borrow_mut().take();
+        match option {
+            Some(token) => {
+                let result = token.join();
+            }
+            None => ()
+        };
+    }
+
+    // cleans up join token
+    fn is_game_running(&self) -> bool {
+        if ! self.game_live.load(Ordering::Relaxed) {
+            let (ref pause_cond, ref pause_lock) = *self.pause_pair;
+            let mut paused = pause_lock.lock().unwrap();
+            if *paused {
+                *paused = false;
+                pause_cond.notify_all();
+            }
+            let option = self.join_token.borrow_mut().take();
+            if let Some(token) = option {
+                if let Err(message) = token.join() {
+                    println!("Game internal thread panicked. {:?}", message);
+                }
+            }
+            false
+        } else {
+            let (_, ref pause_lock) = *self.pause_pair;
+            let paused = pause_lock.lock().unwrap();
+            ! *paused
+        }
+    }
+
     // used by Game's pub functions
     fn new(callback: Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>) -> Self {
         GameImpl {
             callback: Arc::new(Mutex::new(callback)),
             input_queue: Arc::new(Mutex::new(Vec::new())),
-            game_live: Arc::new(AtomicBool::new(true)),
+            game_live: Arc::new(AtomicBool::new(false)),
             pause_pair: Arc::new((Condvar::new(), Mutex::new(true))),
-            join_token: None
+            join_token: RefCell::new(None)
         }
     }
 
     fn run(&mut self) -> Result<(), RunningError> {
-        let (ref pause_cond, ref pause_lock) = *self.pause_pair;
-        let mut paused = pause_lock.lock().unwrap();
-        if ! *paused {
+        if self.is_game_running() {
             Err(RunningError)
-        } else if self.join_token.is_none() {
-            let i = self.input_queue.clone();
-            let cb = self.callback.clone();
-            let live = self.game_live.clone();
-            let p = self.pause_pair.clone();
-            *paused = false;
-            self.join_token = Some(thread::Builder::new().name("GameImpl internal thread".to_string()).spawn(move || {
-                let f: Rc<RefCell<F>> = Rc::new(RefCell::new(F::new()));
-                let info = GameInfo {
-                    field: f.clone(),
-                    piece: P::new(Type::I, 0, f),
-                    callback: cb,
-                    input_queue: i,
-                    game_live: live,
-                    pause_pair: p,
-                };
-
-                GameImpl::thread_func(info)
-            }).unwrap());
-            Ok(())
         } else {
-            *paused = false;
-            pause_cond.notify_all();
+            // using the is_none() result directly causes the borrow to live during the if block, which causes a panic at borrow_mut
+            let thread_absent: bool = self.join_token.borrow().is_none();
+            let (ref pause_cond, ref pause_lock) = *self.pause_pair;
+            let mut paused = pause_lock.lock().unwrap();
+            if thread_absent {
+                let i = self.input_queue.clone();
+                let cb = self.callback.clone();
+                let live = self.game_live.clone();
+                let p = self.pause_pair.clone();
+                *paused = false;
+                self.game_live.store(true, Ordering::Relaxed);
+                *self.join_token.borrow_mut() = Some(thread::Builder::new().name("GameImpl internal thread".to_string()).spawn(move || {
+                    let f: Rc<RefCell<F>> = Rc::new(RefCell::new(F::new()));
+                    let info = GameInfo {
+                        field: f.clone(),
+                        piece: P::new(Type::I, 0, f),
+                        callback: cb,
+                        input_queue: i,
+                        game_live: live,
+                        pause_pair: p,
+                    };
+
+                    GameImpl::thread_func(info)
+                }).unwrap());
+            } else {
+                *paused = false;
+                pause_cond.notify_all();
+            }
             Ok(())
         }
     }
 
     fn pause(&mut self) -> Result<(), NotRunningError> {
         let (_, ref pause_lock) = *self.pause_pair;
-        let mut paused = pause_lock.lock().unwrap();
-        if *paused || self.join_token.is_none() {
+        if ! self.is_game_running() {
             Err(NotRunningError)
         } else {
+            let mut paused = pause_lock.lock().unwrap();
             *paused = true;
             Ok(())
         }
     }
 
     fn set_renderer(&mut self, callback: Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>) -> Result<(), RunningError> {
-        let (_, ref pause_lock) = *self.pause_pair;
-        let paused = *pause_lock.lock().unwrap();
-        if !paused {
-            Err(RunningError)
-        } else {
-            let mut my_cb = self.callback.lock().unwrap();
-            *my_cb = callback;
-            Ok(())
+        if self.is_game_running() {
+            return Err(RunningError);
         }
+        let mut my_cb = self.callback.lock().unwrap();
+        *my_cb = callback;
+        Ok(())
     }
 
     fn queue_input(&mut self, input: piece::Input) -> Result<(), NotRunningError> {
-        let (_, ref pause_lock) = *self.pause_pair;
-        let paused = *pause_lock.lock().unwrap();
-        if paused {
-            Err(NotRunningError)
-        } else {
+        if self.is_game_running() {
             let mut queue = self.input_queue.lock().unwrap();
             queue.push(input);
             Ok(())
+        } else {
+            Err(NotRunningError)
         }
     }
 
     fn is_game_over(&self) -> bool {
-        ! self.game_live.load(Ordering::Relaxed)
+        if self.is_game_running() {
+            // game is neither over nor paused
+            false
+        } else {
+            // game is either over (& thread cleaned), or thread is live but paused
+            ! self.game_live.load(Ordering::Relaxed)
+        }
     }
 }
 
 impl<F: IField + 'static, P: IPiece<F> + 'static> Drop for GameImpl<F, P> {
     fn drop(&mut self) -> () {
-        self.game_over();
+        self.end_game();
     }
 }
 
@@ -498,17 +555,21 @@ mod test {
             let game_ending_render_function = move |field: cell::Ref<MockField>, piece: &MockPiece, _: Option<&MockPiece>|->() {
                 if field.get(block).unwrap() {
                     field.get_results.borrow_mut().insert(block, false);
-                    send.send(());
+                    send.send(()).expect("send failed");
                 } else {
                     field.get_results.borrow_mut().insert(block, true);
                     piece.time_step_result.set(true);
                 }
             };
-            test_game.set_renderer(Box::new(game_ending_render_function)).expect("set_renderer not ok");
-            test_game.run();
-            recieve.recv().expect("send hung up?");
+            assert!(test_game.set_renderer(Box::new(game_ending_render_function)).is_ok());
+            assert!(test_game.run().is_ok());
+            assert!(recieve.recv().is_ok());
             assert!(test_game.is_game_over(), "block {:?}", block);
             assert!(test_game.pause().is_err(), "block {:?}", block);
         }
+    }
+    #[test]
+    fn test_replaces_piece_on_lock() {
+        unimplemented!()
     }
 }
