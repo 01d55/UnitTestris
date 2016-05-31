@@ -374,6 +374,7 @@ mod test {
     use super::super::piece;
     use std::collections::HashMap;
     use std::sync::{Mutex, Arc};
+    use std::thread;
     use std::thread::sleep;
     use std::time::Duration;
     use std::rc::Rc;
@@ -382,6 +383,7 @@ mod test {
 
     #[derive(Debug)]
     struct MockField {
+        piece_type_log: RefCell<Vec<Type>>,
         get_results: RefCell<HashMap<Coord, bool>>,
     }
     impl MockField {
@@ -392,6 +394,7 @@ mod test {
     impl IField for MockField {
         fn new() -> Self {
             MockField {
+                piece_type_log: RefCell::new(Vec::new()),
                 get_results: RefCell::new(HashMap::new())
             }
         }
@@ -413,7 +416,9 @@ mod test {
     }
     impl IPiece<MockField> for MockPiece {
 
-        fn new(_: Type, _: u32, _: Rc<RefCell<MockField>>) -> Self {
+        fn new(t: Type, _: u32, f: Rc<RefCell<MockField>>) -> Self {
+            let fref = f.borrow();
+            fref.piece_type_log.borrow_mut().push(t);
             MockPiece {
                 time_step_call_count: 0,
                 time_step_step_count: 0,
@@ -544,8 +549,6 @@ mod test {
     #[test]
     fn test_game_over() {
         use std::sync::mpsc;
-        use std::thread;
-        use std::time::Duration;
         let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(Box::new(dummy_render_function));
         let (send, recieve) = mpsc::channel();
         // check that blocks in each corner cause game over
@@ -587,6 +590,31 @@ mod test {
     }
     #[test]
     fn test_replaces_piece_on_lock() {
-        unimplemented!()
+        let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(Box::new(dummy_render_function));
+        let type_log: Arc<Mutex<Vec<Type>>> = Arc::new(Mutex::new(Vec::new()));
+        {
+            let type_log = type_log.clone();
+            let render_func = move |field: cell::Ref<MockField>, piece: &MockPiece, _: Option<&MockPiece>|->() {
+                let mut log = type_log.lock().unwrap();
+                let mut new_log_ref = field.piece_type_log.borrow_mut();
+                log.extend(new_log_ref.drain(..));
+                piece.time_step_result.set(true);
+            };
+            assert!(test_game.set_renderer(Box::new(render_func)).is_ok());
+        }
+        assert!(test_game.run().is_ok());
+        thread::sleep(Duration::from_secs(5));
+        test_game.end_game();
+        let log = type_log.lock().unwrap();
+
+        // assert that locked pieces were replaced
+        assert!(log.len() > 1);
+        // assert that new pieces were not all the same type
+        {
+            let mut types = log.clone();
+            types.sort();
+            types.dedup();
+            assert!(types.len() > 1);
+        }
     }
 }

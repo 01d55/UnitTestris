@@ -8,7 +8,7 @@ use super::field;
 use super::field::Field;
 use super::Coord;
 
-#[derive(PartialEq, Eq, Debug, Clone, Copy, Hash)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy, Hash, PartialOrd, Ord)]
 #[allow(dead_code)]
 pub enum Type {
     I,
