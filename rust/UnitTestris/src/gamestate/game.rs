@@ -186,7 +186,7 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
     }
     fn scan_for_loss(game: &GameInfo<F, P>) -> bool {
         for i in 0..field::WIDTH {
-            for j in 0..field::HEIGHT {
+            for j in 20..field::HEIGHT {
                 if game.field.borrow().get(Coord{x:i as i32,y:j as i32}).unwrap() {
                     return true;
                 }
@@ -374,7 +374,6 @@ mod test {
     use super::super::piece;
     use std::collections::HashMap;
     use std::sync::{Mutex, Arc};
-    use std::thread;
     use std::thread::sleep;
     use std::time::Duration;
     use std::rc::Rc;
@@ -583,7 +582,7 @@ mod test {
             };
             assert!(test_game.set_renderer(Box::new(game_ending_render_function)).is_ok());
             assert!(test_game.run().is_ok());
-            thread::sleep(Duration::from_secs(5));
+            sleep(Duration::from_secs(5));
             assert!( ! test_game.is_game_over(), "block {:?}", block);
             assert!( test_game.pause().is_ok(), "block {:?}", block);
         }
@@ -603,7 +602,7 @@ mod test {
             assert!(test_game.set_renderer(Box::new(render_func)).is_ok());
         }
         assert!(test_game.run().is_ok());
-        thread::sleep(Duration::from_secs(5));
+        sleep(Duration::from_secs(5));
         test_game.end_game();
         let log = type_log.lock().unwrap();
 
