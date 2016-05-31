@@ -544,6 +544,8 @@ mod test {
     #[test]
     fn test_game_over() {
         use std::sync::mpsc;
+        use std::thread;
+        use std::time::Duration;
         let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(Box::new(dummy_render_function));
         let (send, recieve) = mpsc::channel();
         // check that blocks in each corner cause game over
@@ -566,6 +568,21 @@ mod test {
             assert!(recieve.recv().is_ok());
             assert!(test_game.is_game_over(), "block {:?}", block);
             assert!(test_game.pause().is_err(), "block {:?}", block);
+        }
+        // test that blocks in corners of visible field do not cause game over
+        for block_ref in [Coord{x:0,y:0}, Coord{x:RIGHT,y:0}, Coord{x:0,y:19}, Coord{x:RIGHT,y:19}].iter() {
+            let block = *block_ref;
+            let game_ending_render_function = move |field: cell::Ref<MockField>, piece: &MockPiece, _: Option<&MockPiece>|->() {
+                if ! field.get(block).unwrap() {
+                    field.get_results.borrow_mut().insert(block, true);
+                    piece.time_step_result.set(true);
+                }
+            };
+            assert!(test_game.set_renderer(Box::new(game_ending_render_function)).is_ok());
+            assert!(test_game.run().is_ok());
+            thread::sleep(Duration::from_secs(5));
+            assert!( ! test_game.is_game_over(), "block {:?}", block);
+            assert!( test_game.pause().is_ok(), "block {:?}", block);
         }
     }
     #[test]
