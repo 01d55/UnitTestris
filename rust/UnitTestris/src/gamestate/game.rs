@@ -8,6 +8,8 @@ use std::rc::Rc;
 use std::sync::{Arc, Condvar, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
+use rand;
+use rand::Rng;
 use super::Coord;
 use super::field;
 use super::field::Field;
@@ -112,37 +114,41 @@ struct GameImpl<F : IField + 'static, P : IPiece<F> + 'static> {
     game_live: Arc<AtomicBool>,
     pause_pair: Arc<(Condvar, Mutex<bool>)>,
 }
-/*
+
 #[allow(dead_code)]
 pub struct Game {
     pimpl: GameImpl<Field, Piece>
 }
 #[allow(dead_code, unused_variables)]
 impl Game {
-    pub fn new(callback:&Fn(&Field, &Piece, Option<&Piece>)->()) -> Game {
-        unimplemented!()
+    pub fn new(callback: Box<Fn(cell::Ref<Field>, &Piece, Option<&Piece>)->() + Send>) -> Game {
+        Game {
+            pimpl: GameImpl::new(callback)
+        }
     }
 
     pub fn run(&mut self) -> Result<(), RunningError> {
-        unimplemented!()
+        self.pimpl.run()
     }
 
     pub fn pause(&mut self) -> Result<(), NotRunningError> {
-        unimplemented!()
+        self.pimpl.pause()
     }
 
-    pub fn set_renderer(&mut self, callback:&Fn(&Field, &Piece, Option<&Piece>) -> ()) -> Result<(), RunningError> {
-        unimplemented!()
+    pub fn set_renderer(&mut self, callback: Box<Fn(cell::Ref<Field>, &Piece, Option<&Piece>)->() + Send>) -> Result<(), RunningError> {
+        self.pimpl.set_renderer(callback)
     }
 
     pub fn queue_input(&mut self, input: piece::Input) -> Result<(), NotRunningError> {
-        unimplemented!()
+        self.pimpl.queue_input(input)
     }
 
     pub fn is_game_over(&self) -> bool {
-        unimplemented!()
+        self.pimpl.is_game_over()
     }
-}*/
+}
+
+const GAMEIMPL_LOCKDELAY: u32 = 0;
 
 #[allow(dead_code, unused_variables)]
 impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
@@ -176,7 +182,7 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
                 if GameImpl::scan_for_loss(game) {
                     GameImpl::game_over(game)
                 } else {
-                    // new piece
+                    game.piece = P::new(rand::thread_rng().gen(), GAMEIMPL_LOCKDELAY, game.field.clone());
                 }
             }
         }
@@ -213,6 +219,7 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
                     GameImpl::game_over(&mut game_info);
                 } else {
                     // new piece
+                    game_info.piece = P::new(rand::thread_rng().gen(), GAMEIMPL_LOCKDELAY, game_info.field.clone());
                 }
             }
             // render callback
@@ -301,7 +308,7 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
                     let f: Rc<RefCell<F>> = Rc::new(RefCell::new(F::new()));
                     let info = GameInfo {
                         field: f.clone(),
-                        piece: P::new(Type::I, 0, f),
+                        piece: P::new(rand::thread_rng().gen(), GAMEIMPL_LOCKDELAY, f),
                         callback: cb,
                         input_queue: i,
                         game_live: live,
