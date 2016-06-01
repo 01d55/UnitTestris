@@ -4,6 +4,8 @@ use std::error::Error;
 use std::result::Result;
 use std::rc::Rc;
 use std::cell::RefCell;
+use rand::Rand;
+use rand::Rng;
 use super::field;
 use super::field::Field;
 use super::Coord;
@@ -19,14 +21,29 @@ pub enum Type {
     T,
     Z,
 }
+
+impl Rand for Type {
+    fn rand<R: Rng>(rng: &mut R) -> Self {
+        const CHOICES: [Type; 7] = [Type::I, Type::J, Type::L, Type::O, Type::S, Type::T, Type::Z];
+        *rng.choose(&CHOICES).unwrap()
+    }
+}
+
 #[allow(dead_code)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Input {
     ShiftRight,
     ShiftLeft,
     RotateCW,
     RotateCCW,
     HardDrop,
+}
+
+impl Rand for Input {
+    fn rand<R: Rng>(rng: &mut R) -> Self {
+        const CHOICES: [Input; 5] = [Input::ShiftRight, Input::ShiftLeft, Input::RotateCW, Input::RotateCCW, Input::HardDrop];
+        *rng.choose(&CHOICES).unwrap()
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
