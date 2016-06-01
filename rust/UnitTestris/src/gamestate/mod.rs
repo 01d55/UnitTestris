@@ -1,6 +1,6 @@
-mod game;
-mod field;
-mod piece;
+pub mod game;
+pub mod field;
+pub mod piece;
 
 use std::ops::*;
 
