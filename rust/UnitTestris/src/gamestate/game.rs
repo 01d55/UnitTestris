@@ -466,8 +466,6 @@ mod test {
         assert!(test_game.run().is_ok());
         sleep(Duration::from_secs(1));
         assert!(test_game.pause().is_ok());
-        // c++ tests attempt to verify that game runs approx 60fps
-        //   but it's squirrely, so skipping that for now
 
         // test that destructor drops the internal thread
         {
@@ -495,15 +493,19 @@ mod test {
     fn whitebox_test_run_callback() {
         let most_recent_time_step_call_mutex: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
         let most_recent_time_step_step_mutex: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
+        let callback_call_count_mutex: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
         let mut test_game: GameImpl<MockField, MockPiece>;
         {
             let most_recent_time_step_call_mutex = most_recent_time_step_call_mutex.clone();
             let most_recent_time_step_step_mutex = most_recent_time_step_step_mutex.clone();
+            let callback_call_count_mutex = callback_call_count_mutex.clone();
             let matching_render_function = move |_: cell::Ref<MockField>, piece: &MockPiece, _: Option<&MockPiece>| {
                 let mut call = most_recent_time_step_call_mutex.lock().unwrap();
                 let mut step = most_recent_time_step_step_mutex.lock().unwrap();
+                let mut count = callback_call_count_mutex.lock().unwrap();
                 *call = (*piece).time_step_call_count;
                 *step = (*piece).time_step_step_count;
+                *count = *count + 1;
             };
             test_game = GameImpl::new(Box::new(matching_render_function));
         }
@@ -512,8 +514,14 @@ mod test {
         assert!(test_game.pause().is_ok());
         let calls = most_recent_time_step_call_mutex.lock().unwrap();
         let step = most_recent_time_step_step_mutex.lock().unwrap();
+        let count = callback_call_count_mutex.lock().unwrap();
         assert!(*calls > 0);
+        assert_eq!(*count, *calls);
         assert!(*step > 0);
+        // Check that the thread is limiting how often it runs
+        assert!(*count < 70);
+        // Check that the thread isn't badly underrunning 60fps
+        assert!(*count > 40);
     }
     #[test]
     fn whitebox_test_input() {

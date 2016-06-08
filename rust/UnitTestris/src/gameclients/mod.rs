@@ -3,6 +3,7 @@ use std::ops::Deref;
 use gamestate::*;
 
 /// captures current state of a piece without ref baggage
+#[derive(Debug)]
 struct PieceData {
     blocks: [Coord; 4],
     typ: piece::Type,
@@ -16,7 +17,7 @@ impl<T: Deref<Target=piece::Piece>> From<T> for PieceData {
         }
     }
 }
-
+#[derive(Debug)]
 struct RenderData {
     current: PieceData,
     ghost: Option<PieceData>,
