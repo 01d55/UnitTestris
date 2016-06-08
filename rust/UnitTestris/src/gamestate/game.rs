@@ -201,6 +201,8 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
         false
     }
     fn thread_func(mut game_info: GameInfo<F, P>) -> () {
+        use std::time::{Duration, Instant};
+        use std::thread::sleep;
         let (ref pause_var, ref pause_lock) = *game_info.pause_pair.clone();
         while game_info.game_live.load(Ordering::Relaxed) {
             // check pause
@@ -209,6 +211,7 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
                 paused = pause_var.wait(paused).unwrap();
             }
             drop(paused);
+            let start_time: Instant = Instant::now();
             // consume input
             GameImpl::consume_input(&mut game_info);
             // time step
@@ -225,6 +228,12 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
             // render callback
             let cb = game_info.callback.lock().unwrap();
             cb(game_info.field.borrow(), &game_info.piece, None);
+            const TARGET_FPS: u32 = 60;
+            let target_duration: Duration = Duration::new(0, 1000000000/TARGET_FPS);
+            let elapsed = start_time.elapsed();
+            if target_duration > elapsed {
+                sleep(target_duration - elapsed);
+            }
         }
     }
     // private fns
