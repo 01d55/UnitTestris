@@ -229,7 +229,8 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
             let cb = game_info.callback.lock().unwrap();
             cb(game_info.field.borrow(), &game_info.piece, None);
             const TARGET_FPS: u32 = 60;
-            let target_duration: Duration = Duration::new(0, 1000000000/TARGET_FPS);
+            const NANO: u32 = 1000000000;
+            let target_duration: Duration = Duration::new(0, NANO/TARGET_FPS);
             let elapsed = start_time.elapsed();
             if target_duration > elapsed {
                 sleep(target_duration - elapsed);
@@ -250,7 +251,7 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
                         pause_cond.notify_all();
                     }
                 }
-                Err(err) => println!("internal thread panicked. {:?}", err)
+                Err(err) => println!("internal thread poisoned pause lock. {:?}", err)
             }
         }
 
@@ -259,6 +260,9 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
         match option {
             Some(token) => {
                 let result = token.join();
+                if let Err(err) = result {
+                    println!("internal thread panicked. {:?}", err);
+                }
             }
             None => ()
         };
@@ -499,6 +503,48 @@ mod test {
         }
     }
     #[test]
+    fn test_framerate() {
+        const EXPECTED_FPS: u32 = 60;
+        const DELTA: u32 = 15;
+        let callback_call_count_mutex: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
+        let mut test_game: GameImpl<MockField, MockPiece>;
+        // Check that the game loop limits itself reasonably
+        {
+            let callback_call_count_mutex = callback_call_count_mutex.clone();
+            let counting_render_function = move |_: cell::Ref<MockField>, _: &MockPiece, _: Option<&MockPiece>| {
+                let mut count = callback_call_count_mutex.lock().unwrap();
+                *count = *count + 1;
+            };
+            test_game = GameImpl::new(Box::new(counting_render_function));
+        }
+        assert!(test_game.run().is_ok());
+        sleep(Duration::from_secs(1));
+        assert!(test_game.pause().is_ok());
+        let count = *(callback_call_count_mutex.lock().unwrap());
+        assert!(count < EXPECTED_FPS + DELTA);
+        assert!(count > EXPECTED_FPS - DELTA);
+        // Check that the game loop tolerates a slow callback
+        {
+            let callback_call_count_mutex = callback_call_count_mutex.clone();
+            {
+                let mut count = callback_call_count_mutex.lock().unwrap();
+                *count = 0;
+            }
+            let slow_render_function = move|_: cell::Ref<MockField>, _: &MockPiece, _: Option<&MockPiece>| {
+                let mut count = callback_call_count_mutex.lock().unwrap();
+                *count = *count + 1;
+                sleep(Duration::from_secs(1));
+            };
+            assert!(test_game.set_renderer(Box::new(slow_render_function)).is_ok());
+        }
+        assert!(test_game.run().is_ok());
+        sleep(Duration::from_secs(3));
+        assert!(test_game.pause().is_ok());
+        let count = *(callback_call_count_mutex.lock().unwrap());
+        assert!(count < 5);
+        assert!(count > 1);
+    }
+    #[test]
     fn whitebox_test_run_callback() {
         let most_recent_time_step_call_mutex: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
         let most_recent_time_step_step_mutex: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
@@ -527,10 +573,6 @@ mod test {
         assert!(*calls > 0);
         assert_eq!(*count, *calls);
         assert!(*step > 0);
-        // Check that the thread is limiting how often it runs
-        assert!(*count < 70);
-        // Check that the thread isn't badly underrunning 60fps
-        assert!(*count > 40);
     }
     #[test]
     fn whitebox_test_input() {
@@ -639,5 +681,39 @@ mod test {
             types.dedup();
             assert!(types.len() > 1);
         }
+    }
+    #[test]
+    fn test_panic_tolerance() {
+        use std::panic::catch_unwind;
+        fn panicing_render_func(_: cell::Ref<MockField>, _: &MockPiece, _: Option<&MockPiece>) -> () {
+            panic!("dummy panic");
+        };
+        {
+            let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(Box::new(panicing_render_func));
+            assert!(test_game.run().is_ok());
+            sleep(Duration::from_secs(1));
+        }
+        {
+            let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(Box::new(panicing_render_func));
+            assert!(test_game.run().is_ok());
+            sleep(Duration::from_secs(1));
+            assert!(test_game.pause().is_ok());
+        }
+        {
+            let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(Box::new(panicing_render_func));
+            assert!(test_game.run().is_ok());
+            assert!(test_game.queue_input(Input::HardDrop).is_ok());
+            sleep(Duration::from_secs(1));
+            assert!(test_game.queue_input(Input::RotateCCW).is_ok());
+            assert!(test_game.pause().is_ok());
+            assert!(test_game.run().is_ok());
+        }
+        // if test_game panics during drop, catch_unwind won't save us
+        let _ = catch_unwind(|| {
+            let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(Box::new(panicing_render_func));
+            let _ = test_game.run();
+            sleep(Duration::from_secs(1));
+            panic!("let's unwind");
+        });
     }
 }
