@@ -9,6 +9,7 @@ use glium::{
 };
 use glium::index::PrimitiveType;
 use glium::backend::glutin_backend::GlutinFacade;
+use super::super::gamestate::*;
 
 #[derive(Copy, Clone)]
 // Non-snake case names mandated by shaders
@@ -44,13 +45,15 @@ const SQUARE_INDICES: [u16; 6] = [
 
 /// Runs tetris in a GL context managed by the glium library
 pub fn run_tetris() {
-    use super::super::gamestate::*;
     use super::RenderData;
     use glium::DisplayBuild;
     use std::sync::{Arc,Mutex,MutexGuard};
     use std::cell::Ref;
     use std::convert::From;
+    const WIDTH: u32 = 400;
+    const HEIGHT: u32 = 800;
     let display = glutin::WindowBuilder::new()
+        .with_dimensions(WIDTH, HEIGHT)
         .build_glium()
         .unwrap();
     let vertex_buffer = VertexBuffer::new(&display, &SQUARE_VERTICES).unwrap();
@@ -83,6 +86,7 @@ pub fn run_tetris() {
         for ev in display.poll_events() {
             match ev {
                 glutin::Event::Closed => return,
+                glutin::Event::KeyboardInput(state, byte, opt) => key_input(&mut game, state, byte, opt),
                 _ => ()
             }
         }
@@ -115,9 +119,9 @@ fn load_shaders(display: &GlutinFacade) -> Result<program::Program, program::Pro
 
 
 fn draw_block<V:Copy>(target: &mut Frame,
-                           v_buff: &VertexBuffer<V>, i_buff: &IndexBuffer<u16>,
-                           program: &program::Program,
-                           offset: (f32, f32), color: (f32, f32, f32, f32), tex: &texture::Texture2d) -> ()
+                      v_buff: &VertexBuffer<V>, i_buff: &IndexBuffer<u16>,
+                      program: &program::Program,
+                      offset: (f32, f32), color: (f32, f32, f32, f32), tex: &texture::Texture2d) -> ()
 {
     let uniforms = uniform! {
         offset: offset,
@@ -128,10 +132,10 @@ fn draw_block<V:Copy>(target: &mut Frame,
 }
 
 fn draw_frame<V: Copy>(display: &GlutinFacade,
-                        data: super::RenderData,
-                        v_buff: &VertexBuffer<V>, i_buff: &IndexBuffer<u16>,
-                        program: &program::Program,
-                        tex: &texture::Texture2d) -> ()
+                       data: super::RenderData,
+                       v_buff: &VertexBuffer<V>, i_buff: &IndexBuffer<u16>,
+                       program: &program::Program,
+                       tex: &texture::Texture2d) -> ()
 {
     use super::super::gamestate::field;
     use super::super::gamestate::piece::Type;
@@ -205,4 +209,34 @@ fn gen_image() -> texture::RawImage2d<'static, (f32, f32, f32)> {
             "size mismatch: len {:?}, width {:?}, height {:?}, get_size() {:?}, size_of {:?}",
             image.data.len(), image.width, image.height, image.format.get_size(), mem::size_of::<(f32, f32, f32)>());
     image
+}
+
+fn key_input(game: &mut game::Game, state: glutin::ElementState, _: u8, opt: Option<glutin::VirtualKeyCode>) -> () {
+    use glium::glutin::VirtualKeyCode;
+    use gamestate::piece::Input;
+    let input: Option<Input>;
+    if state == glutin::ElementState::Pressed {
+        if let Some(code) = opt {
+            input = match code {
+                VirtualKeyCode::Down => Some(Input::HardDrop),
+                VirtualKeyCode::E => Some(Input::RotateCW),
+                VirtualKeyCode::Left => Some(Input::ShiftLeft),
+                VirtualKeyCode::Q => Some(Input::RotateCCW),
+                VirtualKeyCode::Return => Some(Input::HardDrop),
+                VirtualKeyCode::Right => Some(Input::ShiftRight),
+                VirtualKeyCode::P => {
+                    game.pause().or_else(|_|{game.run()}).expect("If pause fails run should always succeed");
+                    None
+                },
+                _ => None
+            }
+        } else {
+            input = None;
+        }
+    } else {
+        input = None;
+    }
+    if let Some(input) = input {
+        let _ = game.queue_input(input);
+    }
 }
