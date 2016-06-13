@@ -568,7 +568,7 @@ mod test {
         assert!(count > 1);
     }
     #[test]
-    fn whitebox_test_run_callback() {
+    fn test_step_ratio() {
         let most_recent_time_step_call_mutex: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
         let most_recent_time_step_step_mutex: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
         let callback_call_count_mutex: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
@@ -586,17 +586,43 @@ mod test {
                 *count = *count + 1;
             };
             test_game = GameImpl::new(Box::new(matching_render_function));
-            test_game.set_step_ratio(1, 1).unwrap();
+            assert!(test_game.set_step_ratio(1, 1).is_ok());
         }
         assert!(test_game.run().is_ok());
         sleep(Duration::from_secs(1));
         assert!(test_game.pause().is_ok());
-        let calls = most_recent_time_step_call_mutex.lock().unwrap();
-        let step = most_recent_time_step_step_mutex.lock().unwrap();
-        let count = callback_call_count_mutex.lock().unwrap();
-        assert!(*calls > 0);
-        assert_eq!(*count, *calls);
-        assert!(*step > 0);
+        {
+            let calls = most_recent_time_step_call_mutex.lock().unwrap();
+            let step = most_recent_time_step_step_mutex.lock().unwrap();
+            let mut count = callback_call_count_mutex.lock().unwrap();
+            assert!(*calls > 0);
+            assert_eq!(*count, *calls);
+            assert!(*step > 0);
+            *count = 0;
+            test_game.end_game();
+        }
+        assert!(test_game.set_step_ratio(3, 1).is_ok());
+        assert!(test_game.run().is_ok());
+        sleep(Duration::from_secs(1));
+        assert!(test_game.pause().is_ok());
+        {
+            let mut callbacks = callback_call_count_mutex.lock().unwrap();
+            let timesteps = most_recent_time_step_call_mutex.lock().unwrap();
+            assert!(*callbacks / *timesteps == 3, "{} / {}", *callbacks, *timesteps);
+            *callbacks = 0;
+            test_game.end_game();
+        }
+        assert!(test_game.set_step_ratio(1, 3).is_ok());
+        assert!(test_game.run().is_ok());
+        sleep(Duration::from_secs(1));
+        assert!(test_game.pause().is_ok());
+        {
+            let callbacks = callback_call_count_mutex.lock().unwrap();
+            let timestep_calls = most_recent_time_step_call_mutex.lock().unwrap();
+            let timesteps = most_recent_time_step_step_mutex.lock().unwrap();
+            assert_eq!(*callbacks, *timestep_calls);
+            assert_eq!(3 * (*callbacks), *timesteps);
+        }
     }
     #[test]
     fn whitebox_test_input() {
