@@ -97,12 +97,13 @@ type Callback<F, P> = Fn(cell::Ref<F>, &P, Option<&P>)->() + Send
 struct GameInfo<F: IField, P:IPiece<F>> {
     field: Rc<RefCell<F>>,
     piece: P,
+    step_counter: u32,
     // shared
     callback: Arc<Mutex<Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>>>,
     input_queue: Arc<Mutex<Vec<piece::Input>>>,
     game_live: Arc<AtomicBool>,
     pause_pair: Arc<(Condvar, Mutex<bool>)>,
-
+    step_ratio: Arc<Mutex<(u32, u32)>>,
 }
 
 #[allow(dead_code)]
@@ -113,6 +114,7 @@ struct GameImpl<F : IField + 'static, P : IPiece<F> + 'static> {
     input_queue: Arc<Mutex<Vec<piece::Input>>>,
     game_live: Arc<AtomicBool>,
     pause_pair: Arc<(Condvar, Mutex<bool>)>,
+    step_ratio: Arc<Mutex<(u32, u32)>>,
 }
 
 #[allow(dead_code)]
@@ -145,6 +147,10 @@ impl Game {
 
     pub fn is_game_over(&self) -> bool {
         self.pimpl.is_game_over()
+    }
+
+    pub fn set_step_ratio(&mut self, denominator: u32, numerator: u32) -> Result<(), RunningError> {
+        self.pimpl.set_step_ratio(denominator, numerator)
     }
 }
 
@@ -215,14 +221,17 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
             // consume input
             GameImpl::consume_input(&mut game_info);
             // time step
-            const TIME: u32 = 1;
-            let piece_locked = game_info.piece.time_step(TIME).unwrap();
-            if piece_locked {
-                if GameImpl::scan_for_loss(&game_info) {
-                    GameImpl::game_over(&mut game_info);
-                } else {
-                    // new piece
-                    game_info.piece = P::new(rand::thread_rng().gen(), GAMEIMPL_LOCKDELAY, game_info.field.clone());
+            let (denominator, numerator) = *(game_info.step_ratio.lock().unwrap());
+            game_info.step_counter += 1;
+            if game_info.step_counter >= denominator {
+                let piece_locked = game_info.piece.time_step(numerator).unwrap();
+                if piece_locked {
+                    if GameImpl::scan_for_loss(&game_info) {
+                        GameImpl::game_over(&mut game_info);
+                    } else {
+                        // new piece
+                        game_info.piece = P::new(rand::thread_rng().gen(), GAMEIMPL_LOCKDELAY, game_info.field.clone());
+                    }
                 }
             }
             // render callback
@@ -293,11 +302,13 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
 
     // used by Game's pub functions
     fn new(callback: Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>) -> Self {
+        const DEFAULT_STEP_RATIO: (u32, u32) = (15, 1);
         GameImpl {
             callback: Arc::new(Mutex::new(callback)),
             input_queue: Arc::new(Mutex::new(Vec::new())),
             game_live: Arc::new(AtomicBool::new(false)),
             pause_pair: Arc::new((Condvar::new(), Mutex::new(true))),
+            step_ratio: Arc::new(Mutex::new(DEFAULT_STEP_RATIO)),
             join_token: RefCell::new(None)
         }
     }
@@ -315,6 +326,7 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
                 let cb = self.callback.clone();
                 let live = self.game_live.clone();
                 let p = self.pause_pair.clone();
+                let step_r = self.step_ratio.clone();
                 *paused = false;
                 self.game_live.store(true, Ordering::Relaxed);
                 *self.join_token.borrow_mut() = Some(thread::Builder::new().name("GameImpl internal thread".to_string()).spawn(move || {
@@ -322,10 +334,12 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
                     let info = GameInfo {
                         field: f.clone(),
                         piece: P::new(rand::thread_rng().gen(), GAMEIMPL_LOCKDELAY, f),
+                        step_counter: 0,
                         callback: cb,
                         input_queue: i,
                         game_live: live,
                         pause_pair: p,
+                        step_ratio: step_r,
                     };
 
                     GameImpl::thread_func(info)
@@ -375,6 +389,15 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
         } else {
             // game is either over (& thread cleaned), or thread is live but paused
             ! self.game_live.load(Ordering::Relaxed)
+        }
+    }
+
+    fn set_step_ratio(&mut self, denominator: u32, numerator: u32) -> Result<(), RunningError> {
+        if self.is_game_running() {
+            return Err(RunningError)
+        } else {
+            *(self.step_ratio.lock().unwrap()) = (denominator, numerator);
+            Ok(())
         }
     }
 }
@@ -563,6 +586,7 @@ mod test {
                 *count = *count + 1;
             };
             test_game = GameImpl::new(Box::new(matching_render_function));
+            test_game.set_step_ratio(1, 1).unwrap();
         }
         assert!(test_game.run().is_ok());
         sleep(Duration::from_secs(1));
@@ -615,6 +639,7 @@ mod test {
     fn test_game_over() {
         use std::sync::mpsc;
         let mut test_game: GameImpl<MockField, MockPiece> = GameImpl::new(Box::new(dummy_render_function));
+        test_game.set_step_ratio(1, 1).unwrap();
         let (send, recieve) = mpsc::channel();
         // check that blocks in each corner cause game over
         const RIGHT: i32 = field::WIDTH as i32 - 1;
