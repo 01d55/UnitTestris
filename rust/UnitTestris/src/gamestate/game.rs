@@ -233,6 +233,7 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
                         game_info.piece = P::new(rand::thread_rng().gen(), GAMEIMPL_LOCKDELAY, game_info.field.clone());
                     }
                 }
+                game_info.step_counter = 0;
             }
             // render callback
             let cb = game_info.callback.lock().unwrap();
