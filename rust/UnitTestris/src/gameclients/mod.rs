@@ -2,8 +2,10 @@ use std::convert::From;
 use std::ops::Deref;
 use gamestate::*;
 
+pub mod glutin;
+
 /// captures current state of a piece without ref baggage
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct PieceData {
     blocks: [Coord; 4],
     typ: piece::Type,
@@ -17,7 +19,7 @@ impl<T: Deref<Target=piece::Piece>> From<T> for PieceData {
         }
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct RenderData {
     current: PieceData,
     ghost: Option<PieceData>,

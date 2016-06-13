@@ -5,3 +5,4 @@ authors = ["Alan Jacobs Richardson <arrlaari@gmail.com>"]
 
 [dependencies]
 rand = "0.3"
+glium = "*"

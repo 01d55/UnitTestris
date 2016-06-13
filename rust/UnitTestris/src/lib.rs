@@ -1,4 +1,6 @@
+#[macro_use]
+extern crate glium;
 extern crate rand;
 
 mod gamestate;
-mod gameclients;
+pub mod gameclients;
