@@ -94,27 +94,39 @@ type Callback<F, P> = Fn(cell::Ref<F>, &P, Option<&P>)->() + Send
  * alas.
  */
 
-struct GameInfo<F: IField, P:IPiece<F>> {
-    field: Rc<RefCell<F>>,
-    piece: P,
-    step_counter: u32,
-    // shared
+struct SharedState<F: IField, P: IPiece<F>> {
     callback: Arc<Mutex<Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>>>,
     input_queue: Arc<Mutex<Vec<piece::Input>>>,
     game_live: Arc<AtomicBool>,
     pause_pair: Arc<(Condvar, Mutex<bool>)>,
     step_ratio: Arc<Mutex<(u32, u32)>>,
+    lock_delay: Arc<Mutex<u32>>,
+}
+// deriving demands F: Clone and P: Clone
+impl<F: IField, P: IPiece<F>> Clone for SharedState<F, P> {
+    fn clone(&self) -> Self {
+        SharedState {
+            callback: self.callback.clone(),
+            input_queue: self.input_queue.clone(),
+            game_live: self.game_live.clone(),
+            pause_pair: self.pause_pair.clone(),
+            step_ratio: self.step_ratio.clone(),
+            lock_delay: self.lock_delay.clone(),
+        }
+    }
+}
+
+struct GameInfo<F: IField, P:IPiece<F>> {
+    field: Rc<RefCell<F>>,
+    piece: P,
+    step_counter: u32,
+    shared: SharedState<F, P>
 }
 
 #[allow(dead_code)]
 struct GameImpl<F : IField + 'static, P : IPiece<F> + 'static> {
     join_token: RefCell<Option<thread::JoinHandle<()>>>,
-    // shared
-    callback: Arc<Mutex<Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>>>,
-    input_queue: Arc<Mutex<Vec<piece::Input>>>,
-    game_live: Arc<AtomicBool>,
-    pause_pair: Arc<(Condvar, Mutex<bool>)>,
-    step_ratio: Arc<Mutex<(u32, u32)>>,
+    shared: SharedState<F, P>
 }
 
 #[allow(dead_code)]
@@ -152,9 +164,12 @@ impl Game {
     pub fn set_step_ratio(&mut self, denominator: u32, numerator: u32) -> Result<(), RunningError> {
         self.pimpl.set_step_ratio(denominator, numerator)
     }
+
+    pub fn set_lock_delay(&mut self, delay: u32) -> Result<(), RunningError> {
+        self.pimpl.set_lock_delay(delay)
+    }
 }
 
-const GAMEIMPL_LOCKDELAY: u32 = 0;
 
 #[allow(dead_code, unused_variables)]
 impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
@@ -179,7 +194,7 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
             help: consider using a `let` binding to increase its lifetime
             let queue: Vec<piece::Input> = self.input_queue.lock().unwrap().drain(0..).collect();
              */
-            let mut weird_lifetime_bullshit = game.input_queue.lock().unwrap();
+            let mut weird_lifetime_bullshit = game.shared.input_queue.lock().unwrap();
             queue = weird_lifetime_bullshit.drain(0..).collect();
         }
         for input in queue {
@@ -188,13 +203,13 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
                 if GameImpl::scan_for_loss(game) {
                     GameImpl::game_over(game)
                 } else {
-                    game.piece = P::new(rand::thread_rng().gen(), GAMEIMPL_LOCKDELAY, game.field.clone());
+                    game.piece = P::new(rand::thread_rng().gen(), *(game.shared.lock_delay.lock().unwrap()), game.field.clone());
                 }
             }
         }
     }
     fn game_over(game: &mut GameInfo<F, P>) -> () {
-        game.game_live.store(false, Ordering::Relaxed);
+        game.shared.game_live.store(false, Ordering::Relaxed);
     }
     fn scan_for_loss(game: &GameInfo<F, P>) -> bool {
         for i in 0..field::WIDTH {
@@ -209,8 +224,8 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
     fn thread_func(mut game_info: GameInfo<F, P>) -> () {
         use std::time::{Duration, Instant};
         use std::thread::sleep;
-        let (ref pause_var, ref pause_lock) = *game_info.pause_pair.clone();
-        while game_info.game_live.load(Ordering::Relaxed) {
+        let (ref pause_var, ref pause_lock) = *game_info.shared.pause_pair.clone();
+        while game_info.shared.game_live.load(Ordering::Relaxed) {
             // check pause
             let mut paused = pause_lock.lock().unwrap();
             while *paused {
@@ -221,7 +236,7 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
             // consume input
             GameImpl::consume_input(&mut game_info);
             // time step
-            let (denominator, numerator) = *(game_info.step_ratio.lock().unwrap());
+            let (denominator, numerator) = *(game_info.shared.step_ratio.lock().unwrap());
             game_info.step_counter += 1;
             if game_info.step_counter >= denominator {
                 let piece_locked = game_info.piece.time_step(numerator).unwrap();
@@ -230,13 +245,13 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
                         GameImpl::game_over(&mut game_info);
                     } else {
                         // new piece
-                        game_info.piece = P::new(rand::thread_rng().gen(), GAMEIMPL_LOCKDELAY, game_info.field.clone());
+                        game_info.piece = P::new(rand::thread_rng().gen(), *(game_info.shared.lock_delay.lock().unwrap()), game_info.field.clone());
                     }
                 }
                 game_info.step_counter = 0;
             }
             // render callback
-            let cb = game_info.callback.lock().unwrap();
+            let cb = game_info.shared.callback.lock().unwrap();
             cb(game_info.field.borrow(), &game_info.piece, None);
             const TARGET_FPS: u32 = 60;
             const NANO: u32 = 1000000000;
@@ -250,9 +265,9 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
     // private fns
     fn end_game(&mut self) -> () {
         // can't panic here because this is called by drop
-        self.game_live.store(false, Ordering::Relaxed);
+        self.shared.game_live.store(false, Ordering::Relaxed);
         {
-            let (ref pause_cond, ref pause_lock) = *self.pause_pair;
+            let (ref pause_cond, ref pause_lock) = *self.shared.pause_pair;
 
             match pause_lock.lock() {
                 Ok(mut paused) => {
@@ -280,8 +295,8 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
 
     // cleans up join token
     fn is_game_running(&self) -> bool {
-        if ! self.game_live.load(Ordering::Relaxed) {
-            let (ref pause_cond, ref pause_lock) = *self.pause_pair;
+        if ! self.shared.game_live.load(Ordering::Relaxed) {
+            let (ref pause_cond, ref pause_lock) = *self.shared.pause_pair;
             let mut paused = pause_lock.lock().unwrap();
             if *paused {
                 *paused = false;
@@ -295,7 +310,7 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
             }
             false
         } else {
-            let (_, ref pause_lock) = *self.pause_pair;
+            let (_, ref pause_lock) = *self.shared.pause_pair;
             let paused = pause_lock.lock().unwrap();
             ! *paused
         }
@@ -304,12 +319,16 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
     // used by Game's pub functions
     fn new(callback: Box<Fn(cell::Ref<F>, &P, Option<&P>)->() + Send>) -> Self {
         const DEFAULT_STEP_RATIO: (u32, u32) = (15, 1);
+        const DEFAULT_LOCK_DELAY: u32 = 0;
         GameImpl {
-            callback: Arc::new(Mutex::new(callback)),
-            input_queue: Arc::new(Mutex::new(Vec::new())),
-            game_live: Arc::new(AtomicBool::new(false)),
-            pause_pair: Arc::new((Condvar::new(), Mutex::new(true))),
-            step_ratio: Arc::new(Mutex::new(DEFAULT_STEP_RATIO)),
+            shared: SharedState {
+                callback: Arc::new(Mutex::new(callback)),
+                input_queue: Arc::new(Mutex::new(Vec::new())),
+                game_live: Arc::new(AtomicBool::new(false)),
+                pause_pair: Arc::new((Condvar::new(), Mutex::new(true))),
+                step_ratio: Arc::new(Mutex::new(DEFAULT_STEP_RATIO)),
+                lock_delay: Arc::new(Mutex::new(DEFAULT_LOCK_DELAY)),
+            },
             join_token: RefCell::new(None)
         }
     }
@@ -320,27 +339,20 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
         } else {
             // using the is_none() result directly causes the borrow to live during the if block, which causes a panic at borrow_mut
             let thread_absent: bool = self.join_token.borrow().is_none();
-            let (ref pause_cond, ref pause_lock) = *self.pause_pair;
+            let (ref pause_cond, ref pause_lock) = *self.shared.pause_pair;
             let mut paused = pause_lock.lock().unwrap();
             if thread_absent {
-                let i = self.input_queue.clone();
-                let cb = self.callback.clone();
-                let live = self.game_live.clone();
-                let p = self.pause_pair.clone();
-                let step_r = self.step_ratio.clone();
+                let share = self.shared.clone();
+                let ld: u32 = *(self.shared.lock_delay.lock().unwrap()); // appease borrowck
                 *paused = false;
-                self.game_live.store(true, Ordering::Relaxed);
+                self.shared.game_live.store(true, Ordering::Relaxed);
                 *self.join_token.borrow_mut() = Some(thread::Builder::new().name("GameImpl internal thread".to_string()).spawn(move || {
                     let f: Rc<RefCell<F>> = Rc::new(RefCell::new(F::new()));
                     let info = GameInfo {
                         field: f.clone(),
-                        piece: P::new(rand::thread_rng().gen(), GAMEIMPL_LOCKDELAY, f),
+                        piece: P::new(rand::thread_rng().gen(), ld, f), // borrow `share` here ...
                         step_counter: 0,
-                        callback: cb,
-                        input_queue: i,
-                        game_live: live,
-                        pause_pair: p,
-                        step_ratio: step_r,
+                        shared: share // ... will block moving `share` here
                     };
 
                     GameImpl::thread_func(info)
@@ -354,7 +366,7 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
     }
 
     fn pause(&mut self) -> Result<(), NotRunningError> {
-        let (_, ref pause_lock) = *self.pause_pair;
+        let (_, ref pause_lock) = *self.shared.pause_pair;
         if ! self.is_game_running() {
             Err(NotRunningError)
         } else {
@@ -368,14 +380,14 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
         if self.is_game_running() {
             return Err(RunningError);
         }
-        let mut my_cb = self.callback.lock().unwrap();
+        let mut my_cb = self.shared.callback.lock().unwrap();
         *my_cb = callback;
         Ok(())
     }
 
     fn queue_input(&mut self, input: piece::Input) -> Result<(), NotRunningError> {
         if self.is_game_running() {
-            let mut queue = self.input_queue.lock().unwrap();
+            let mut queue = self.shared.input_queue.lock().unwrap();
             queue.push(input);
             Ok(())
         } else {
@@ -389,7 +401,7 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
             false
         } else {
             // game is either over (& thread cleaned), or thread is live but paused
-            ! self.game_live.load(Ordering::Relaxed)
+            ! self.shared.game_live.load(Ordering::Relaxed)
         }
     }
 
@@ -397,7 +409,16 @@ impl<F: IField + 'static, P: IPiece<F> + 'static> GameImpl<F, P> {
         if self.is_game_running() {
             return Err(RunningError)
         } else {
-            *(self.step_ratio.lock().unwrap()) = (denominator, numerator);
+            *(self.shared.step_ratio.lock().unwrap()) = (denominator, numerator);
+            Ok(())
+        }
+    }
+
+    pub fn set_lock_delay(&mut self, delay: u32) -> Result<(), RunningError> {
+        if self.is_game_running() {
+            return Err(RunningError)
+        } else {
+            *(self.shared.lock_delay.lock().unwrap()) = delay;
             Ok(())
         }
     }
@@ -452,6 +473,7 @@ mod test {
     }
     #[derive(Debug)]
     struct MockPiece {
+        lock_delay: u32,
         time_step_call_count: u32,
         time_step_step_count: u32,
         time_step_result: Cell<bool>,
@@ -459,10 +481,11 @@ mod test {
     }
     impl IPiece<MockField> for MockPiece {
 
-        fn new(t: Type, _: u32, f: Rc<RefCell<MockField>>) -> Self {
+        fn new(t: Type, lock_delay: u32, f: Rc<RefCell<MockField>>) -> Self {
             let fref = f.borrow();
             fref.piece_type_log.borrow_mut().push(t);
             MockPiece {
+                lock_delay: lock_delay,
                 time_step_call_count: 0,
                 time_step_step_count: 0,
                 time_step_result: Cell::new(false),
@@ -767,5 +790,30 @@ mod test {
             sleep(Duration::from_secs(1));
             panic!("let's unwind");
         });
+    }
+    #[test]
+    fn test_set_lock_delay() {
+        let mut test_game: GameImpl<MockField, MockPiece>;
+        let observed_lock_delay_mutex: Arc<Mutex<u32>> = Arc::new(Mutex::new(1));
+        {
+            let observed_lock_delay_mutex = observed_lock_delay_mutex.clone();
+            let time_step_checking_render_func = move |_: cell::Ref<MockField>, p: &MockPiece, _: Option<&MockPiece>|->() {
+                *(observed_lock_delay_mutex.lock().unwrap()) = p.lock_delay;
+                p.time_step_result.set(true);
+            };
+            test_game = GameImpl::new(Box::new(time_step_checking_render_func));
+        }
+        assert!(test_game.set_lock_delay(0).is_ok());
+        assert!(test_game.run().is_ok());
+        sleep(Duration::from_secs(1));
+        assert!(test_game.set_lock_delay(1).is_err());
+        assert!(test_game.pause().is_ok());
+        assert_eq!(*(observed_lock_delay_mutex.lock().unwrap()), 0);
+
+        assert!(test_game.set_lock_delay(1).is_ok());
+        assert!(test_game.run().is_ok());
+        sleep(Duration::from_secs(1));
+        assert!(test_game.pause().is_ok());
+        assert_eq!(*(observed_lock_delay_mutex.lock().unwrap()), 1);
     }
 }
