@@ -6,3 +6,5 @@ authors = ["Alan Jacobs Richardson <arrlaari@gmail.com>"]
 [dependencies]
 rand = "0.3"
 glium = "*"
+portaudio = "0.6.*"
+vorbis = "*"

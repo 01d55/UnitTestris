@@ -10,6 +10,10 @@ use glium::{
 use glium::index::PrimitiveType;
 use glium::backend::glutin_backend::GlutinFacade;
 use super::super::gamestate::*;
+use super::sound::{
+    Player,
+    PortAudio,
+};
 
 #[derive(Copy, Clone)]
 // Non-snake case names mandated by shaders
@@ -81,8 +85,10 @@ pub fn run_tetris() {
         game = game::Game::new(Box::new(callback));
     }
     game.run().unwrap();
+    let pa = PortAudio::new().unwrap();
+    let mut player = Player::new(&pa).unwrap();
+    player.toggle_play_music(&pa).unwrap();
     loop {
-        // TODO: input
         for ev in display.poll_events() {
             match ev {
                 glutin::Event::Closed => return,
@@ -93,6 +99,9 @@ pub fn run_tetris() {
         let data_opt: Option<RenderData> = data_mutex.lock().unwrap().clone();
         if let Some(data) = data_opt {
             draw_frame(&display, data, &vertex_buffer, &index_buffer, &program, &texture);
+        }
+        if game.is_game_over() {
+            player.pause_music(&pa).unwrap();
         }
     }
 }

@@ -2,6 +2,8 @@ use std::convert::From;
 use std::ops::Deref;
 use gamestate::*;
 
+mod sound;
+
 pub mod glutin;
 
 /// captures current state of a piece without ref baggage
