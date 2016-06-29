@@ -92,7 +92,7 @@ pub fn run_tetris() {
         for ev in display.poll_events() {
             match ev {
                 glutin::Event::Closed => return,
-                glutin::Event::KeyboardInput(state, byte, opt) => key_input(&mut game, state, byte, opt),
+                glutin::Event::KeyboardInput(state, byte, opt) => key_input(&mut game, &pa, &mut player, state, byte, opt),
                 _ => ()
             }
         }
@@ -101,7 +101,7 @@ pub fn run_tetris() {
             draw_frame(&display, data, &vertex_buffer, &index_buffer, &program, &texture);
         }
         if game.is_game_over() {
-            player.reset_music(&pa).unwrap();
+            player.reset_music().unwrap();
         }
     }
 }
@@ -220,7 +220,7 @@ fn gen_image() -> texture::RawImage2d<'static, (f32, f32, f32)> {
     image
 }
 
-fn key_input(game: &mut game::Game, state: glutin::ElementState, _: u8, opt: Option<glutin::VirtualKeyCode>) -> () {
+fn key_input<'pa>(game: &mut game::Game, pa: &'pa PortAudio, player: &mut Player<'pa>, state: glutin::ElementState, _: u8, opt: Option<glutin::VirtualKeyCode>) -> () {
     use glium::glutin::VirtualKeyCode;
     use gamestate::piece::Input;
     let input: Option<Input>;
@@ -235,6 +235,7 @@ fn key_input(game: &mut game::Game, state: glutin::ElementState, _: u8, opt: Opt
                 VirtualKeyCode::Right => Some(Input::ShiftRight),
                 VirtualKeyCode::P => {
                     game.pause().or_else(|_|{game.run()}).expect("If pause fails run should always succeed");
+                    player.toggle_play_music(pa).unwrap();
                     None
                 },
                 _ => None

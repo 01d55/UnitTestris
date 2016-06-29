@@ -107,7 +107,7 @@ impl<'pa> Player<'pa> {
                 Ok(())
             }
         } else {
-            Ok(())
+            self.toggle_play_music(pa)
         }
     }
     /// Pause music if it is currently playing. Otherwise does nothing.
