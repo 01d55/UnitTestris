@@ -86,8 +86,8 @@ pub fn run_tetris() {
     }
     game.run().unwrap();
     let pa = PortAudio::new().unwrap();
-    let mut player = Player::new(&pa).unwrap();
-    player.toggle_play_music(&pa).unwrap();
+    let mut player = Player::new();
+    player.start_music(&pa).unwrap();
     loop {
         for ev in display.poll_events() {
             match ev {
@@ -101,7 +101,7 @@ pub fn run_tetris() {
             draw_frame(&display, data, &vertex_buffer, &index_buffer, &program, &texture);
         }
         if game.is_game_over() {
-            player.pause_music(&pa).unwrap();
+            player.reset_music(&pa).unwrap();
         }
     }
 }

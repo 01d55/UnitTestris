@@ -45,27 +45,12 @@ pub struct Player<'pa> {
     stream: Option<portaudio::Stream<'pa, portaudio::NonBlocking, portaudio::Output<i16>>>,
 }
 
-/// Gather the arguments to PortAudio::default_output_stream_settings in one struct
-pub struct PlayerSettings {
-    pub channels: i32,
-    pub num_seconds: i32,
-    pub sample_rate: f64,
-    pub frames_per_buffer: u32
-}
-
-const EXAMPLE_SETTINGS: PlayerSettings = PlayerSettings {
-    channels: 2,
-    num_seconds: 5,
-    sample_rate: 44_100.0,
-    frames_per_buffer: 64
-};
-
 impl<'pa> Player<'pa> {
 
-    pub fn new(pa: &'pa PortAudio) -> Result<Self, portaudio::Error> {
-        Ok(Player {
+    pub fn new() -> Self {
+        Player {
             stream: None,
-        })
+        }
     }
     /// Starts music if it is stopped or paused. Otherwise pauses.
     pub fn toggle_play_music(&mut self, pa: &'pa PortAudio) -> Result<(), portaudio::Error> {
